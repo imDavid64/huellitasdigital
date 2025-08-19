@@ -1011,6 +1011,11 @@ header {
     color: rgb(255, 255, 255);
 }
 
+.subtittles {
+    display: flex;
+    justify-content: space-between;
+}
+
 .index-tittles {
     display: flex;
     justify-content: space-between;
@@ -1351,7 +1356,7 @@ header {
     gap: 1rem;
 }
 
-/**/
+/*admin mode*/
 
 .admin-main-content {
     padding-bottom: 2rem;
@@ -1584,6 +1589,82 @@ header {
     height: 700px;
     margin: 0 auto;
     color: #002557;
+}
+
+.sm-calendar {
+    max-width: 100%;
+    height: 500px;
+    margin: 0 auto;
+    color: #002557;
+}
+
+/*vet mode*/
+
+.vet-main-content {
+    padding-bottom: 2rem;
+    padding-top: 1rem;
+    padding-right: 2rem;
+    padding-left: 1rem;
+    width: 1290px;
+    background-color: #ffffff;
+}
+
+.vet-content-home {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 1290px;
+}
+
+.vet-calendar-container {
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    width: 1290px;
+}
+
+.vet-mgmt-table {
+    width: 1290px;
+    border-radius: 10px;
+    color: #002557;
+    padding: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.client-vet-info-content {
+    padding-bottom: 2rem;
+    padding-top: 1rem;
+    padding-right: 2rem;
+    padding-left: 1rem;
+    width: 1290px;
+    background-color: #ffffff;
+}
+
+.vet-client-container {
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.vet-client-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.vet-client-info span {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.vet-pet-list-table {
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 /*Testimonios*/

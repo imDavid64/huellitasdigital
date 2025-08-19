@@ -53,22 +53,10 @@
                 <div class="aside-container">
                     <div class="aside-main">
                         <ul>
-                            <li><a href="home.html"><i class="bi bi-opencollective"></i>Dashboard</a></li>
-                            <li><a href="user-mgmt.html"><i class="bi bi-people-fill"></i>Gestión de Usuarios</a></li>
-                            <li><a href="role-mgmt.html"><i class="bi bi-diagram-2-fill"></i>Gestión de Roles</a>
-                            </li>
-                            <li><a href="supplier-mgmt.html"><i class="bi bi-building-fill"></i>Gestión de
-                                    Proveedores</a></li>
-                            <li><a href="product-mgmt.html"><i class="bi bi-box2-fill"></i>Gestión de productos</a></li>
-                            <li><a href="inventory-mgmt.html"><i class="bi bi-clipboard2-check-fill"></i>Gestión de
-                                    Inventario</a></li>
-                            <li><a href="accounting-record.html"><i class="bi bi-calculator-fill"></i>Registro
-                                    Contable</a></li>
-                            <li><a href="order-mgmt.html"><i class="bi bi-cart-fill"></i>Gestión de pedidos</a></li>
-                            <li><a href="appointment-mgmt.html"><i class="bi bi-calendar-week-fill"></i>Gestión de citas</a>
-                            </li>
-                            <li><a href="general-settings.html"><i class="bi bi-gear-fill"></i>Configuración general</a>
-                            </li>
+                            <li><a href="home.html"><i class="bi bi-house-fill"></i>Inicio</a></li>
+                            <li><a href="client-mgmt.html"><i class="bi bi-people-fill"></i>Clientes</a></li>
+                            <li><a href="appointment-mgmt.html"><i class="bi bi-calendar-week-fill"></i>Citas</a></li>
+                            <li><a href="inventory-mgmt.html"><i class="bi bi-clipboard2-check-fill"></i>Inventario</a></li>
                         </ul>
                     </div>
                     <hr />
@@ -78,32 +66,47 @@
                     </div>
                 </div>
             </aside>
-            <section class="admin-main-content-add-user">
+            <section class="vet-main-content">
                 <div>
                     <div class="tittles">
-                        <h2><i class="bi bi-node-plus-fill"></i><strong> Agregar Rol</strong></h2>
+                        <h2><i class="bi bi-calendar-plus-fill"></i><strong> Agendar Cita</strong></h2>
+                        <div></div>
                     </div>
                 </div>
                 <div class="admin-form-container">
-                    <form action="role-mgmt.html" method="POST">
+                    <form action="user-mgmt.html" method="POST">
                         <div class="form-container">
                             <div class="form-item">
-                                <label for="addrolename">Nombre del Rol</label>
-                                <input type="text" id="addrolename" name="addrolename" required>
-                            </div>
-                            <div class="form-item">
-                                <label for="addroledescription">Descripción</label>
-                                <input type="text" id="addroledescription" name="addroledescription" required>
-                            </div>
-                            <div class="form-item">
-                                <label for="state">Estado</label>
-                                <select id="state" name="state" required>
-                                    <option value="" disabled>Seleccione un rol</option>
-                                    <option value="activo" selected>Activo</option>
-                                    <option value="inactivo">Inactivo</option>
+                                <label for="appointment">Motivo de la Cita</label>
+                                <select id="appointment" name="appointment" required>
+                                    <option value="" disabled selected>Seleccione el motivo</option>
+                                    <option>Consulta</option>
+                                    <option>Vacunación</option>
+                                    <option>Desparacitación</option>
+                                    <option>Examenes de Laboratorio</option>
+                                    <option>Ultrasonido</option>
+                                    <option>Cirugia Menor</option>
+                                    <option>Limpieza Dental</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn-blue"><strong>Agregar Rol</strong><i class="bi bi-node-plus-fill"></i></button>
+                            <div class="form-item">
+                                <label for="clientname">Nombre del Cliente</label>
+                                <input type="text" id="clientname" name="clientname" required>
+                            </div>
+                            <div class="form-item">
+                                <label for="petname">Nombre de la Mascota</label>
+                                <input type="text" id="petname" name="petname" required>
+                            </div>
+                            <div class="form-item">
+                                <label for="appointmentdate">Fecha</label>
+                                <input type="date" id="appointmentdate" name="appointmentdate" required>
+                            </div>
+                            <div class="form-item">
+                                <label for="appointmenttime">Hora</label>
+                                <input type="time" id="appointmenttime" name="appointmenttime" required>
+                            </div>
+                            <button type="submit" class="btn-blue"><strong>Agendar Cita</strong><i
+                                    class="bi bi-calendar-plus-fill"></i></button>
                         </div>
                     </form>
                 </div>
