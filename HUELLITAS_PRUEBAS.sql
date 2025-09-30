@@ -1,0 +1,143 @@
+INSERT INTO HUELLITAS_ESTADO_TB (ESTADO_DESCRIPCION) VALUES 
+('ACTIVO'),
+('INACTIVO');
+
+INSERT INTO HUELLITAS_ROL_USUARIO_TB (ID_ESTADO_FK, DESCRIPCION_ROL_USUARIO) VALUES 
+(1, 'CLIENTE'),
+(1, 'ADMINISTRADOR'),
+(1, 'EMPLEADO'),
+(1, 'VETERINARIO');
+
+INSERT INTO HUELLITAS_DIRECCION_PROVINCIA_TB (ID_ESTADO_FK, NOMBRE_PROVINCIA) VALUES 
+(1, 'SAN JOSÉ'),
+(1, 'ALAJUELA'),
+(1, 'CARTAGO'),
+(1, 'HEREDIA'),
+(1, 'GUANACASTE'),
+(1, 'PUNTARENAS'),
+(1, 'LIMÓN');
+
+INSERT INTO HUELLITAS_DIRECCION_CANTON_TB (ID_ESTADO_FK, NOMBRE_CANTON) VALUES 
+(1, 'CENTRAL'),
+(1, 'ESCAZÚ'),
+(1, 'DESAMPARADOS'),
+(1, 'MORAVIA'),
+(1, 'TIBÁS'),
+(1, 'GOICOECHEA'),
+(1, 'SANTA ANA');
+
+
+INSERT INTO HUELLITAS_DIRECCION_DISTRITO_TB (ID_ESTADO_FK, NOMBRE_DISTRITO) VALUES 
+(1, 'CARMEN'),
+(1, 'MERCED'),
+(1, 'HATILLO'),
+(1, 'SAN FRANCISCO'),
+(1, 'URUCA'),
+(1, 'MATA REDONDA'),
+(1, 'ZAPOTE');
+
+INSERT INTO HUELLITAS_DIRECCION_TB (ID_ESTADO_FK, ID_DIRECCION_PROVINCIA_FK, ID_DIRECCION_CANTON_FK, ID_DIRECCION_DISTRITO_FK, DIRECCION_SENNAS) VALUES 
+(1, 1, 1, 1, 'AVENIDA CENTRAL, CALLE 25, CASA 456');
+
+INSERT INTO HUELLITAS_TELEFONO_CONTACTO_TB (ID_ESTADO_FK, TELEFONO_CONTACTO) VALUES 
+(1, 88889999);
+
+
+-- Crear claves de encriptación
+INSERT INTO HUELLITAS_CLAVES_ENCRIPTACION_TB (NOMBRE_CLAVE, CLAVE_ENCRIPTACION) VALUES 
+('CLAVE_NUMERO_TARJETA', HUELLITAS_GENERAR_CLAVE_AES_FN()),
+('CLAVE_CVV', HUELLITAS_GENERAR_CLAVE_AES_FN()),
+('CLAVE_CONTRASENNA', HUELLITAS_GENERAR_CLAVE_AES_FN());
+
+
+INSERT INTO HUELLITAS_USUARIOS_TB (
+    ID_ESTADO_FK, 
+    ID_ROL_USUARIO_FK, 
+    ID_DIRECCION_FK, 
+    ID_TELEFONO_CONTACTO_FK,
+    USUARIO_NOMBRE, 
+    USUARIO_CORREO, 
+    USUARIO_CONTRASENNA,
+    USUARIO_IDENTIFICACION
+) VALUES (
+    1,  -- ACTIVO
+    1,  -- CLIENTE
+    1,  -- DIRECCIÓN
+    1,  -- TELÉFONO
+    'MARÍA FERNANDA LÓPEZ GARCÍA',
+    'maria.lopez@email.com',
+    'ClaveSegura2024!',
+    123456789
+);
+
+INSERT INTO HUELLITAS_TARJETAS_TB (
+    ID_USUARIO_FK,
+    TIPO_TARJETA,
+    MARCA_TARJETA,
+    NOMBRE_TITULAR,
+    NUMERO_TARJETA_ENCRIPTADO,
+    ULTIMOS_CUATRO_DIGITOS,
+    FECHA_VENCIMIENTO,
+    CVV_ENCRIPTADO,
+    ES_PREDETERMINADO,
+    IP_REGISTRO
+) VALUES (
+    1,  -- ID del usuario recién insertado
+    'CREDITO',
+    'VISA',
+    'MARIA FERNANDA LOPEZ',
+    '4111111111111111',  -- Se encriptará automáticamente
+    '1111',
+    '2027-05-20',
+    '123',               -- Se encriptará automáticamente
+    TRUE,
+    '192.168.1.100'
+);
+
+
+-------------------------------------------------------------------------------------------------
+-------------------------------------- Pruebas Encriptacion --------------------------------------------
+-------------------------------------------------------------------------------------------------
+
+-- Verificar usuario
+SELECT 
+    ID_USUARIO_PK,
+    USUARIO_NOMBRE,
+    USUARIO_CONTRASENNA,
+    USUARIO_CONTRASENNA_ENCRIPTADA,
+    USUARIO_SALT
+FROM HUELLITAS_USUARIOS_TB;
+
+-- Verificar tarjeta
+SELECT 
+    ID_TARJETA_PK,
+    NUMERO_TARJETA_ENCRIPTADO,
+    ULTIMOS_CUATRO_DIGITOS,
+    CVV_ENCRIPTADO,
+    LENGTH(NUMERO_TARJETA_ENCRIPTADO) AS LONG_NUMERO,
+    LENGTH(CVV_ENCRIPTADO) AS LONG_CVV
+FROM HUELLITAS_TARJETAS_TB;
+
+-- Probar desencriptación de tarjeta
+SELECT 
+    ID_TARJETA_PK,
+    NOMBRE_TITULAR,
+    ULTIMOS_CUATRO_DIGITOS,
+    HUELLITAS_DESENCRIPTAR_DATO_FN(NUMERO_TARJETA_ENCRIPTADO, 'CLAVE_NUMERO_TARJETA') AS NUMERO_DESENCRIPTADO,
+    HUELLITAS_DESENCRIPTAR_DATO_FN(CVV_ENCRIPTADO, 'CLAVE_CVV') AS CVV_DESENCRIPTADO
+FROM HUELLITAS_TARJETAS_TB;
+
+-------------------------------------------------------------------------------------------------
+-------------------------------------- Pruebas login --------------------------------------------
+-------------------------------------------------------------------------------------------------
+-- Probar login exitoso
+CALL HUELLITAS_VALIDAR_LOGIN_SP('maria.lopez@email.com', 'ClaveSegura2024!');
+
+-- Probar login fallido
+CALL HUELLITAS_VALIDAR_LOGIN_SP('maria.lopez@email.com', 'clave_incorrecta');
+
+-- Cambiar contraseña
+CALL HUELLITAS_CAMBIAR_CONTRASENNA_SP(1, 'ClaveSegura2024!', 'NuevaClaveSuperSegura2024!');
+
+-- Probar que la nueva contraseña funciona
+CALL HUELLITAS_VALIDAR_LOGIN_SP('maria.lopez@email.com', 'NuevaClaveSuperSegura2024!');
