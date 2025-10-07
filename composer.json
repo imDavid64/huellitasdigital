@@ -1,0 +1,11 @@
+{
+    "name": "david/huellitasdigital",
+    "autoload": {
+        "psr-4": {
+            "David\\Huellitasdigital\\": "src/"
+        }
+    },
+    "require": {
+        "kreait/firebase-php": "^5.26"
+    }
+}

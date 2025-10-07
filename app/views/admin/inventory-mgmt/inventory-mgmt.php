@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!--Include para el head-->
+<!--HEAD-->
+<?php include_once __DIR__ . "/../partials/adminHead.php"; ?>
+<!--HEAD-->
+
+<body>
+
+    <!--Include para el herder-->
+    <!--HEADER-->
+    <?php include_once __DIR__ . "/../partials/header.php"; ?>
+    <!--HEADER-->
+
+
+    <!--CONTENIDO CENTRAL-->
+    <main>
+        <section class="admin-main">
+            <aside class="admin-aside">
+                <div class="aside-container">
+                    <div class="aside-main">
+                        <ul>
+                            <li><a href="home.html"><i class="bi bi-opencollective"></i>Dashboard</a></li>
+                            <li><a href="user-mgmt.html"><i class="bi bi-people-fill"></i>Gestión de Usuarios</a></li>
+                            <li><a href="role-mgmt.html"><i class="bi bi-diagram-2-fill"></i>Gestión de Roles</a></li>
+                            <li><a href="supplier-mgmt.html"><i class="bi bi-building-fill"></i>Gestión de
+                                    Proveedores</a></li>
+                            <li><a href="product-mgmt.html"><i class="bi bi-box2-fill"></i>Gestión de productos</a></li>
+                            <li><a href="inventory-mgmt.html"><i class="bi bi-clipboard2-check-fill"></i>Gestión de
+                                    Inventario</a></li>
+                            <li><a href="accounting-record.html"><i class="bi bi-calculator-fill"></i>Registro
+                                    Contable</a></li>
+                            <li><a href="order-mgmt.html"><i class="bi bi-cart-fill"></i>Gestión de pedidos</a></li>
+                            <li><a href="appointment-mgmt.html"><i class="bi bi-calendar-week-fill"></i>Gestión de citas</a>
+                            </li>
+                            <li><a href="general-settings.html"><i class="bi bi-gear-fill"></i>Configuración general</a></li>
+                        </ul>
+                    </div>
+                    <hr />
+                    <div class="aside-footer">
+                        <a class="btn-dark-blue" href="../../index_unlogin.html"><strong>
+                                Cerrar Sesión</strong></a>
+                    </div>
+                </div>
+            </aside>
+            <section class="admin-main-content">
+                <div>
+                    <div class="tittles">
+                        <h2><i class="bi bi-clipboard2-check-fill"></i><strong> Gestión de Inventario</strong></h2>
+                        <div>
+                            <a href="add-inventory.html" class="btn-blue"><strong>Registrar Movimiento</strong>
+                                <i class="bi bi-plus-circle-fill"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <section class="admin-main-content-mgmt">
+                    <div>
+                        <div class="search">
+                            <input type="text" id="header-search" placeholder="Buscar producto en inventario...">
+                            <i class="bi bi-search"></i>
+                        </div>
+                    </div>
+                    <div class="admin-mgmt-table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Producto</th>
+                                    <th scope="col">Categoría</th>
+                                    <th scope="col">Stock Actual</th>
+                                    <th scope="col">Última Entrada</th>
+                                    <th scope="col">Última Salida</th>
+                                    <th scope="col">Estado</th>
+                                    <th class="d-flex justify-content-center" scope="col">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Alimento Premium Perro 10kg</td>
+                                    <td>Alimento</td>
+                                    <td>50</td>
+                                    <td>05/08/2025 (20)</td>
+                                    <td>12/08/2025 (10)</td>
+                                    <td>Disponible</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="edit-inventory.html" class="btn btn-dark-blue btn-sm">Editar <i
+                                                    class="bi bi-pencil-square"></i></a>
+                                            <button class="btn btn-green btn-sm">Entrada <i
+                                                    class="bi bi-box-arrow-in-down"></i></button>
+                                            <button class="btn btn-yellow btn-sm">Salida <i
+                                                    class="bi bi-box-arrow-up"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Collar Antipulgas</td>
+                                    <td>Accesorio</td>
+                                    <td>10</td>
+                                    <td>01/08/2025 (50)</td>
+                                    <td>10/08/2025 (40)</td>
+                                    <td>Crítico</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="edit-inventory.html" class="btn btn-dark-blue btn-sm">Editar <i
+                                                    class="bi bi-pencil-square"></i></a>
+                                            <button class="btn btn-green btn-sm">Entrada <i
+                                                    class="bi bi-box-arrow-in-down"></i></button>
+                                            <button class="btn btn-yellow btn-sm">Salida <i
+                                                    class="bi bi-box-arrow-up"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Antibiótico Amoxicilina 500mg</td>
+                                    <td>Medicamento</td>
+                                    <td>0</td>
+                                    <td>15/07/2025 (100)</td>
+                                    <td>01/08/2025 (100)</td>
+                                    <td>Agotado</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="edit-inventory.html" class="btn btn-dark-blue btn-sm">Editar <i
+                                                    class="bi bi-pencil-square"></i></a>
+                                            <button class="btn btn-green btn-sm">Entrada <i
+                                                    class="bi bi-box-arrow-in-down"></i></button>
+                                            <button class="btn btn-yellow btn-sm">Salida <i
+                                                    class="bi bi-box-arrow-up"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                                </li>
+                                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Siguiente</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </section>
+            </section>
+        </section>
+    </main>
+    <!--CONTENIDO CENTRAL-->
+</body>
+
+<!--FOOTER-->
+<footer>
+    <div class="post-footer" style="background-color: #002557; color: white;">
+        <span>&copy; 2025 - Dra Huellitas</span>
+    </div>
+</footer>
+<!--FOOTER-->
+
+
+</html>
