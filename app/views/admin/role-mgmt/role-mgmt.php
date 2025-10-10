@@ -1,3 +1,9 @@
+<?php
+//Este include verifica si hay sesión activa
+include_once __DIR__ . '/../includes/auth.php';
+checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -21,10 +27,21 @@
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
             <section class="admin-main-content">
                 <div>
+                    <!--Breadcrumb-->
+                    <nav class="breadcrumbs-container">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a
+                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                            </li>
+                            <li class="breadcrumb-item current-page">Gestión de Roles</li>
+                        </ol>
+                    </nav>
                     <div class="tittles">
                         <h2><i class="bi bi-diagram-2-fill"></i><strong> Gestión de Roles</strong></h2>
                         <div>
-                            <a href="../../../app/controllers/admin/roleController.php?action=create" class="btn-blue"><strong>Agregar Rol</strong>
+                            <a href="../../../app/controllers/admin/roleController.php?action=create"
+                                class="btn-blue"><strong>Agregar Rol</strong>
                                 <i class="bi bi-node-plus-fill"></i></a>
                         </div>
                     </div>

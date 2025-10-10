@@ -943,8 +943,7 @@ header {
 
 .breadcrumbs-container {
     color: #002557;
-    padding-left: 4rem;
-    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
 .breadcrumb a {
@@ -959,6 +958,7 @@ header {
 /* ----------------- SLIDER BANNER (SOBRESCRIBE reglas anteriores) ----------------- */
 .slider-banner {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    min-height: 400px;
 }
 
 .static-banner {
@@ -1001,17 +1001,6 @@ header {
 .pages-product-content {
     display: flex;
     width: 1530px;
-}
-
-.tittles {
-    display: flex;
-    justify-content: space-between;
-    align-content: center;
-    margin-bottom: 2rem;
-    border-color: rgb(170, 170, 170);
-    border-bottom-style: solid;
-    border-width: thin;
-    width: 1290px;
 }
 
 .tittles {
@@ -1379,7 +1368,6 @@ header {
 
 .admin-main-content {
     padding-bottom: 2rem;
-    padding-top: 1rem;
     padding-right: 2rem;
     padding-left: 1rem;
     width: 1290px;
@@ -1407,7 +1395,9 @@ header {
 }
 
 .admin-main-content-mgmt {
-    padding: 2rem;
+    padding-left: 2rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
     display: flex;
     flex-direction: column;
     width: 1290px;
@@ -1440,6 +1430,16 @@ header {
     left: 370px;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.mgmt-header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.search-container {
+    display: flex;
+    justify-content: space-between;
 }
 
 .admin-mgmt-table {

@@ -1,5 +1,4 @@
 <?php
-session_start();
 include_once __DIR__ . "/../../models/conexionDB.php";
 require_once __DIR__ . "/../../models/admin/userModel.php";
 require_once __DIR__ . "/../../models/admin/catalogModel.php";
@@ -95,3 +94,4 @@ switch ($action) {
     default:
         echo "Acción no válida";
 }
+

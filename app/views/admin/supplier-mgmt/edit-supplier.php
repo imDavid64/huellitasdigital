@@ -59,7 +59,7 @@
                             <div class="form-item">
                                 <label for="suppliercontact">Nombre del Contacto</label>
                                 <input type="text" id="suppliercontact" name="suppliercontact"
-                                    value="<?= htmlspecialchars($supplier['NOMBRE_CONTACTO']) ?>" required>
+                                    value="<?= htmlspecialchars($supplier['NOMBRE_REPRESENTANTE']) ?>" required>
                             </div>
                             <div class="form-item">
                                 <label for="suppliernumber">Teléfono</label>

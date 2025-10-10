@@ -1,3 +1,9 @@
+<?php
+//Este include verifica si hay sesión activa
+include_once __DIR__ . '/../includes/auth.php';
+checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -19,6 +25,16 @@
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
             <section class="admin-main-content">
                 <div>
+                    <!--Breadcrumb-->
+                    <nav class="breadcrumbs-container">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a
+                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                            </li>
+                            <li class="breadcrumb-item current-page">Configuración General</li>
+                        </ol>
+                    </nav>
                     <div class="tittles">
                         <h2><i class="bi bi-gear-fill"></i><strong> Configuración General</strong></h2>
                     </div>
@@ -48,7 +64,7 @@
                                     <tr>
                                         <td><?= $geSetting['ID_SLIDER_BANNER_PK'] ?></td>
                                         <td><img src="<?= htmlspecialchars($geSetting['IMAGEN_URL']) ?>"
-                                        style="min-height: 60px; max-height: 60px;"></td>
+                                                style="min-height: 60px; max-height: 60px;"></td>
                                         <td><?= htmlspecialchars($geSetting['DESCRIPCION_SLIDER_BANNER']) ?></td>
                                         <td><?= htmlspecialchars($geSetting['ESTADO']) ?></td>
                                         <td class="text-center">

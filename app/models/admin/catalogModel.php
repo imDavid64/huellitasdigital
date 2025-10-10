@@ -32,5 +32,28 @@ class CatalogModel
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
+
+    public function getAllCategorias()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_CATEGORIAS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getAllMarcas()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_MARCAS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getAllEsNuevo()
+    {
+        $stmt = $this->conn->prepare("SELECT ID_NUEVO_PK, NUEVO_DESCRIPCION FROM HUELLITAS_NUEVO_TB");
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
 }
 ?>

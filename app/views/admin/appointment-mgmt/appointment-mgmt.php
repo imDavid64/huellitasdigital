@@ -1,3 +1,9 @@
+<?php
+//Este include verifica si hay sesión activa
+include_once __DIR__ . '/../includes/auth.php';
+checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -34,7 +40,8 @@
                             <li><a href="order-mgmt.html"><i class="bi bi-cart-fill"></i>Gestión de pedidos</a></li>
                             <li><a href="appointment-mgmt.html"><i class="bi bi-calendar-week-fill"></i>Gestión de
                                     citas</a></li>
-                            <li><a href="general-settings.html"><i class="bi bi-gear-fill"></i>Configuración general</a></li>
+                            <li><a href="general-settings.html"><i class="bi bi-gear-fill"></i>Configuración general</a>
+                            </li>
                         </ul>
                     </div>
                     <hr />
@@ -46,6 +53,16 @@
             </aside>
             <section class="admin-main-content">
                 <div>
+                    <!--Breadcrumb-->
+                    <nav class="breadcrumbs-container">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a
+                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                            </li>
+                            <li class="breadcrumb-item current-page">Gestión de Citas</li>
+                        </ol>
+                    </nav>
                     <div class="tittles">
                         <h2><i class="bi bi-calendar-week-fill"></i><strong> Gestión de Citas</strong></h2>
                         <div>
@@ -55,7 +72,7 @@
                     </div>
                 </div>
                 <section class="admin-main-content-mgmt">
-                    
+
                     <div class="calendar" id="calendar" class="mt-3"></div>
 
                     <script>

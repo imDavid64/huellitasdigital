@@ -1,5 +1,4 @@
 <?php
-session_start();
 include_once __DIR__ . "/../../models/conexionDB.php";
 require_once __DIR__ . "/../../models/admin/supplierModel.php";
 require_once __DIR__ . "/../../models/admin/catalogModel.php";

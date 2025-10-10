@@ -10,35 +10,40 @@ class ProductModel
 
     // Dentro de la clase ProductModel en productModel.php
 
-    public function updateProduct($id, $id_proveedor, $id_estado, $nombre, $descripcion, $categoria, $precio, $stock, $imagen_url)
+    public function updateProduct($id, $id_proveedor, $id_estado, $id_categoria, $id_marca, $id_nuevo, $nombre, $descripcion, $precio, $stock, $imagen_url)
     {
-        $query = "UPDATE HUELLITAS_PRODUCTOS_TB SET
-                ID_PROVEEDOR_FK = ?,
-                ID_ESTADO_FK = ?,
-                PRODUCTO_NOMBRE = ?,
-                PRODUCTO_DESCRIPCION = ?,
-                CATEGORIA = ?,
-                PRODUCTO_PRECIO_UNITARIO = ?,
-                PRODUCTO_STOCK = ?,
-                IMAGEN_URL = ?
-              WHERE ID_PRODUCTO_PK = ?";
-
+        $query = "CALL HUELLITAS_ACTUALIZAR_PRODUCTO_SP(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($query);
+
         if (!$stmt) {
             throw new Exception("❌ Error en prepare: " . $this->conn->error);
         }
 
-        // Tipos de datos: i (int), i, s (string), s, s, d (double), i, s, i
-        $stmt->bind_param("iisssdisi", $id_proveedor, $id_estado, $nombre, $descripcion, $categoria, $precio, $stock, $imagen_url, $id);
+        // Tipos corregidos: 6 enteros, nombre y descripcion strings, precio double, stock int, imagen string
+        $stmt->bind_param(
+            "iiiiiissdis",
+            $id,
+            $id_proveedor,
+            $id_estado,
+            $id_categoria,
+            $id_marca,
+            $id_nuevo,
+            $nombre,
+            $descripcion,
+            $precio,
+            $stock,
+            $imagen_url
+        );
 
         $result = $stmt->execute();
         if (!$result) {
-            throw new Exception("❌ Error al ejecutar la actualización: " . $stmt->error);
+            throw new Exception("❌ Error al ejecutar el procedimiento: " . $stmt->error);
         }
 
         $stmt->close();
         return $result;
     }
+
 
     public function getProductById($id_producto)
     {
@@ -59,30 +64,153 @@ class ProductModel
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function addProduct($id_proveedor, $id_estado, $nombre, $descripcion, $precio, $stock, $imagen_url)
+    public function addProduct($id_proveedor, $id_estado, $id_categoria, $id_marca, $id_nuevo, $nombre, $descripcion, $precio, $stock, $imagen_url)
     {
-        // ⬇️ SE CORRIGIERON LOS NOMBRES DE LAS COLUMNAS AQUÍ ⬇️
-        $sql = "INSERT INTO HUELLITAS_PRODUCTOS_TB
-            (ID_PROVEEDOR_FK, ID_ESTADO_FK, PRODUCTO_NOMBRE, PRODUCTO_DESCRIPCION, PRODUCTO_PRECIO_UNITARIO, PRODUCTO_STOCK, IMAGEN_URL)
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
-
+        $sql = "CALL HUELLITAS_AGREGAR_PRODUCTO_SP(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
+
         if (!$stmt) {
-            throw new Exception("Error al preparar consulta: " . $this->conn->error);
+            throw new Exception("Error al preparar la consulta: " . $this->conn->error);
         }
 
-        // El bind_param ya era correcto (iissdis), no necesita cambios.
-        $stmt->bind_param("iissdis", $id_proveedor, $id_estado, $nombre, $descripcion, $precio, $stock, $imagen_url);
+        $stmt->bind_param(
+            "iiiiissdis",
+            $id_proveedor,
+            $id_estado,
+            $id_categoria,
+            $id_marca,
+            $id_nuevo,
+            $nombre,
+            $descripcion,
+            $precio,
+            $stock,
+            $imagen_url
+        );
 
         $result = $stmt->execute();
 
-        // 💡 Consejo: Agrega esta verificación para obtener el error específico de MySQL
         if (!$result) {
-            throw new Exception("Error al ejecutar consulta: " . $stmt->error);
+            throw new Exception("Error al ejecutar el procedimiento almacenado: " . $stmt->error);
         }
 
         $stmt->close();
         return $result;
     }
+
+    public function addCategory($nombreCategoria, $estado)
+    {
+        $sql = "CALL HUELLITAS_AGREGAR_CATEGORIA_SP(?, ?)";
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("is", $estado, $nombreCategoria);
+
+        $result = $stmt->execute();
+
+        if (!$result) {
+            throw new Exception("Error al ejecutar el procedimiento almacenado: " . $stmt->error);
+        }
+
+        $stmt->close();
+        return $result;
+    }
+
+    public function getCategoryById($id_categoria)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM HUELLITAS_PRODUCTOS_CATEGORIA_TB WHERE ID_CATEGORIA_PK = ?");
+        $stmt->bind_param("i", $id_categoria);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $categoria = $result->fetch_assoc();
+        $stmt->close();
+        return $categoria;
+    }
+
+    public function updateCategory($id_categoria, $estado, $nombreCategoria)
+    {
+        $query = "CALL HUELLITAS_ACTUALIZAR_CATEGORIA_SP(?, ?, ?)";
+        $stmt = $this->conn->prepare($query);
+
+        if (!$stmt) {
+            throw new Exception("❌ Error en prepare: " . $this->conn->error);
+        }
+
+        $stmt->bind_param(
+            "iis",
+            $id_categoria,
+            $estado,
+            $nombreCategoria
+        );
+
+        $result = $stmt->execute();
+        if (!$result) {
+            throw new Exception("❌ Error al ejecutar el procedimiento: " . $stmt->error);
+        }
+
+        $stmt->close();
+        return $result;
+    }
+
+    function addBrand($nombre, $estado, $imagen_url)
+    {
+        $sql = "CALL HUELLITAS_AGREGAR_MARCA_SP(?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("sis", $nombre, $estado, $imagen_url);
+
+        $result = $stmt->execute();
+
+        if (!$result) {
+            throw new Exception("Error al ejecutar el procedimiento almacenado: " . $stmt->error);
+        }
+
+        $stmt->close();
+        return $result;
+    }
+
+    function getBrandById($id_marca)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM HUELLITAS_MARCAS_TB WHERE ID_MARCA_PK = ?");
+        $stmt->bind_param("i", $id_marca);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $marca = $result->fetch_assoc();
+        $stmt->close();
+        return $marca;
+    }
+
+    function updateBrand($id_marca, $nombre, $estado, $imagen_url)
+    {
+        $query = "CALL HUELLITAS_ACTUALIZAR_MARCA_SP(?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($query);
+
+        if (!$stmt) {
+            throw new Exception("❌ Error en prepare: " . $this->conn->error);
+        }
+
+        $stmt->bind_param(
+            "isis",
+            $id_marca,
+            $nombre,
+            $estado,
+            $imagen_url
+        );
+
+        $result = $stmt->execute();
+        if (!$result) {
+            throw new Exception("❌ Error al ejecutar el procedimiento: " . $stmt->error);
+        }
+
+        $stmt->close();
+        return $result;
+    }
+
 }
 ?>

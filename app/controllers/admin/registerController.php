@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once __DIR__ . '/../../models/conexionDB.php';
 require_once __DIR__ . '/../../models/admin/registerModel.php';
 

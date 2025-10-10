@@ -24,7 +24,7 @@ class SupplierModel
         $query = "
         SELECT 
             P.ID_PROVEEDOR_PK,
-            P.NOMBRE_CONTACTO,
+            P.NOMBRE_REPRESENTANTE,
             P.PROVEEDOR_NOMBRE,
             P.PROVEEDOR_CORREO,
             P.ID_ESTADO_FK,

@@ -1,3 +1,9 @@
+<?php
+//Este include verifica si hay sesión activa
+include_once __DIR__ . '/../includes/auth.php';
+checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -21,10 +27,21 @@
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
             <section class="admin-main-content">
                 <div>
+                    <!--Breadcrumb-->
+                    <nav class="breadcrumbs-container">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a
+                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                            </li>
+                            <li class="breadcrumb-item current-page">Gestión de Proveedores</li>
+                        </ol>
+                    </nav>
                     <div class="tittles">
                         <h2><i class="bi bi-building-fill"></i><strong> Gestión de Proveedores</strong></h2>
                         <div>
-                            <a href="../../../app/controllers/admin/supplierController.php?action=create" class="btn-blue"><strong>Agregar Proveedor</strong>
+                            <a href="../../../app/controllers/admin/supplierController.php?action=create"
+                                class="btn-blue"><strong>Agregar Proveedor</strong>
                                 <i class="bi bi-building-fill-add"></i></a>
                         </div>
                     </div>
@@ -54,7 +71,7 @@
                                     <tr>
                                         <td><?= $supplier['ID_PROVEEDOR_PK'] ?></td>
                                         <td><?= htmlspecialchars($supplier['PROVEEDOR_NOMBRE']) ?></td>
-                                        <td><?= htmlspecialchars($supplier['NOMBRE_CONTACTO']) ?></td>
+                                        <td><?= htmlspecialchars($supplier['NOMBRE_REPRESENTANTE']) ?></td>
                                         <td><?= htmlspecialchars($supplier['TELEFONO_CONTACTO']) ?></td>
                                         <td><?= htmlspecialchars($supplier['PROVEEDOR_CORREO']) ?></td>
                                         <td><?= $supplier['ESTADO'] ?></td>

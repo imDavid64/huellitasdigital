@@ -1,6 +1,6 @@
 <?php
 //Este include verifica si hay sesión activa
-include_once __DIR__ . '/../includes/auth.php';
+include_once __DIR__ . '/../../includes/auth.php';
 checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 ?>
 
@@ -8,13 +8,13 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 <html lang="es">
 
 <!--Include para el head-->
-<?php include_once __DIR__ . "/../partials/adminHead.php"; ?>
+<?php include_once __DIR__ . "/../../partials/adminHead.php"; ?>
 
 <body>
 
     <!--Include para el herder-->
     <!--HEADER-->
-    <?php include_once __DIR__ . "/../partials/header.php"; ?>
+    <?php include_once __DIR__ . "/../../partials/header.php"; ?>
     <!--HEADER-->
 
 
@@ -22,28 +22,39 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     <main>
         <section class="admin-main">
             <!--Include para el menu aside-->
-            <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
+            <?php include_once __DIR__ . "/../../partials/asideMenu.php"; ?>
             <section class="admin-main-content-add-user">
                 <div>
+                    <!--Breadcrumb-->
+                    <nav class="breadcrumbs-container">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a
+                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="/huellitasdigital/app/controllers/admin/productController.php?action=index">Gestión
+                                    de Productos</a>
+                            </li>
+                            <li class="breadcrumb-item current-page">Agregar Categoría</li>
+                        </ol>
+                    </nav>
                     <div class="tittles">
-                        <h2><i class="bi bi-file-earmark-plus-fill"></i><strong>Agregar Slider/Banner</strong></h2>
+                        <h2><i class="bi bi-collection-fill"></i><strong>+</strong><strong>Agregar Categoría</strong>
+                        </h2>
                         <div></div>
                     </div>
                 </div>
                 <div class="admin-form-container">
-                    <form
-                        action="/huellitasdigital/app/controllers/admin/generalSettingController.php?action=store_slider_banner"
+                    <form action="/huellitasdigital/app/controllers/admin/productController.php?action=storeCategory"
                         method="POST" enctype="multipart/form-data">
                         <div class="form-container">
+
                             <div class="form-item">
-                                <label for="imagen">Slider/Banner</label>
-                                <input type="file" id="imagen" name="imagen" accept="image/*" required>
-                                <span><strong>Importante:</strong> La imagen debe tener una tamaño de "1080x300"</span>
+                                <label for="nombreCategoria">Nombre de la Categoría</label>
+                                <input type="text" id="nombreCategoria" name="nombreCategoria" required>
                             </div>
-                            <div class="form-item">
-                                <label for="descripcion">Descripción</label>
-                                <textarea id="descripcion" name="descripcion" required></textarea>
-                            </div>
+
                             <div class="form-item">
                                 <label for="estado">Estado</label>
                                 <select id="estado" name="estado" required>
@@ -55,8 +66,9 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <button type="submit" class="btn-blue"><strong>Agregar Slider/Banner</strong><i
-                                    class="bi bi-file-earmark-plus"></i></button>
+
+                            <button type="submit" class="btn-blue"><strong>Agregar Categoría</strong>
+                                <i class="bi bi-collection-fill"></i><strong>+</strong></button>
                         </div>
                     </form>
                 </div>
