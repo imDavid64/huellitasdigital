@@ -1,0 +1,1059 @@
+-- ==========================================
+-- Orden de creacion de tablas para la base de datos HUELLITAS
+-- 1 HUELLITAS_TABLAS.sql
+-- 2 HUELLITAS_FUNCIONES.sql
+-- 3 HUELLITAS_TRIGGERS.sql
+-- 4 HUELLITAS_PROCEDIMIENTOS.sql
+-- 5 HUELLITAS_VISTAS.sql
+-- 6 HUELLITAS_PRUEBAS.sql
+-- ==========================================
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CAMBIAR_CONTRASENNA_SP
+-- DESCRIPCIÓN: Procedimiento para cambiar la contraseña de un usuario verificando la actual
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_CAMBIAR_CONTRASENNA_SP(
+    IN P_USUARIO_ID INT,
+    IN P_CONTRASENNA_ACTUAL VARCHAR(255),
+    IN P_CONTRASENNA_NUEVA VARCHAR(255)
+)
+BEGIN
+    DECLARE V_CONTRASENNA_VALIDA BOOLEAN;
+    DECLARE V_SALT_ANTERIOR VARCHAR(100);
+    
+    -- Verificar contraseña actual
+    SET V_CONTRASENNA_VALIDA = HUELLITAS_VERIFICAR_CONTRASENNA_FN(P_USUARIO_ID, P_CONTRASENNA_ACTUAL);
+    
+    IF V_CONTRASENNA_VALIDA THEN
+        -- Obtener salt anterior (para debug)
+        SELECT USUARIO_SALT INTO V_SALT_ANTERIOR FROM HUELLITAS_USUARIOS_TB WHERE ID_USUARIO_PK = P_USUARIO_ID;
+        
+        -- Actualizar contraseña (el trigger se encarga de la encriptación)
+        UPDATE HUELLITAS_USUARIOS_TB 
+        SET USUARIO_CONTRASENNA = P_CONTRASENNA_NUEVA
+        WHERE ID_USUARIO_PK = P_USUARIO_ID;
+        
+        SELECT 
+            'CONTRASEÑA ACTUALIZADA EXITOSAMENTE' AS MENSAJE,
+            'Salt anterior: ' || V_SALT_ANTERIOR AS DEBUG_INFO;
+    ELSE
+        SELECT 'ERROR: CONTRASEÑA ACTUAL INCORRECTA' AS MENSAJE;
+    END IF;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_VALIDAR_LOGIN_SP
+-- DESCRIPCIÓN: Procedimiento para validar el login de usuario con verificación de estado
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_VALIDAR_LOGIN_SP(
+    IN P_USUARIO_CORREO VARCHAR(100),
+    IN P_CONTRASENNA_INTENTO VARCHAR(255)
+)
+BEGIN
+    DECLARE V_USUARIO_ID INT;
+    DECLARE V_CONTRASENNA_VALIDA BOOLEAN;
+    DECLARE V_ID_ESTADO_FK INT;
+    
+    -- OBTENER DATOS DEL USUARIO
+    SELECT 
+        ID_USUARIO_PK, 
+        ID_ESTADO_FK
+    INTO 
+        V_USUARIO_ID, 
+        V_ID_ESTADO_FK
+    FROM HUELLITAS_USUARIOS_TB 
+    WHERE USUARIO_CORREO = P_USUARIO_CORREO;
+    
+    IF V_USUARIO_ID IS NULL THEN
+        SELECT 'ERROR: USUARIO NO ENCONTRADO' AS MENSAJE, FALSE AS LOGIN_EXITOSO;
+    ELSEIF V_ID_ESTADO_FK != 1 THEN  -- 1 = ACTIVO, 0 = INACTIVO
+        SELECT 'ERROR: USUARIO INACTIVO' AS MENSAJE, FALSE AS LOGIN_EXITOSO;
+    ELSE
+        -- VERIFICAR CONTRASEÑA
+        SET V_CONTRASENNA_VALIDA = HUELLITAS_VERIFICAR_CONTRASENNA_FN(V_USUARIO_ID, P_CONTRASENNA_INTENTO);
+        
+        IF V_CONTRASENNA_VALIDA THEN
+            -- ACTUALIZAR ÚLTIMO LOGIN
+            UPDATE HUELLITAS_USUARIOS_TB 
+            SET USUARIO_ULTIMO_LOGIN = NOW()
+            WHERE ID_USUARIO_PK = V_USUARIO_ID;
+            
+            -- Modificado por DAVID
+			SELECT
+				'LOGIN EXITOSO' AS MENSAJE,
+				TRUE AS LOGIN_EXITOSO,
+				U.ID_USUARIO_PK AS ID_USUARIO,
+				U.USUARIO_NOMBRE,
+				U.USUARIO_CORREO,
+				R.DESCRIPCION_ROL_USUARIO AS ROL
+			FROM HUELLITAS_USUARIOS_TB U
+			JOIN HUELLITAS_ROL_USUARIO_TB R ON U.ID_ROL_USUARIO_FK = R.ID_ROL_USUARIO_PK
+			WHERE U.ID_USUARIO_PK = V_USUARIO_ID;
+        ELSE
+            SELECT 'ERROR: CONTRASEÑA INCORRECTA' AS MENSAJE, FALSE AS LOGIN_EXITOSO;
+        END IF;
+    END IF;
+END//
+DELIMITER ;
+/
+-- ==========================================
+-- NOMBRE: HUELLITAS_INICIALIZAR_CLAVE_ENCRIPTACION_SP
+-- DESCRIPCIÓN: Procedimiento para inicializar claves de encriptación si no existen
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_INICIALIZAR_CLAVE_ENCRIPTACION_SP(
+    IN P_NOMBRE_CLAVE VARCHAR(100)
+)
+BEGIN
+    DECLARE V_CLAVE_EXISTENTE INT;
+    
+    SELECT COUNT(*) INTO V_CLAVE_EXISTENTE 
+    FROM HUELLITAS_CLAVES_ENCRIPTACION_TB 
+    WHERE NOMBRE_CLAVE = P_NOMBRE_CLAVE AND ESTA_ACTIVA = TRUE;
+    
+    IF V_CLAVE_EXISTENTE = 0 THEN
+        INSERT INTO HUELLITAS_CLAVES_ENCRIPTACION_TB (NOMBRE_CLAVE, CLAVE_ENCRIPTACION, VERSION_CLAVE)
+        VALUES (P_NOMBRE_CLAVE, HUELLITAS_GENERAR_CLAVE_AES_FN(), 1);
+    END IF;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_TARJETA_SP
+-- DESCRIPCIÓN: Procedimiento para agregar una nueva tarjeta con validación de usuario
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_AGREGAR_TARJETA_SP(
+    IN P_ID_USUARIO_FK INT,
+    IN P_TIPO_TARJETA ENUM('CREDITO', 'DEBITO'),
+    IN P_MARCA_TARJETA ENUM('VISA', 'MASTERCARD', 'AMEX', 'DINERS', 'OTHER'),
+    IN P_NOMBRE_TITULAR VARCHAR(255),
+    IN P_NUMERO_TARJETA VARCHAR(16),
+    IN P_FECHA_VENCIMIENTO DATE,  -- EL FRONTEND VALIDA
+    IN P_CVV VARCHAR(3),
+    IN P_ES_PREDETERMINADO BOOLEAN,
+    IN P_IP_REGISTRO VARCHAR(45)
+)
+BEGIN
+    DECLARE V_USUARIO_EXISTE INT;
+    
+    SELECT COUNT(*) INTO V_USUARIO_EXISTE 
+    FROM HUELLITAS_USUARIOS_TB 
+    WHERE ID_USUARIO_PK = P_ID_USUARIO_FK;
+    
+    IF V_USUARIO_EXISTE = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'USUARIO NO ENCONTRADO';
+    END IF;
+    
+    INSERT INTO HUELLITAS_TARJETAS_TB (
+        ID_USUARIO_FK, TIPO_TARJETA, MARCA_TARJETA, NOMBRE_TITULAR,
+        NUMERO_TARJETA_ENCRIPTADO, FECHA_VENCIMIENTO, CVV_ENCRIPTADO,
+        ES_PREDETERMINADO, IP_REGISTRO
+    ) VALUES (
+        P_ID_USUARIO_FK, P_TIPO_TARJETA, P_MARCA_TARJETA, P_NOMBRE_TITULAR,
+        P_NUMERO_TARJETA, P_FECHA_VENCIMIENTO, P_CVV,
+        P_ES_PREDETERMINADO, P_IP_REGISTRO
+    );
+    
+    SELECT 'TARJETA AGREGADA EXITOSAMENTE' AS MENSAJE;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_TARJETAS_USUARIO_SP
+-- DESCRIPCIÓN: Procedimiento para obtener las tarjetas de un usuario de forma segura
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_OBTENER_TARJETAS_USUARIO_SP(
+    IN P_ID_USUARIO_FK INT
+)
+BEGIN
+    SELECT 
+        ID_TARJETA_PK, 
+        TIPO_TARJETA, 
+        MARCA_TARJETA, 
+        NOMBRE_TITULAR,
+        ULTIMOS_CUATRO_DIGITOS, 
+        DATE_FORMAT(FECHA_VENCIMIENTO, '%m/%Y') AS FECHA_VENCIMIENTO_FORMATEADA,
+        ES_PREDETERMINADO, 
+        FECHA_REGISTRO,
+        -- ESTADO SIMPLIFICADO: EL FRONTEND MANEJA LA LÓGICA DE VENCIMIENTO
+        'VIGENTE' AS ESTADO_TARJETA
+    FROM HUELLITAS_TARJETAS_TB
+    WHERE ID_USUARIO_FK = P_ID_USUARIO_FK AND ESTA_ACTIVO = TRUE
+    ORDER BY ES_PREDETERMINADO DESC, FECHA_REGISTRO DESC;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ROTAR_CLAVES_ENCRIPTACION_SP
+-- DESCRIPCIÓN: Procedimiento para rotar claves de encriptación y reencriptar datos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_ROTAR_CLAVES_ENCRIPTACION_SP(
+    IN P_NOMBRE_CLAVE VARCHAR(100),
+    IN P_NUEVA_VERSION INT
+)
+BEGIN
+    DECLARE V_FINALIZADO INT DEFAULT 0;
+    DECLARE V_ID_TARJETA INT;
+    DECLARE V_NUMERO_ENCRIPTADO TEXT;
+    DECLARE V_CVV_ENCRIPTADO TEXT;
+    
+    DECLARE CUR_TARJETAS CURSOR FOR 
+    SELECT ID_TARJETA_PK, NUMERO_TARJETA_ENCRIPTADO, CVV_ENCRIPTADO 
+    FROM HUELLITAS_TARJETAS_TB WHERE ESTA_ACTIVO = TRUE;
+    
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET V_FINALIZADO = 1;
+    
+    UPDATE HUELLITAS_CLAVES_ENCRIPTACION_TB 
+    SET ESTA_ACTIVA = FALSE 
+    WHERE NOMBRE_CLAVE = P_NOMBRE_CLAVE AND ESTA_ACTIVA = TRUE;
+    
+    INSERT INTO HUELLITAS_CLAVES_ENCRIPTACION_TB (NOMBRE_CLAVE, CLAVE_ENCRIPTACION, VERSION_CLAVE)
+    VALUES (P_NOMBRE_CLAVE, HUELLITAS_GENERAR_CLAVE_AES_FN(), P_NUEVA_VERSION);
+    
+    OPEN CUR_TARJETAS;
+    BUCLE_REENCRIPTACION: LOOP
+        FETCH CUR_TARJETAS INTO V_ID_TARJETA, V_NUMERO_ENCRIPTADO, V_CVV_ENCRIPTADO;
+        IF V_FINALIZADO = 1 THEN LEAVE BUCLE_REENCRIPTACION; END IF;
+        
+        UPDATE HUELLITAS_TARJETAS_TB 
+        SET NUMERO_TARJETA_ENCRIPTADO = HUELLITAS_ENCRIPTAR_DATO_FN(
+            HUELLITAS_DESENCRIPTAR_DATO_FN(V_NUMERO_ENCRIPTADO, P_NOMBRE_CLAVE), P_NOMBRE_CLAVE
+        ),
+        CVV_ENCRIPTADO = HUELLITAS_ENCRIPTAR_DATO_FN(
+            HUELLITAS_DESENCRIPTAR_DATO_FN(V_CVV_ENCRIPTADO, P_NOMBRE_CLAVE), P_NOMBRE_CLAVE
+        )
+        WHERE ID_TARJETA_PK = V_ID_TARJETA;
+    END LOOP;
+    CLOSE CUR_TARJETAS;
+END//
+DELIMITER ;
+/
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_USUARIO_SP
+-- DESCRIPCIÓN: Procedimiento para listar todos los usuarios con sus roles y estados
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_USUARIO_SP()
+BEGIN
+    SELECT u.ID_USUARIO_PK, u.USUARIO_NOMBRE, u.USUARIO_CORREO,
+           r.DESCRIPCION_ROL_USUARIO AS ROL, e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_USUARIOS_TB u
+    INNER JOIN HUELLITAS_ROL_USUARIO_TB r ON u.ID_ROL_USUARIO_FK = r.ID_ROL_USUARIO_PK
+    INNER JOIN HUELLITAS_ESTADO_TB e ON u.ID_ESTADO_FK = e.ID_ESTADO_PK
+    ORDER BY u.ID_USUARIO_PK;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_ROLES_SP
+-- DESCRIPCIÓN: Procedimiento para listar todos los roles de usuario
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_ROLES_SP()
+BEGIN
+    SELECT 
+        R.ID_ROL_USUARIO_PK,
+        R.DESCRIPCION_ROL_USUARIO,
+        E.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_ROL_USUARIO_TB R
+    JOIN HUELLITAS_ESTADO_TB E ON R.ID_ESTADO_FK = E.ID_ESTADO_PK
+    ORDER BY R.ID_ROL_USUARIO_PK;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PROVEEDORES_SP
+-- DESCRIPCIÓN: Procedimiento para listar todos los proveedores con información completa
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_PROVEEDORES_SP()
+BEGIN
+    SELECT 
+        P.ID_PROVEEDOR_PK,
+        P.PROVEEDOR_NOMBRE,
+        P.NOMBRE_REPRESENTANTE,
+        P.PROVEEDOR_CORREO,
+        P.PROVEEDOR_DESCRIPCION_PRODUCTOS,
+        D.DIRECCION_SENNAS,
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        TC.TELEFONO_CONTACTO AS TELEFONO_CONTACTO
+    FROM HUELLITAS_PROVEEDORES_TB P
+    LEFT JOIN HUELLITAS_DIRECCION_TB D ON P.ID_DIRECCION_FK = D.ID_DIRECCION_PK
+    LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB TC ON P.ID_TELEFONO_CONTACTO_FK = TC.ID_TELEFONO_CONTACTO_PK
+    JOIN HUELLITAS_ESTADO_TB E ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+    ORDER BY P.ID_PROVEEDOR_PK;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PRODUCTOS_SP
+-- DESCRIPCIÓN: Procedimiento para listar todos los productos con información relacionada
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_PRODUCTOS_SP()
+BEGIN
+    SELECT 
+        P.ID_PRODUCTO_PK,
+        P.PRODUCTO_NOMBRE,
+        P.PRODUCTO_DESCRIPCION,
+        P.PRODUCTO_PRECIO_UNITARIO,
+        P.PRODUCTO_STOCK,
+        P.IMAGEN_URL,
+        P.FECHA_CREACION,
+
+        -- Relaciones
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        PR.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        C.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        M.NOMBRE_MARCA AS MARCA,
+        N.NUEVO_DESCRIPCION AS CONDICION
+
+    FROM 
+        HUELLITAS_PRODUCTOS_TB P
+        INNER JOIN HUELLITAS_ESTADO_TB E 
+            ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN HUELLITAS_PROVEEDORES_TB PR 
+            ON P.ID_PROVEEDOR_FK = PR.ID_PROVEEDOR_PK
+        INNER JOIN HUELLITAS_PRODUCTOS_CATEGORIA_TB C 
+            ON P.ID_CATEGORIA_FK = C.ID_CATEGORIA_PK
+        INNER JOIN HUELLITAS_MARCAS_TB M 
+            ON P.ID_MARCA_FK = M.ID_MARCA_PK
+        INNER JOIN HUELLITAS_NUEVO_TB N 
+            ON P.ID_NUEVO_FK = N.ID_NUEVO_PK
+
+    ORDER BY 
+        P.FECHA_CREACION DESC;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_PRODUCTO_SP
+-- DESCRIPCIÓN: Procedimiento para actualizar la información de un producto
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_PRODUCTO_SP (
+    IN p_id_producto INT,
+    IN p_id_proveedor INT,
+    IN p_id_estado INT,
+    IN p_id_categoria INT,
+    IN p_id_marca INT,
+    IN p_id_nuevo INT,
+    IN p_nombre VARCHAR(100),
+    IN p_descripcion VARCHAR(200),
+    IN p_precio DECIMAL(10,2),
+    IN p_stock INT,
+    IN p_imagen_url VARCHAR(255)
+)
+BEGIN
+    UPDATE HUELLITAS_PRODUCTOS_TB
+    SET 
+        ID_PROVEEDOR_FK = p_id_proveedor,
+        ID_ESTADO_FK = p_id_estado,
+        ID_CATEGORIA_FK = p_id_categoria,
+        ID_MARCA_FK = p_id_marca,
+        ID_NUEVO_FK = p_id_nuevo,
+        PRODUCTO_NOMBRE = p_nombre,
+        PRODUCTO_DESCRIPCION = p_descripcion,
+        PRODUCTO_PRECIO_UNITARIO = p_precio,
+        PRODUCTO_STOCK = p_stock,
+        IMAGEN_URL = p_imagen_url
+    WHERE ID_PRODUCTO_PK = p_id_producto;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_PRODUCTO_SP
+-- DESCRIPCIÓN: Procedimiento para agregar nuevos productos al sistema
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_AGREGAR_PRODUCTO_SP (
+    IN p_id_proveedor INT,
+    IN p_id_estado INT,
+    IN p_id_categoria INT,
+    IN p_id_marca INT,
+    IN p_id_nuevo INT,
+    IN p_nombre VARCHAR(100),
+    IN p_descripcion VARCHAR(200),
+    IN p_precio DECIMAL(10,2),
+    IN p_stock INT,
+    IN p_imagen_url VARCHAR(255)
+)
+BEGIN
+    INSERT INTO HUELLITAS_PRODUCTOS_TB (
+        ID_PROVEEDOR_FK,
+        ID_ESTADO_FK,
+        ID_CATEGORIA_FK,
+        ID_MARCA_FK,
+        ID_NUEVO_FK,
+        PRODUCTO_NOMBRE,
+        PRODUCTO_DESCRIPCION,
+        PRODUCTO_PRECIO_UNITARIO,
+        PRODUCTO_STOCK,
+        IMAGEN_URL
+    )
+    VALUES (
+        p_id_proveedor,
+        p_id_estado,
+        p_id_categoria,
+        p_id_marca,
+        p_id_nuevo,
+        p_nombre,
+        p_descripcion,
+        p_precio,
+        p_stock,
+        p_imagen_url
+    );
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_SLIDER_BANNER_SP
+-- DESCRIPCIÓN: Procedimiento para listar todos los sliders/banners
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_SLIDER_BANNER_SP()
+BEGIN
+    SELECT 
+        sb.ID_SLIDER_BANNER_PK,
+        sb.IMAGEN_URL,
+        sb.DESCRIPCION_SLIDER_BANNER,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM 
+        HUELLITAS_SLIDER_BANNER_TB sb
+    INNER JOIN 
+        HUELLITAS_ESTADO_TB e ON sb.ID_ESTADO_FK = e.ID_ESTADO_PK
+    ORDER BY 
+        sb.ID_SLIDER_BANNER_PK;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_SLIDER_BANNER_ACTIVOS_SP
+-- DESCRIPCIÓN: Procedimiento para listar solo los sliders/banners activos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_SLIDER_BANNER_ACTIVOS_SP()
+BEGIN
+    SELECT 
+        ID_SLIDER_BANNER_PK,
+        IMAGEN_URL,
+        DESCRIPCION_SLIDER_BANNER
+    FROM HUELLITAS_SLIDER_BANNER_TB
+    WHERE ID_ESTADO_FK = 1; -- solo activos
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_PROVEEDOR_SP
+-- DESCRIPCIÓN: Procedimiento para agregar nuevos proveedores con manejo de transacciones
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_AGREGAR_PROVEEDOR_SP(
+    IN p_proveedor_nombre VARCHAR(100),
+    IN p_nombre_representante VARCHAR(100),
+    IN p_proveedor_correo VARCHAR(100),
+    IN p_id_estado_fk INT,
+    IN p_telefono_contacto INT
+)
+BEGIN
+    DECLARE v_id_telefono_fk INT;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: No se pudo agregar el proveedor. Se revirtieron los cambios.';
+    END;
+
+    START TRANSACTION;
+
+    INSERT INTO HUELLITAS_TELEFONO_CONTACTO_TB (TELEFONO_CONTACTO, ID_ESTADO_FK)
+    VALUES (p_telefono_contacto, p_id_estado_fk);
+
+    SET v_id_telefono_fk = LAST_INSERT_ID();
+
+    INSERT INTO HUELLITAS_PROVEEDORES_TB 
+        (PROVEEDOR_NOMBRE, NOMBRE_REPRESENTANTE, PROVEEDOR_CORREO, ID_ESTADO_FK, ID_TELEFONO_CONTACTO_FK)
+    VALUES 
+        (p_proveedor_nombre, p_nombre_representante, p_proveedor_correo, p_id_estado_fk, v_id_telefono_fk);
+
+    COMMIT;
+
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_PROVEEDOR_SP
+-- DESCRIPCIÓN: Procedimiento para actualizar información de proveedores
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_PROVEEDOR_SP(
+    IN P_ID_PROVEEDOR_PK INT,
+    IN P_PROVEEDOR_NOMBRE VARCHAR(100),
+    IN P_NOMBRE_REPRESENTANTE VARCHAR(100),
+    IN P_PROVEEDOR_CORREO VARCHAR(100),
+    IN P_ID_ESTADO_FK INT,
+    IN P_TELEFONO_CONTACTO VARCHAR(20),
+    IN P_DIRECCION_SENNAS VARCHAR(255)
+)
+BEGIN
+    DECLARE V_ID_TELEFONO INT;
+    DECLARE V_ID_DIRECCION INT;
+
+    -- Validar que el proveedor exista
+    IF (SELECT COUNT(*) FROM HUELLITAS_PROVEEDORES_TB WHERE ID_PROVEEDOR_PK = P_ID_PROVEEDOR_PK) = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR: EL PROVEEDOR NO EXISTE';
+    END IF;
+
+    -- Obtener llaves actuales de teléfono y dirección
+    SELECT ID_TELEFONO_CONTACTO_FK, ID_DIRECCION_FK
+    INTO V_ID_TELEFONO, V_ID_DIRECCION
+    FROM HUELLITAS_PROVEEDORES_TB
+    WHERE ID_PROVEEDOR_PK = P_ID_PROVEEDOR_PK;
+
+    -- Actualizar teléfono si existe
+    IF V_ID_TELEFONO IS NOT NULL THEN
+        UPDATE HUELLITAS_TELEFONO_CONTACTO_TB
+        SET TELEFONO_CONTACTO = P_TELEFONO_CONTACTO
+        WHERE ID_TELEFONO_CONTACTO_PK = V_ID_TELEFONO;
+    END IF;
+
+    -- Actualizar dirección si existe
+    IF V_ID_DIRECCION IS NOT NULL THEN
+        UPDATE HUELLITAS_DIRECCION_TB
+        SET DIRECCION_SENNAS = P_DIRECCION_SENNAS
+        WHERE ID_DIRECCION_PK = V_ID_DIRECCION;
+    END IF;
+
+    -- Actualizar proveedor
+    UPDATE HUELLITAS_PROVEEDORES_TB
+    SET 
+        PROVEEDOR_NOMBRE = P_PROVEEDOR_NOMBRE,
+        NOMBRE_REPRESENTANTE = P_NOMBRE_REPRESENTANTE,
+        PROVEEDOR_CORREO = P_PROVEEDOR_CORREO,
+        ID_ESTADO_FK = P_ID_ESTADO_FK
+    WHERE ID_PROVEEDOR_PK = P_ID_PROVEEDOR_PK;
+
+    SELECT '✅ PROVEEDOR ACTUALIZADO CORRECTAMENTE' AS MENSAJE;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_RECUPERAR_CONTRASENNA_SP
+-- DESCRIPCIÓN: Procedimiento para recuperar/resetear contraseña de usuario
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_RECUPERAR_CONTRASENNA_SP (
+IN P_ID_USUARIO INT,
+IN P_NUEVA_CONTRASENNA VARCHAR(255)
+)
+BEGIN
+DECLARE V_EXISTE INT;
+
+-- Verificar que el usuario exista y esté activo
+SELECT COUNT(*) INTO V_EXISTE
+FROM HUELLITAS_USUARIOS_TB
+WHERE ID_USUARIO_PK = P_ID_USUARIO AND ID_ESTADO_FK = 1; -- 1 = Activo
+
+IF V_EXISTE = 0 THEN
+    SELECT '❌ ERROR: USUARIO NO ENCONTRADO O INACTIVO' AS MENSAJE;
+ELSE
+    -- Actualizar la contraseña (el trigger hará la encriptación y la regeneración del salt)
+    UPDATE HUELLITAS_USUARIOS_TB
+    SET USUARIO_CONTRASENNA = P_NUEVA_CONTRASENNA
+    WHERE ID_USUARIO_PK = P_ID_USUARIO;
+
+    SELECT '✅ CONTRASEÑA RECUPERADA EXITOSAMENTE' AS MENSAJE;
+END IF;
+
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_USUARIO_POR_ID_SP
+-- DESCRIPCIÓN: Procedimiento para obtener información detallada de un usuario por ID
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_OBTENER_USUARIO_POR_ID_SP(IN p_id_usuario INT)
+BEGIN
+    SELECT 
+        u.ID_USUARIO_PK,
+        u.USUARIO_NOMBRE,
+        u.USUARIO_CORREO,
+        u.USUARIO_IMAGEN_URL,
+        u.USUARIO_IDENTIFICACION,
+        r.DESCRIPCION_ROL_USUARIO AS ROL,
+        t.TELEFONO_CONTACTO,
+        d.DIRECCION_SENNAS,
+        p.NOMBRE_PROVINCIA,
+        c.NOMBRE_CANTON,
+        di.NOMBRE_DISTRITO
+    FROM HUELLITAS_USUARIOS_TB u
+    INNER JOIN HUELLITAS_ROL_USUARIO_TB r ON u.ID_ROL_USUARIO_FK = r.ID_ROL_USUARIO_PK
+    LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB t ON u.ID_TELEFONO_CONTACTO_FK = t.ID_TELEFONO_CONTACTO_PK
+    LEFT JOIN HUELLITAS_DIRECCION_TB d ON u.ID_DIRECCION_FK = d.ID_DIRECCION_PK
+    LEFT JOIN HUELLITAS_DIRECCION_PROVINCIA_TB p ON d.ID_DIRECCION_PROVINCIA_FK = p.ID_DIRECCION_PROVINCIA_PK
+    LEFT JOIN HUELLITAS_DIRECCION_CANTON_TB c ON d.ID_DIRECCION_CANTON_FK = c.ID_DIRECCION_CANTON_PK
+    LEFT JOIN HUELLITAS_DIRECCION_DISTRITO_TB di ON d.ID_DIRECCION_DISTRITO_FK = di.ID_DIRECCION_DISTRITO_PK
+    WHERE u.ID_USUARIO_PK = p_id_usuario;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_PERFIL_USUARIO_SP
+-- DESCRIPCIÓN: Procedimiento para actualizar el perfil completo del usuario
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_PERFIL_USUARIO_SP(
+    IN P_ID_USUARIO_PK INT,
+    IN P_USUARIO_NOMBRE VARCHAR(100),
+    IN P_USUARIO_IDENTIFICACION INT,
+    IN P_USUARIO_CUENTA_BANCARIA VARCHAR(50),
+    IN P_USUARIO_IMAGEN_URL VARCHAR(500),
+
+    IN P_ID_PROVINCIA_FK INT,
+    IN P_ID_CANTON_FK INT,
+    IN P_ID_DISTRITO_FK INT,
+    IN P_DIRECCION_SENNAS VARCHAR(200),
+
+    IN P_TELEFONO_CONTACTO INT
+)
+BEGIN
+    DECLARE V_ID_DIRECCION INT;
+    DECLARE V_ID_TELEFONO INT;
+    DECLARE V_ID_ESTADO_ACTIVO INT DEFAULT 1; -- Suponiendo que 1 = ACTIVO
+
+    -- Verificar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM HUELLITAS_USUARIOS_TB WHERE ID_USUARIO_PK = P_ID_USUARIO_PK) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario especificado no existe.';
+    END IF;
+
+    -- Verificar si ya tiene dirección asociada
+    SELECT ID_DIRECCION_FK INTO V_ID_DIRECCION
+    FROM HUELLITAS_USUARIOS_TB
+    WHERE ID_USUARIO_PK = P_ID_USUARIO_PK;
+
+    -- Si no tiene dirección, se inserta una nueva
+    IF V_ID_DIRECCION IS NULL THEN
+        INSERT INTO HUELLITAS_DIRECCION_TB (
+            ID_ESTADO_FK, 
+            ID_DIRECCION_PROVINCIA_FK, 
+            ID_DIRECCION_CANTON_FK, 
+            ID_DIRECCION_DISTRITO_FK, 
+            DIRECCION_SENNAS
+        ) VALUES (
+            V_ID_ESTADO_ACTIVO, 
+            P_ID_PROVINCIA_FK, 
+            P_ID_CANTON_FK, 
+            P_ID_DISTRITO_FK, 
+            P_DIRECCION_SENNAS
+        );
+        SET V_ID_DIRECCION = LAST_INSERT_ID();
+    ELSE
+        -- Si ya tiene dirección, la actualizamos
+        UPDATE HUELLITAS_DIRECCION_TB
+        SET 
+            ID_DIRECCION_PROVINCIA_FK = P_ID_PROVINCIA_FK,
+            ID_DIRECCION_CANTON_FK = P_ID_CANTON_FK,
+            ID_DIRECCION_DISTRITO_FK = P_ID_DISTRITO_FK,
+            DIRECCION_SENNAS = P_DIRECCION_SENNAS
+        WHERE ID_DIRECCION_PK = V_ID_DIRECCION;
+    END IF;
+
+    -- Verificar si ya tiene teléfono asociado
+    SELECT ID_TELEFONO_CONTACTO_FK INTO V_ID_TELEFONO
+    FROM HUELLITAS_USUARIOS_TB
+    WHERE ID_USUARIO_PK = P_ID_USUARIO_PK;
+
+    -- Si no tiene teléfono, insertamos uno nuevo
+    IF V_ID_TELEFONO IS NULL THEN
+        INSERT INTO HUELLITAS_TELEFONO_CONTACTO_TB (ID_ESTADO_FK, TELEFONO_CONTACTO)
+        VALUES (V_ID_ESTADO_ACTIVO, P_TELEFONO_CONTACTO);
+        SET V_ID_TELEFONO = LAST_INSERT_ID();
+    ELSE
+        -- Si ya tiene teléfono, se actualiza
+        UPDATE HUELLITAS_TELEFONO_CONTACTO_TB
+        SET TELEFONO_CONTACTO = P_TELEFONO_CONTACTO
+        WHERE ID_TELEFONO_CONTACTO_PK = V_ID_TELEFONO;
+    END IF;
+
+    -- Finalmente, actualizar los datos del usuario
+    UPDATE HUELLITAS_USUARIOS_TB
+    SET
+        USUARIO_NOMBRE = P_USUARIO_NOMBRE,
+        USUARIO_IDENTIFICACION = P_USUARIO_IDENTIFICACION,
+        USUARIO_CUENTA_BANCARIA = P_USUARIO_CUENTA_BANCARIA,
+        USUARIO_IMAGEN_URL = P_USUARIO_IMAGEN_URL,
+        ID_DIRECCION_FK = V_ID_DIRECCION,
+        ID_TELEFONO_CONTACTO_FK = V_ID_TELEFONO
+    WHERE ID_USUARIO_PK = P_ID_USUARIO_PK;
+
+    SELECT 
+        'Datos del perfil actualizados correctamente' AS MENSAJE,
+        P_ID_USUARIO_PK AS ID_USUARIO,
+        V_ID_DIRECCION AS ID_DIRECCION,
+        V_ID_TELEFONO AS ID_TELEFONO;
+END//
+DELIMITER ;
+/
+-- ==========================================
+-- NOMBRE: HUELLITAS_CREAR_DESCUENTO_SP
+-- DESCRIPCIÓN: Procedimiento para crear nuevos descuentos temporales en productos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_CREAR_DESCUENTO_SP(
+    IN P_ID_PRODUCTO_FK INT,
+    IN P_PORCENTAJE_DESCUENTO DECIMAL(5,2),
+    IN P_FECHA_FIN DATE
+)
+BEGIN
+    DECLARE V_PRODUCTO_EXISTE INT;
+    
+    -- VERIFICAR QUE EL PRODUCTO EXISTA
+    SELECT COUNT(*) INTO V_PRODUCTO_EXISTE
+    FROM HUELLITAS_PRODUCTOS_TB 
+    WHERE ID_PRODUCTO_PK = P_ID_PRODUCTO_FK AND ID_ESTADO_FK = 1; -- Asumiendo que 1 es activo
+    
+    IF V_PRODUCTO_EXISTE = 0 THEN
+        SELECT 'ERROR: PRODUCTO NO ENCONTRADO O INACTIVO' AS MENSAJE;
+    ELSEIF P_FECHA_FIN < CURDATE() THEN
+        SELECT 'ERROR: LA FECHA FIN NO PUEDE SER ANTERIOR A HOY' AS MENSAJE;
+    ELSE
+        -- INSERTAR NUEVO DESCUENTO (FECHA INICIO IMPLÍCITA = HOY)
+        INSERT INTO HUELLITAS_DESCUENTOS_TB (
+            ID_PRODUCTO_FK,
+            ID_ESTADO_FK,
+            PORCENTAJE_DESCUENTO,
+            FECHA_FIN
+        ) VALUES (
+            P_ID_PRODUCTO_FK,
+            1, -- ACTIVO
+            P_PORCENTAJE_DESCUENTO,
+            P_FECHA_FIN
+        );
+        
+        SELECT 
+            'DESCUENTO CREADO EXITOSAMENTE' AS MENSAJE,
+            LAST_INSERT_ID() AS ID_DESCUENTO_CREADO,
+            CURDATE() AS FECHA_INICIO,
+            P_FECHA_FIN AS FECHA_FIN;
+    END IF;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_DESACTIVAR_DESCUENTOS_VENCIDOS_SP
+-- DESCRIPCIÓN: Procedimiento para desactivar automáticamente descuentos vencidos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_DESACTIVAR_DESCUENTOS_VENCIDOS_SP()
+BEGIN
+    -- DESACTIVAR DESCUENTOS CUYA FECHA_FIN YA PASÓ
+    UPDATE HUELLITAS_DESCUENTOS_TB 
+    SET ID_ESTADO_FK = 0 -- INACTIVO
+    WHERE ID_ESTADO_FK = 1 -- ACTIVO
+    AND FECHA_FIN < CURDATE();
+    
+    SELECT 
+        CONCAT('DESCUENTOS DESACTIVADOS: ', ROW_COUNT()) AS RESULTADO;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LIMPIAR_DESCUENTOS_VENCIDOS_EV
+-- DESCRIPCIÓN: Evento programado para limpiar descuentos vencidos diariamente
+-- ==========================================
+DELIMITER //
+CREATE EVENT IF NOT EXISTS HUELLITAS_LIMPIAR_DESCUENTOS_VENCIDOS_EV
+ON SCHEDULE EVERY 1 DAY
+STARTS CURRENT_TIMESTAMP
+DO
+BEGIN
+    CALL HUELLITAS_DESACTIVAR_DESCUENTOS_VENCIDOS_SP();
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_DESCUENTOS_ACTIVOS_SP
+-- DESCRIPCIÓN: Procedimiento para obtener descuentos activos de productos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_OBTENER_DESCUENTOS_ACTIVOS_SP(
+    IN P_ID_PRODUCTO_FK INT -- NULL PARA TODOS LOS PRODUCTOS
+)
+BEGIN
+    IF P_ID_PRODUCTO_FK IS NULL THEN
+        -- OBTENER TODOS LOS DESCUENTOS ACTIVOS
+        SELECT 
+            D.ID_DESCUENTO_PK,
+            P.PRODUCTO_NOMBRE AS NOMBRE_PRODUCTO,
+            D.PORCENTAJE_DESCUENTO,
+            D.FECHA_CREACION AS FECHA_INICIO, -- FECHA CREACIÓN COMO INICIO
+            D.FECHA_FIN,
+            CASE 
+                WHEN D.FECHA_FIN >= CURDATE() THEN 'ACTIVO'
+                ELSE 'VENCIDO'
+            END AS ESTADO_DESCUENTO,
+            DATEDIFF(D.FECHA_FIN, CURDATE()) AS DIAS_RESTANTES
+        FROM HUELLITAS_DESCUENTOS_TB D
+        JOIN HUELLITAS_PRODUCTOS_TB P ON D.ID_PRODUCTO_FK = P.ID_PRODUCTO_PK
+        WHERE D.ID_ESTADO_FK = 1
+        AND D.FECHA_FIN >= CURDATE()
+        ORDER BY D.FECHA_FIN ASC;
+    ELSE
+        -- OBTENER DESCUENTOS DE UN PRODUCTO ESPECÍFICO
+        SELECT 
+            D.ID_DESCUENTO_PK,
+            P.PRODUCTO_NOMBRE AS NOMBRE_PRODUCTO,
+            D.PORCENTAJE_DESCUENTO,
+            D.FECHA_CREACION AS FECHA_INICIO,
+            D.FECHA_FIN,
+            CASE 
+                WHEN D.FECHA_FIN >= CURDATE() THEN 'ACTIVO'
+                ELSE 'VENCIDO'
+            END AS ESTADO_DESCUENTO,
+            DATEDIFF(D.FECHA_FIN, CURDATE()) AS DIAS_RESTANTES
+        FROM HUELLITAS_DESCUENTOS_TB D
+        JOIN HUELLITAS_PRODUCTOS_TB P ON D.ID_PRODUCTO_FK = P.ID_PRODUCTO_PK
+        WHERE D.ID_PRODUCTO_FK = P_ID_PRODUCTO_FK
+        AND D.ID_ESTADO_FK = 1
+        AND D.FECHA_FIN >= CURDATE()
+        ORDER BY D.FECHA_FIN ASC;
+    END IF;
+END//
+DELIMITER ;
+/
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_CATEGORIA_SP
+-- DESCRIPCIÓN: Procedimiento para insertar nuevas categorías de productos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_AGREGAR_CATEGORIA_SP (
+    IN p_id_estado_fk INT,
+    IN p_descripcion_categoria VARCHAR(100)
+)
+BEGIN
+    INSERT INTO HUELLITAS_PRODUCTOS_CATEGORIA_TB (ID_ESTADO_FK, DESCRIPCION_CATEGORIA)
+    VALUES (p_id_estado_fk, p_descripcion_categoria);
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_CATEGORIAS_SP
+-- DESCRIPCIÓN: Procedimiento para listar todas las categorías de productos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_CATEGORIAS_SP ()
+BEGIN
+    SELECT 
+        c.ID_CATEGORIA_PK,
+        c.DESCRIPCION_CATEGORIA,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_PRODUCTOS_CATEGORIA_TB c
+    INNER JOIN HUELLITAS_ESTADO_TB e ON e.ID_ESTADO_PK = c.ID_ESTADO_FK
+    ORDER BY c.ID_CATEGORIA_PK ASC;
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_CATEGORIA_SP
+-- DESCRIPCIÓN: Procedimiento para actualizar categorías de productos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_CATEGORIA_SP (
+    IN p_id_categoria_pk INT,
+    IN p_id_estado_fk INT,
+    IN p_descripcion_categoria VARCHAR(100)
+)
+BEGIN
+    UPDATE HUELLITAS_PRODUCTOS_CATEGORIA_TB
+    SET 
+        ID_ESTADO_FK = p_id_estado_fk,
+        DESCRIPCION_CATEGORIA = p_descripcion_categoria
+    WHERE ID_CATEGORIA_PK = p_id_categoria_pk;
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_MARCA_SP
+-- DESCRIPCIÓN: Procedimiento para insertar nuevas marcas de productos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_AGREGAR_MARCA_SP (
+    IN p_nombre_marca VARCHAR(100),
+    IN p_id_estado_fk INT,
+    IN p_marca_imagen_url VARCHAR(500)
+)
+BEGIN
+    INSERT INTO HUELLITAS_MARCAS_TB (NOMBRE_MARCA, ID_ESTADO_FK, MARCA_IMAGEN_URL)
+    VALUES (p_nombre_marca, p_id_estado_fk, p_marca_imagen_url);
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_MARCAS_SP
+-- DESCRIPCIÓN: Procedimiento para listar todas las marcas
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_MARCAS_SP ()
+BEGIN
+    SELECT 
+        m.ID_MARCA_PK,
+        m.NOMBRE_MARCA,
+        m.MARCA_IMAGEN_URL,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_MARCAS_TB m
+    INNER JOIN HUELLITAS_ESTADO_TB e ON e.ID_ESTADO_PK = m.ID_ESTADO_FK
+    ORDER BY m.ID_MARCA_PK ASC;
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_MARCA_SP
+-- DESCRIPCIÓN: Procedimiento para actualizar marcas de productos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_MARCA_SP (
+    IN p_id_marca_pk INT,
+    IN p_nombre_marca VARCHAR(100),
+    IN p_id_estado_fk INT,
+    IN p_marca_imagen_url VARCHAR(500)
+)
+BEGIN
+    UPDATE HUELLITAS_MARCAS_TB
+    SET 
+        NOMBRE_MARCA = p_nombre_marca,
+        ID_ESTADO_FK = p_id_estado_fk,
+        MARCA_IMAGEN_URL = p_marca_imagen_url
+    WHERE ID_MARCA_PK = p_id_marca_pk;
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_MARCAS_ACTIVAS_SP
+-- DESCRIPCIÓN: Procedimiento para listar solo las marcas activas
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_MARCAS_ACTIVAS_SP()
+BEGIN
+    SELECT 
+        m.ID_MARCA_PK,
+        m.NOMBRE_MARCA,
+        m.MARCA_IMAGEN_URL,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_MARCAS_TB m
+    INNER JOIN HUELLITAS_ESTADO_TB e ON e.ID_ESTADO_PK = m.ID_ESTADO_FK
+    WHERE m.ID_ESTADO_FK = 1 -- solo activos
+    ORDER BY m.ID_MARCA_PK ASC;
+END //
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PRODUCTOS_ACTIVOS_SP
+-- DESCRIPCIÓN: Procedimiento para listar solo los productos activos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_PRODUCTOS_ACTIVOS_SP()
+BEGIN
+    SELECT
+        P.ID_PRODUCTO_PK,
+        P.PRODUCTO_NOMBRE,
+        P.PRODUCTO_DESCRIPCION,
+        P.PRODUCTO_PRECIO_UNITARIO,
+        P.PRODUCTO_STOCK,
+        P.IMAGEN_URL,
+        P.FECHA_CREACION,
+        -- Relaciones
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        PR.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        C.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        M.NOMBRE_MARCA AS MARCA,
+        N.NUEVO_DESCRIPCION AS CONDICION
+    FROM 
+        HUELLITAS_PRODUCTOS_TB P
+        INNER JOIN HUELLITAS_ESTADO_TB E 
+            ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN HUELLITAS_PROVEEDORES_TB PR 
+            ON P.ID_PROVEEDOR_FK = PR.ID_PROVEEDOR_PK
+        INNER JOIN HUELLITAS_PRODUCTOS_CATEGORIA_TB C 
+            ON P.ID_CATEGORIA_FK = C.ID_CATEGORIA_PK
+        INNER JOIN HUELLITAS_MARCAS_TB M 
+            ON P.ID_MARCA_FK = M.ID_MARCA_PK
+        INNER JOIN HUELLITAS_NUEVO_TB N 
+            ON P.ID_NUEVO_FK = N.ID_NUEVO_PK
+		WHERE P.ID_ESTADO_FK = 1 -- solo activos
+    ORDER BY 
+        P.FECHA_CREACION DESC;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PRODUCTOS_ACTIVOS_NUEVOS_SP
+-- DESCRIPCIÓN: Procedimiento para listar productos activos y nuevos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_PRODUCTOS_ACTIVOS_NUEVOS_SP()
+BEGIN
+    SELECT
+        P.ID_PRODUCTO_PK,
+        P.PRODUCTO_NOMBRE,
+        P.PRODUCTO_DESCRIPCION,
+        P.PRODUCTO_PRECIO_UNITARIO,
+        P.PRODUCTOS_STOCK,
+        P.IMAGEN_URL,
+        P.FECHA_CREACION,
+        -- Relaciones
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        PR.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        C.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        M.NOMBRE_MARCA AS MARCA,
+        N.NUEVO_DESCRIPCION AS CONDICION
+    FROM 
+        HUELLITAS_PRODUCTOS_TB P
+        INNER JOIN HUELLITAS_ESTADO_TB E 
+            ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN HUELLITAS_PROVEEDORES_TB PR 
+            ON P.ID_PROVEEDOR_FK = PR.ID_PROVEEDOR_PK
+        INNER JOIN HUELLITAS_PRODUCTOS_CATEGORIA_TB C 
+            ON P.ID_CATEGORIA_FK = C.ID_CATEGORIA_PK
+        INNER JOIN HUELLITAS_MARCAS_TB M 
+            ON P.ID_MARCA_FK = M.ID_MARCA_PK
+        INNER JOIN HUELLITAS_NUEVO_TB N 
+            ON P.ID_NUEVO_FK = N.ID_NUEVO_PK
+		WHERE P.ID_ESTADO_FK = 1 AND P.ID_NUEVO_FK = 1
+    ORDER BY 
+        P.FECHA_CREACION DESC;
+END//
+DELIMITER ;

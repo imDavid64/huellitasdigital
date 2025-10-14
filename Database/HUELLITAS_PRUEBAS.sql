@@ -1,3 +1,13 @@
+-- ==========================================
+-- Orden de creacion de tablas para la base de datos HUELLITAS
+-- 1 HUELLITAS_TABLAS.sql
+-- 2 HUELLITAS_FUNCIONES.sql
+-- 3 HUELLITAS_TRIGGERS.sql
+-- 4 HUELLITAS_PROCEDIMIENTOS.sql
+-- 5 HUELLITAS_VISTAS.sql
+-- 6 HUELLITAS_PRUEBAS.sql
+-- ==========================================
+
 INSERT INTO HUELLITAS_ESTADO_TB (ESTADO_DESCRIPCION) VALUES 
 ('ACTIVO'),
 ('INACTIVO');
