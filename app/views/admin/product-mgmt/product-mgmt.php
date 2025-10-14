@@ -29,7 +29,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <nav class="breadcrumbs-container">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                                <a
+                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
                             </li>
                             <li class="breadcrumb-item current-page">Gestión de Productos</li>
                         </ol>
@@ -81,17 +82,46 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <tbody>
                                 <?php foreach ($products as $product): ?>
                                     <tr>
-                                        <td><?= $product['ID_PRODUCTO_PK'] ?></td>
-                                        <td><img src="<?= htmlspecialchars($product['IMAGEN_URL']) ?>"
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($product['ID_PRODUCTO_PK']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <img src="<?= htmlspecialchars($product['IMAGEN_URL']) ?>"
                                                 style="min-width: 70px; min-height: 70px; max-width: 70px; max-height: 70px;">
                                         </td>
-                                        <td><?= htmlspecialchars($product['PRODUCTO_NOMBRE']) ?></td>
-                                        <td><?= htmlspecialchars($product['CATEGORIA']) ?></td>
-                                        <td>₡<?= $product['PRODUCTO_PRECIO_UNITARIO'] ?></td>
-                                        <td><?= $product['PRODUCTO_STOCK'] ?></td>
-                                        <td><?= htmlspecialchars($product['PRODUCTO_DESCRIPCION']) ?></td>
-                                        <td><?= htmlspecialchars($product['PROVEEDOR']) ?></td>
-                                        <td><?= htmlspecialchars($product['ESTADO']) ?></td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($product['PRODUCTO_NOMBRE']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($product['CATEGORIA']) ?></div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">₡<?= $product['PRODUCTO_PRECIO_UNITARIO'] ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($product['PRODUCTO_STOCK']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($product['PRODUCTO_DESCRIPCION']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($product['PROVEEDOR']) ?></div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit"><?= htmlspecialchars($product['ESTADO']) ?>
+                                            </div>
+                                        </td>
                                         <td class="text-center">
                                             <div class="btn-group" product="group">
                                                 <a href="/huellitasdigital/app/controllers/admin/productController.php?action=edit&id=<?= $product['ID_PRODUCTO_PK'] ?>"
@@ -100,6 +130,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                                 </a>
                                             </div>
                                         </td>
+
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>

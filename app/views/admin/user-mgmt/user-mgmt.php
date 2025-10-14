@@ -68,11 +68,28 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <tbody>
                                 <?php foreach ($usuarios as $usuario): ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($usuario['ID_USUARIO_PK']) ?></td>
-                                        <td><?= htmlspecialchars($usuario['USUARIO_NOMBRE']) ?></td>
-                                        <td><?= htmlspecialchars($usuario['USUARIO_CORREO']) ?></td>
-                                        <td><?= htmlspecialchars($usuario['ROL']) ?></td>
-                                        <td><?= htmlspecialchars($usuario['ESTADO']) ?></td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($usuario['ID_USUARIO_PK']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($usuario['USUARIO_NOMBRE']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit"></div>
+                                            <?= htmlspecialchars($usuario['USUARIO_CORREO']) ?>
+                                        </td>
+                                        <div class="admin-table-text-limit">
+                                            <td><?= htmlspecialchars($usuario['ROL']) ?></td>
+                                        </div>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($usuario['ESTADO']) ?>
+                                            </div>
+                                        </td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
                                                 <a href="../../../app/controllers/admin/userController.php?action=edit&id=<?= $usuario['ID_USUARIO_PK'] ?>"

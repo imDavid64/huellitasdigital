@@ -14,8 +14,7 @@ class ConexionDatabase {
 
         // Para caracteres especiales
         $conn->set_charset("utf8");
-
-        echo "Se conectó correctamente a la base de datos.<br>";
+        
         return $conn;
     }
 }

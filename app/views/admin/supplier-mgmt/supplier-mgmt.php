@@ -69,12 +69,36 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <tbody>
                                 <?php foreach ($suppliers as $supplier): ?>
                                     <tr>
-                                        <td><?= $supplier['ID_PROVEEDOR_PK'] ?></td>
-                                        <td><?= htmlspecialchars($supplier['PROVEEDOR_NOMBRE']) ?></td>
-                                        <td><?= htmlspecialchars($supplier['NOMBRE_REPRESENTANTE']) ?></td>
-                                        <td><?= htmlspecialchars($supplier['TELEFONO_CONTACTO']) ?></td>
-                                        <td><?= htmlspecialchars($supplier['PROVEEDOR_CORREO']) ?></td>
-                                        <td><?= $supplier['ESTADO'] ?></td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= $supplier['ID_PROVEEDOR_PK'] ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($supplier['PROVEEDOR_NOMBRE']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($supplier['NOMBRE_REPRESENTANTE']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($supplier['TELEFONO_CONTACTO']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($supplier['PROVEEDOR_CORREO']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= $supplier['ESTADO'] ?>
+                                            </div>
+                                        </td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
                                                 <a href="../../../app/controllers/admin/supplierController.php?action=edit&id=<?= $supplier['ID_PROVEEDOR_PK'] ?>"

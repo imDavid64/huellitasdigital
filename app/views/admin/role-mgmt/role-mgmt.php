@@ -66,9 +66,21 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <tbody>
                                 <?php foreach ($roles as $role): ?>
                                     <tr>
-                                        <td><?= $role['ID_ROL_USUARIO_PK'] ?></td>
-                                        <td><?= htmlspecialchars($role['DESCRIPCION_ROL_USUARIO']) ?></td>
-                                        <td><?= htmlspecialchars($role['ESTADO']) ?></td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= $role['ID_ROL_USUARIO_PK'] ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($role['DESCRIPCION_ROL_USUARIO']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($role['ESTADO']) ?>
+                                            </div>
+                                        </td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
                                                 <a href="../../../app/controllers/admin/roleController.php?action=edit&id=<?= $role['ID_ROL_USUARIO_PK'] ?>"

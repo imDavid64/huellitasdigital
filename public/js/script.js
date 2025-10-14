@@ -11,6 +11,8 @@ $(function () {
     $("#btnCloseXRegister, #btnCloseRegister").on("click", () => $("#display-register").hide());
     $("#btnCloseXResetPass, #btnCloseResetPass").on("click", () => $("#display-resetPass").hide());
 
+    $("#btnLoginAddCart").on("click", () => $("#display-login").css("display", "flex"));
+
     // --- Menú usuario ---
     $("#header-user-img").on("click", function (e) {
         e.stopPropagation();
@@ -53,5 +55,25 @@ $(function () {
             }
         );
     });
+
+    // --- Carruseles Genéricos (Marcas y Productos) ---
+    function setupCarousel(leftBtn, rightBtn, carouselSelector, scrollAmount = 300) {
+        const $carousel = $(carouselSelector);
+
+        $(rightBtn).on("click", function (e) {
+            e.preventDefault();
+            $carousel.animate({ scrollLeft: "+=" + scrollAmount }, 800, "linear");
+        });
+
+        $(leftBtn).on("click", function (e) {
+            e.preventDefault();
+            $carousel.animate({ scrollLeft: "-=" + scrollAmount }, 800, "linear");
+        });
+    }
+
+    // Iniciar ambos carruseles
+    setupCarousel("#brand-left", "#brand-right", "#brand-carousel");
+    setupCarousel("#product-left", "#product-right", "#product-carousel");
+
 
 });

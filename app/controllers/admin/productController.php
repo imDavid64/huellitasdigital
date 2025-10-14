@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . "/../../models/admin/productModel.php";
-include_once __DIR__ . "/../../models/conexionDB.php";
+require_once __DIR__ . "/../../models/conexionDB.php";
 require_once __DIR__ . "/../../models/admin/catalogModel.php";
 
 $db = new ConexionDatabase();
@@ -52,6 +52,7 @@ switch ($action) {
                 }
             }
 
+            
             // 3. Actualizar la base de datos
             try {
                 $result = $productModel->updateProduct(
