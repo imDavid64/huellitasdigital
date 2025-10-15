@@ -7,7 +7,7 @@
 -- 5 HUELLITAS_VISTAS.sql
 -- 6 HUELLITAS_PRUEBAS.sql
 -- ==========================================
-
+use PROYECTO;
 -- ==========================================
 -- NOMBRE: HUELLITAS_CAMBIAR_CONTRASENNA_SP
 -- DESCRIPCIÓN: Procedimiento para cambiar la contraseña de un usuario verificando la actual
@@ -388,7 +388,7 @@ CREATE PROCEDURE HUELLITAS_AGREGAR_PRODUCTO_SP (
     IN p_id_marca INT,
     IN p_id_nuevo INT,
     IN p_nombre VARCHAR(100),
-    IN p_descripcion VARCHAR(200),
+    IN p_descripcion VARCHAR(1000),
     IN p_precio DECIMAL(10,2),
     IN p_stock INT,
     IN p_imagen_url VARCHAR(255)
@@ -1031,7 +1031,7 @@ BEGIN
         P.PRODUCTO_NOMBRE,
         P.PRODUCTO_DESCRIPCION,
         P.PRODUCTO_PRECIO_UNITARIO,
-        P.PRODUCTOS_STOCK,
+        P.PRODUCTO_STOCK,
         P.IMAGEN_URL,
         P.FECHA_CREACION,
         -- Relaciones

@@ -19,7 +19,7 @@ class UsuarioModel
 
     public function getUsuarioById($idUsuario)
     {
-        $sql = "CALL HUELLITAS_GET_USUARIO_BY_ID_SP(?)";
+        $sql = "CALL HUELLITAS_OBTENER_USUARIO_POR_ID_SP(?)";
         $stmt = $this->conn->prepare($sql);
 
         if (!$stmt) {

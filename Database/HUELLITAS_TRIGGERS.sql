@@ -7,7 +7,7 @@
 -- 5 HUELLITAS_VISTAS.sql
 -- 6 HUELLITAS_PRUEBAS.sql
 -- ==========================================
-
+use PROYECTO;
 -- ==========================================
 -- NOMBRE: HUELLITAS_ANTES_INSERTAR_USUARIO_TR
 -- DESCRIPCIÓN: Trigger para encriptar contraseña automáticamente al insertar usuario

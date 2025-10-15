@@ -7,7 +7,7 @@
 -- 5 HUELLITAS_VISTAS.sql
 -- 6 HUELLITAS_PRUEBAS.sql
 -- ==========================================
-
+use PROYECTO;
 -- ==========================================
 -- NOMBRE: HUELLITAS_GENERAR_SALT_FN
 -- DESCRIPCIÓN: Función para generar un salt único para encriptación
