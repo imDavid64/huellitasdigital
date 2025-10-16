@@ -26,6 +26,8 @@ switch ($action) {
         $products = $productModel->getAllActiveProducts();
         // Obtener productos activos
         $newproducts = $productModel->getAllNewActiveProducts();
+        // Obtener categorias activas
+        $categories = $productModel->getAllNewAllActiveCategories();
 
         // Cargar la vista principal del home
         require_once __DIR__ . '/../views/home.php';

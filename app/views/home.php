@@ -97,33 +97,32 @@
                         <?php if (!empty($newproducts)): ?>
                             <?php foreach ($newproducts as $newproduct): ?>
                                 <div class="cards product-item">
-                                    <div>
-                                        <div class="card-img">
-                                            <!-- Ajusta la ruta del campo imagen que tengas -->
-                                            <img src="<?= htmlspecialchars($newproduct['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"
-                                                alt="<?= htmlspecialchars($newproduct['NOMBRE_PRODUCTO'] ?? '') ?>"
-                                                style="width:100%; height:100%; object-fit:cover;">
+                                    <a href="/huellitasdigital/app/controllers/client/productController.php?action=productsDetails&id=<?= $newproduct['ID_PRODUCTO_PK'] ?>">
+                                        <div>
+                                            <div class="card-img">
+                                                <img src="<?= htmlspecialchars($newproduct['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"
+                                                    alt="<?= htmlspecialchars($newproduct['NOMBRE_PRODUCTO'] ?? '') ?>"
+                                                    style="width:100%; height:100%; object-fit:cover;">
+                                            </div>
+                                            <div class="card-name">
+                                                <?= htmlspecialchars($newproduct['PRODUCTO_NOMBRE'] ?? 'Sin nombre') ?>
+                                            </div>
+                                            <div class="card-description product-description">
+                                                <?= htmlspecialchars($newproduct['PRODUCTO_DESCRIPCION'] ?? '') ?>
+                                            </div>
                                         </div>
-                                        <div class="card-name">
-                                            <?= htmlspecialchars($newproduct['PRODUCTO_NOMBRE'] ?? 'Sin nombre') ?>
-                                        </div>
-                                        <div class="card-description product-description">
-                                            <?= htmlspecialchars($newproduct['PRODUCTO_DESCRIPCION'] ?? '') ?>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer">
                                         <div class="card-price">
                                             ₡<?= htmlspecialchars($newproduct['PRODUCTO_PRECIO_UNITARIO'] ?? '$0') ?>
                                         </div>
-                                        <div class="card-button">
-                                            <?php if (isset($_SESSION['user_name'])): ?>
-                                                <a class="btn-orange"
-                                                    href="/huellitasdigital/app/controllers/client/productController.php?action=addToCart&id=<?= htmlspecialchars($newproduct['ID_PRODUCTO'] ?? 0) ?>">Añadir
-                                                    al Carrito</a>
-                                            <?php else: ?>
-                                                <a class="btn-orange" id="btnLoginAddCart" href="#">Añadir al Carrito</a>
-                                            <?php endif; ?>
-                                        </div>
+                                    </a>
+                                    <div class="card-button">
+                                        <?php if (isset($_SESSION['user_name'])): ?>
+                                            <a class="btn-orange"
+                                                href="/huellitasdigital/app/controllers/client/productController.php?action=addToCart&id=<?= htmlspecialchars($newproduct['ID_PRODUCTO'] ?? 0) ?>">Añadir
+                                                al Carrito</a>
+                                        <?php else: ?>
+                                            <a class="btn-orange btnLogin" href="#">Añadir al Carrito</a>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>

@@ -882,6 +882,26 @@ DELIMITER ;
 /
 
 -- ==========================================
+-- NOMBRE: HHUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP
+-- DESCRIPCIÓN: Procedimiento para listar todas las categorías activas de productos
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP()
+BEGIN
+    SELECT 
+        c.ID_CATEGORIA_PK,
+        c.DESCRIPCION_CATEGORIA,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_PRODUCTOS_CATEGORIA_TB c
+    INNER JOIN HUELLITAS_ESTADO_TB e ON e.ID_ESTADO_PK = c.ID_ESTADO_FK
+    WHERE c.ID_ESTADO_FK = 1 -- solo activos
+    ORDER BY c.ID_CATEGORIA_PK ASC;
+END //
+DELIMITER ;
+/
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_ACTUALIZAR_CATEGORIA_SP
 -- DESCRIPCIÓN: Procedimiento para actualizar categorías de productos
 -- ==========================================
@@ -1056,4 +1076,118 @@ BEGIN
     ORDER BY 
         P.FECHA_CREACION DESC;
 END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_PRODUCTO_ACTIVO_POR_ID_SP
+-- DESCRIPCIÓN: Procedimiento para obtener producto activo por id
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_OBTENER_PRODUCTO_ACTIVO_POR_ID_SP(IN p_id_producto INT)
+BEGIN
+    SELECT
+        P.ID_PRODUCTO_PK,
+        P.PRODUCTO_NOMBRE,
+        P.PRODUCTO_DESCRIPCION,
+        P.PRODUCTO_PRECIO_UNITARIO,
+        P.PRODUCTO_STOCK,
+        P.IMAGEN_URL,
+        P.FECHA_CREACION,
+        -- Relaciones
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        PR.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        C.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        M.NOMBRE_MARCA AS MARCA,
+        N.NUEVO_DESCRIPCION AS CONDICION
+    FROM 
+        HUELLITAS_PRODUCTOS_TB P
+        INNER JOIN HUELLITAS_ESTADO_TB E 
+            ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN HUELLITAS_PROVEEDORES_TB PR 
+            ON P.ID_PROVEEDOR_FK = PR.ID_PROVEEDOR_PK
+        INNER JOIN HUELLITAS_PRODUCTOS_CATEGORIA_TB C 
+            ON P.ID_CATEGORIA_FK = C.ID_CATEGORIA_PK
+        INNER JOIN HUELLITAS_MARCAS_TB M 
+            ON P.ID_MARCA_FK = M.ID_MARCA_PK
+        INNER JOIN HUELLITAS_NUEVO_TB N 
+            ON P.ID_NUEVO_FK = N.ID_NUEVO_PK
+		WHERE P.ID_ESTADO_FK = 1 -- solo activos
+			AND P.ID_PRODUCTO_PK = p_id_producto;
+END//
+DELIMITER ;
+/
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PRODUCTOS_BUSCADOS_ACTIVOS_SP
+-- DESCRIPCIÓN: Procedimiento para listar los productos buscados por el cliente
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_PRODUCTOS_BUSCADOS_ACTIVOS_SP(
+    IN p_busqueda VARCHAR(100)
+)
+BEGIN
+    SELECT
+        P.ID_PRODUCTO_PK,
+        P.PRODUCTO_NOMBRE,
+        P.PRODUCTO_DESCRIPCION,
+        P.PRODUCTO_PRECIO_UNITARIO,
+        P.PRODUCTO_STOCK,
+        P.IMAGEN_URL,
+        P.FECHA_CREACION,
+        -- Relaciones
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        PR.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        C.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        M.NOMBRE_MARCA AS MARCA,
+        N.NUEVO_DESCRIPCION AS CONDICION
+    FROM 
+        HUELLITAS_PRODUCTOS_TB P
+        INNER JOIN HUELLITAS_ESTADO_TB E 
+            ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN HUELLITAS_PROVEEDORES_TB PR 
+            ON P.ID_PROVEEDOR_FK = PR.ID_PROVEEDOR_PK
+        INNER JOIN HUELLITAS_PRODUCTOS_CATEGORIA_TB C 
+            ON P.ID_CATEGORIA_FK = C.ID_CATEGORIA_PK
+        INNER JOIN HUELLITAS_MARCAS_TB M 
+            ON P.ID_MARCA_FK = M.ID_MARCA_PK
+        INNER JOIN HUELLITAS_NUEVO_TB N 
+            ON P.ID_NUEVO_FK = N.ID_NUEVO_PK
+    WHERE 
+        P.ID_ESTADO_FK = 1 -- solo productos activos
+        AND (
+            P.PRODUCTO_NOMBRE LIKE CONCAT('%', p_busqueda, '%')
+            OR P.PRODUCTO_DESCRIPCION LIKE CONCAT('%', p_busqueda, '%')
+            OR M.NOMBRE_MARCA LIKE CONCAT('%', p_busqueda, '%')
+            OR C.DESCRIPCION_CATEGORIA LIKE CONCAT('%', p_busqueda, '%')
+        )
+    ORDER BY 
+        P.FECHA_CREACION DESC;
+END//
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_COMENTARIOS_ACTIVOS_POR_PRODUCTO_SP
+-- DESCRIPCIÓN: Procedimiento para listar los comentarios de un producto en especifico.
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_COMENTARIOS_ACTIVOS_POR_PRODUCTO_SP(
+    IN p_id_producto INT
+)
+BEGIN
+    SELECT 
+        C.ID_COMENTARIO_PK,
+        C.ID_PRODUCTO_FK,
+        C.ID_USUARIO_FK,
+        U.USUARIO_NOMBRE AS NOMBRE_USUARIO,
+        C.COMENTARIO_TEXTO,
+        C.CALIFICACION_TIPO,
+        C.FECHA_CREACION
+    FROM HUELLITAS_PRODUCTOS_COMENTARIOS_TB AS C
+    INNER JOIN HUELLITAS_USUARIOS_TB AS U 
+        ON C.ID_USUARIO_FK = U.ID_USUARIO_PK
+    WHERE C.ID_PRODUCTO_FK = p_id_producto
+      AND C.ID_ESTADO_FK = 1
+    ORDER BY C.FECHA_CREACION DESC;
+END //
 DELIMITER ;

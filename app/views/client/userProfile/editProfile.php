@@ -22,7 +22,7 @@
     <nav class="breadcrumbs-container">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="../index.html">Inicio</a>
+                <a href="/huellitasdigital/app/controllers/homeController.php?action=index">Inicio</a>
             </li>
             <li class="breadcrumb-item">
                 <a href="profile.html">Perfil de Usuario</a>

@@ -30,13 +30,13 @@ VALUES
  'Agenda tu cita para vacunación y chequeos veterinarios en línea.', 1);
 
 INSERT INTO HUELLITAS_PRODUCTOS_CATEGORIA_TB (ID_ESTADO_FK, DESCRIPCION_CATEGORIA) VALUES
-(1, 'MEDICAMENTO'),
-(1, 'ACCESORIO'),
-(1, 'ALIMENTO'),
-(1, 'MEDICAMENTO PARA PERRO'),
-(1, 'ACCESORIO PARA GATO'),
-(1, 'ALIMENTO PARA GATO'),
-(1, 'ALIMENTO PARA PERRO');
+(1, 'Medicamentos'),
+(1, 'Accesorios'),
+(1, 'Alimentos'),
+(1, 'Medicamento para perro'),
+(1, 'Accesorio para gato'),
+(1, 'Alimento para gato'),
+(1, 'Alimento para perro');
 
 -- Inserciones de 10 proveedores mediante el procedimiento almacenado
 CALL HUELLITAS_AGREGAR_PROVEEDOR_SP('PetSupply CR', 'Laura Hernández', 'contacto@petsupplycr.com', 1, 88871234);
@@ -201,6 +201,32 @@ INSERT INTO HUELLITAS_TARJETAS_TB (
 );
 
 
+INSERT INTO HUELLITAS_PRODUCTOS_COMENTARIOS_TB 
+(ID_PRODUCTO_FK, ID_USUARIO_FK, ID_ESTADO_FK, COMENTARIO_TEXTO, CALIFICACION_TIPO)
+VALUES
+(1, 1, 1, 'Excelente calidad, mi mascota lo ama.', '5'),
+(2, 2, 1, 'Llegó rápido y bien empacado.', '4'),
+(3, 1, 1, 'No le gustó mucho el sabor, pero el servicio fue bueno.', '3'),
+(4, 2, 1, 'Producto muy útil, justo lo que necesitaba.', '5'),
+(5, 1, 2, 'El empaque vino dañado.', '2'),
+(6, 2, 1, 'Mi perro está feliz con este juguete.', '5'),
+(7, 1, 1, 'Calidad aceptable por el precio.', '3'),
+(8, 2, 1, 'El envío fue más rápido de lo esperado.', '4'),
+(9, 1, 2, 'El tamaño no coincidía con la descripción.', '2'),
+(10, 2, 1, 'Excelente producto, muy recomendado.', '5'),
+(11, 1, 1, 'Mi gato se adaptó muy bien a este alimento.', '4'),
+(12, 2, 1, 'Cumple su función, nada extraordinario.', '3'),
+(13, 1, 1, 'Buena relación calidad-precio.', '4'),
+(14, 2, 2, 'No funcionó como esperaba.', '1'),
+(15, 1, 1, 'Totalmente satisfecho con la compra.', '5'),
+(3, 2, 1, 'Buen sabor según mi perro, volveré a comprar.', '4'),
+(5, 1, 1, 'La textura es perfecta para mi mascota senior.', '5'),
+(8, 2, 2, 'El producto venía incompleto.', '1'),
+(10, 1, 1, 'Muy buen servicio al cliente, resolvieron mis dudas.', '4'),
+(12, 2, 1, 'Producto fresco y en excelente estado.', '5');
+
+
+
 -------------------------------------------------------------------------------------------------
 -------------------------------------- Pruebas Encriptacion --------------------------------------------
 -------------------------------------------------------------------------------------------------
@@ -225,7 +251,7 @@ SELECT
 FROM HUELLITAS_TARJETAS_TB;
 
 -- Probar desencriptación de tarjeta
-SELECT 
+SELECT
     ID_TARJETA_PK,
     NOMBRE_TITULAR,
     ULTIMOS_CUATRO_DIGITOS,
