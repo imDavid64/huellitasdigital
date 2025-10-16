@@ -3,7 +3,7 @@ class ConexionDatabase {
     private $host = "localhost";
     private $user = "root";
     private $pass = "admin";
-    private $dbname = "proyecto";
+    private $dbname = "HUELLITASDIGITAL";
 
     public function connectDB() {
         $conn = new mysqli($this->host, $this->user, $this->pass, $this->dbname);

@@ -7,7 +7,7 @@
 -- 5 HUELLITAS_VISTAS.sql
 -- 6 HUELLITAS_PRUEBAS.sql
 -- ==========================================
-use PROYECTO;
+use HUELLITASDIGITAL;
 -- ==========================================
 -- NOMBRE: HUELLITAS_CAMBIAR_CONTRASENNA_SP
 -- DESCRIPCIÓN: Procedimiento para cambiar la contraseña de un usuario verificando la actual

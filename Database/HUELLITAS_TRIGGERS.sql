@@ -7,7 +7,7 @@
 -- 5 HUELLITAS_VISTAS.sql
 -- 6 HUELLITAS_PRUEBAS.sql
 -- ==========================================
-use PROYECTO;
+use HUELLITASDIGITAL;
 -- ==========================================
 -- NOMBRE: HUELLITAS_ANTES_INSERTAR_USUARIO_TR
 -- DESCRIPCIÓN: Trigger para encriptar contraseña automáticamente al insertar usuario
@@ -115,3 +115,68 @@ BEGIN
     END IF;
 END//
 DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_VALIDAR_TARJETA_TR
+-- DESCRIPCIÓN: Trigger para Validar Fechas de Tarjetas (integridad lógica)
+-- ==========================================
+DELIMITER //
+CREATE TRIGGER HUELLITAS_VALIDAR_TARJETA_TR
+BEFORE INSERT ON HUELLITAS_TARJETAS_TB
+FOR EACH ROW
+BEGIN
+    IF NEW.FECHA_VENCIMIENTO < CURDATE() THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = '❌ No se puede registrar una tarjeta vencida.';
+    END IF;
+END//
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_DISMINUIR_STOCK_TR
+-- DESCRIPCIÓN: Trigger para Control de Stock Automático
+-- ==========================================
+DELIMITER //
+CREATE TRIGGER HUELLITAS_DISMINUIR_STOCK_TR
+AFTER INSERT ON HUELLITAS_DETALLE_FACTURA_TB
+FOR EACH ROW
+BEGIN
+    UPDATE HUELLITAS_PRODUCTOS_TB
+    SET PRODUCTO_STOCK = PRODUCTO_STOCK - NEW.CANTIDAD
+    WHERE ID_PRODUCTO_PK = NEW.ID_PRODUCTO_FK;
+
+    IF (SELECT PRODUCTO_STOCK FROM HUELLITAS_PRODUCTOS_TB WHERE ID_PRODUCTO_PK = NEW.ID_PRODUCTO_FK) < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = '⚠️ El stock del producto no puede ser negativo.';
+    END IF;
+END//
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_VALIDAR_COMENTARIO_TR
+-- DESCRIPCIÓN: Trigger para Validar Comentarios de Productos
+-- ==========================================
+/*
+DELIMITER //
+CREATE TRIGGER HUELLITAS_VALIDAR_COMENTARIO_TR
+BEFORE INSERT ON HUELLITAS_PRODUCTOS_COMENTARIOS_TB
+FOR EACH ROW
+BEGIN
+    DECLARE V_EXISTE_COMPRA INT;
+
+    SELECT COUNT(*) INTO V_EXISTE_COMPRA
+    FROM HUELLITAS_DETALLE_FACTURA_TB DF
+    INNER JOIN HUELLITAS_FACTURACIONES_TB F ON DF.ID_FACTURA_FK = F.ID_FACTURA_PK
+    WHERE DF.ID_PRODUCTO_FK = NEW.ID_PRODUCTO_FK
+      AND F.ID_USUARIO_FK = NEW.ID_USUARIO_FK;
+
+    IF V_EXISTE_COMPRA = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = '❌ Solo los clientes que hayan comprado el producto pueden comentar.';
+    END IF;
+END//
+DELIMITER ;
+*/
+
+

@@ -114,7 +114,23 @@
                     <?php else: ?>
                         <p class="text-muted">Aún no hay comentarios para este producto.</p>
                     <?php endif; ?>
-                    <a class="btn-purple btnLogin" href="#">Agregar un Comentario</a>
+                    <div class="product-comments-addComment">
+                        <div class="form-item">
+                            <div>
+                                <span>Agrega un comentario del producto</span>
+                            </div>
+                            <div>
+                                <label for="addComment"></label>
+                                <textarea></textarea>
+                            </div>
+                            <div class="give-product-stars">
+
+                            </div>
+                        </div>
+                        <div>
+                            <a class="btn-purple btnLogin" href="#">Agregar un Comentario</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

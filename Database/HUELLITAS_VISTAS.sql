@@ -7,7 +7,7 @@
 -- 5 HUELLITAS_VISTAS.sql
 -- 6 HUELLITAS_PRUEBAS.sql
 -- ==========================================
-use PROYECTO;
+use HUELLITASDIGITAL;
 -- ==========================================
 -- NOMBRE: HUELLITAS_TARJETAS_SEGURAS_VW
 -- DESCRIPCIÓN: Vista segura para mostrar información de tarjetas sin datos sensibles
