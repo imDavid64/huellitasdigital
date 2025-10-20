@@ -11,6 +11,25 @@ $catalogModel = new CatalogModel($conn);
 $action = $_GET['action'] ?? 'index';
 
 switch ($action) {
+    case 'search':
+        $query = trim($_GET['query'] ?? '');
+        $page = intval($_GET['page'] ?? 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $roles = $roleModel->searchRolePaginated($query, $limit, $offset);
+        $total = $roleModel->countRoles($query);
+        $totalPages = ceil($total / $limit);
+
+        // Si es AJAX (solo tabla)
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            require __DIR__ . "/../../views/admin/role-mgmt/partials/role-table.php";
+            exit;
+        }
+
+        require __DIR__ . "/../../views/admin/role-mgmt/role-mgmt.php";
+        break;
+
     case 'update':
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id_rol = intval($_POST['id_rol']);
@@ -67,7 +86,15 @@ switch ($action) {
     case 'index':
 
     default:
-        $roles = $roleModel->getAllRoles();
+        $query = '';
+        $page = 1;
+        $limit = 10;
+        $offset = 0;
+
+        $roles = $roleModel->searchRolePaginated($query, $limit, $offset);
+        $total = $roleModel->countRoles($query);
+        $totalPages = ceil($total / $limit);
+
         require __DIR__ . "/../../views/admin/role-mgmt/role-mgmt.php";
         break;
 }

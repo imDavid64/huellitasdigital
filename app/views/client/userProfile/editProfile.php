@@ -19,7 +19,7 @@
     <!--HEADER-->
 
     <!--Breadcrumb-->
-    <nav class="breadcrumbs-container">
+    <nav class="breadcrumbs-container-client">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <a href="/huellitasdigital/app/controllers/homeController.php?action=index">Inicio</a>
@@ -38,56 +38,90 @@
                     <h1><strong>Editar Perfil</strong></h1>
                 </div>
                 <div class="contentProfile">
-                    <div class="editProfile">
-                        <form action="/huellitasdigital/app/controllers/client/userController.php?action=updateProfile"
-                            method="POST" enctype="multipart/form-data">
-
-                            <img src="<?= htmlspecialchars($usuario['USUARIO_IMAGEN_URL'] ?? 'ruta/a/imagen/default.png') ?>"
-                                alt="Foto de perfil">
-                            <input type="file" name="imagenFile" accept="image/*">
-
-                            <label>Nombre completo</label>
-                            <input type="text" name="usuario_nombre"
-                                value="<?= htmlspecialchars($usuario['USUARIO_NOMBRE'] ?? '') ?>">
-
-                            <label>Identificación</label>
-                            <input type="number" name="usuario_identificacion"
-                                value="<?= htmlspecialchars($usuario['USUARIO_IDENTIFICACION'] ?? '') ?>">
-
-                            <div hidden>
-                                <label>Cuenta Bancaria (IBAN)</label>
-                                <input type="text" name="usuario_cuenta_bancaria"
-                                    value="<?= htmlspecialchars($usuario['USUARIO_CUENTA_BANCARIA'] ?? '') ?>">
+                    <form action="/huellitasdigital/app/controllers/client/userController.php?action=updateProfile"
+                        method="POST" enctype="multipart/form-data">
+                        <div class="editProfile">
+                            <h3>Información Personal</h3>
+                            <div class="profileImg">
+                                <img src="<?= htmlspecialchars($usuario['USUARIO_IMAGEN_URL'] ?? '/huellitasdigital/public/assets/images/default-user-image.png') ?>"
+                                    alt="Foto de perfil">
                             </div>
-
-                            <label>Teléfono</label>
-                            <input type="number" name="usuario_telefono"
-                                value="<?= htmlspecialchars($usuario['TELEFONO_CONTACTO'] ?? '') ?>">
-
+                            <div class="form-item">
+                                <input type="file" name="imagenFile" accept="image/*">
+                            </div>
+                            <div class="form-item">
+                                <label>Nombre completo</label>
+                                <input type="text" name="usuario_nombre"
+                                    value="<?= htmlspecialchars($usuario['USUARIO_NOMBRE'] ?? '') ?>">
+                            </div>
+                            <div class="form-item">
+                                <label>Identificación</label>
+                                <input type="number" name="usuario_identificacion"
+                                    value="<?= htmlspecialchars($usuario['USUARIO_IDENTIFICACION'] ?? '') ?>">
+                            </div>
+                            <div hidden class="form-item">
+                                <label>Identificación</label>
+                                <input type="number" name="usuario_cuenta_bancaria">
+                            </div>
+                            <div class="form-item">
+                                <label>Teléfono</label>
+                                <input type="number" name="usuario_telefono"
+                                    value="<?= htmlspecialchars($usuario['TELEFONO_CONTACTO'] ?? '') ?>">
+                            </div>
                             <hr>
                             <h3>Dirección</h3>
-                            <div hidden>
-                                <label>Provincia (ID)</label>
-                                <input type="number" name="id_provincia"
-                                    value="<?= htmlspecialchars($usuario['ID_PROVINCIA_FK'] ?? '1') ?>">
-
-                                <label>Cantón (ID)</label>
-                                <input type="number" name="id_canton"
-                                    value="<?= htmlspecialchars($usuario['ID_CANTON_FK'] ?? '1') ?>">
-
-                                <label>Distrito (ID)</label>
-                                <input type="number" name="id_distrito"
-                                    value="<?= htmlspecialchars($usuario['ID_DISTRITO_FK'] ?? '1') ?>">
+                            <!-- PROVINCIA -->
+                            <div class="form-item">
+                                <label for="provincia">Provincia</label>
+                                <select id="provincia" name="provincia">
+                                    <option value="" disabled <?= empty($usuario['ID_DIRECCION_PROVINCIA_FK']) ? 'selected' : '' ?>>Selecciona una Provincia</option>
+                                    <?php foreach ($provincias as $provincia): ?>
+                                        <option value="<?= htmlspecialchars($provincia['ID_DIRECCION_PROVINCIA_PK']) ?>"
+                                            <?= (isset($usuario['ID_DIRECCION_PROVINCIA_FK']) && $usuario['ID_DIRECCION_PROVINCIA_FK'] == $provincia['ID_DIRECCION_PROVINCIA_PK']) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($provincia['NOMBRE_PROVINCIA']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
-                            <label>Señas exactas</label>
-                            <textarea
-                                name="direccion_senas"><?= htmlspecialchars($usuario['DIRECCION_SENNAS'] ?? '') ?></textarea>
-
-
-                            <button type="submit">Guardar cambios</button>
-                        </form>
-
-                    </div>
+                            <!-- CANTÓN -->
+                            <div class="form-item">
+                                <label for="canton">Cantón</label>
+                                <select id="canton" name="canton">
+                                    <option value="" disabled <?= empty($usuario['ID_DIRECCION_CANTON_FK']) ? 'selected' : '' ?>>Selecciona un Cantón</option>
+                                    <?php foreach ($cantones as $canton): ?>
+                                        <option value="<?= htmlspecialchars($canton['ID_DIRECCION_CANTON_PK']) ?>"
+                                            <?= (isset($usuario['ID_DIRECCION_CANTON_FK']) && $usuario['ID_DIRECCION_CANTON_FK'] == $canton['ID_DIRECCION_CANTON_PK']) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($canton['NOMBRE_CANTON']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <!-- DISTRITO -->
+                            <div class="form-item">
+                                <label for="distrito">Distrito</label>
+                                <select id="distrito" name="distrito">
+                                    <option value="" disabled <?= empty($usuario['ID_DIRECCION_DISTRITO_FK']) ? 'selected' : '' ?>>Selecciona un Distrito</option>
+                                    <?php foreach ($distritos as $distrito): ?>
+                                        <option value="<?= htmlspecialchars($distrito['ID_DIRECCION_DISTRITO_PK']) ?>"
+                                            <?= (isset($usuario['ID_DIRECCION_DISTRITO_FK']) && $usuario['ID_DIRECCION_DISTRITO_FK'] == $distrito['ID_DIRECCION_DISTRITO_PK']) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($distrito['NOMBRE_DISTRITO']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <!-- SEÑAS -->
+                            <div class="form-item">
+                                <label for="senas">Señas Exactas</label>
+                                <textarea id="senas" name="senas"
+                                    rows="3"><?= htmlspecialchars($usuario['DIRECCION_SENNAS'] ?? '') ?></textarea>
+                            </div>
+                            <div class="editProfile-footer">
+                                <button class="btn-blue" type="submit">Guardar cambios</button>
+                                <a href="/huellitasdigital/app/controllers/client/userController.php?action=index"
+                                    class="btn-black">Cancelar</a>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </section>

@@ -39,59 +39,73 @@
                     <?php if ($usuario): ?>
                         <div class="infoProfile">
                             <div class="profileImgContainer">
-                                <?php if (!empty($usuario['USUARIO_IMAGEN_URL'])): ?>
-                                    <img src="<?= htmlspecialchars($usuario['USUARIO_IMAGEN_URL']) ?>" alt="Foto de perfil"
-                                        class="profileImg">
-                                <?php else: ?>
-                                    <div class="profileImg"><i class="bi bi-person-fill"></i></div>
-                                <?php endif; ?>
+                                <div class="profileImg">
+                                    <img src="<?= htmlspecialchars($usuario['USUARIO_IMAGEN_URL'] ?? '/huellitasdigital/public/assets/images/default-user-image.png') ?>"
+                                        alt="Foto de perfil">
+                                </div>
                             </div>
-
                             <div class="profileInfo">
                                 <div class="btnEditUser">
-                                    <a class="btn-blue"
-                                        href="../../../app/controllers/client/userController.php?action=edit&id=<?= $usuario['ID_USUARIO_PK'] ?>">
-                                        <i class="bi bi-pencil-fill"></i> Editar
-                                    </a>
+                                    <div>
+                                        <h2>Información Personal</h2>
+                                    </div>
+                                    <div>
+                                        <a class="btn-blue"
+                                            href="../../../app/controllers/client/userController.php?action=edit&id=<?= $usuario['ID_USUARIO_PK'] ?>">
+                                            Editar Perfil<i class="bi bi-pencil-fill"></i></a>
+                                    </div>
+                                </div>
+                                <div class="profileInfoBox">
+                                    <strong>Nombre</strong>
+                                    <span><?= htmlspecialchars($usuario['USUARIO_NOMBRE']) ?></span>
                                 </div>
 
-                                <div>
-                                    <h3>Nombre</h3>
-                                    <span class="profileInfoBox"><?= htmlspecialchars($usuario['USUARIO_NOMBRE']) ?></span>
+                                <div class="profileInfoBox">
+                                    <strong>Correo Electrónico</strong>
+                                    <span><?= htmlspecialchars($usuario['USUARIO_CORREO']) ?></span>
                                 </div>
 
-                                <div>
-                                    <h3>Correo Electrónico</h3>
-                                    <span class="profileInfoBox"><?= htmlspecialchars($usuario['USUARIO_CORREO']) ?></span>
+                                <div class="profileInfoBox">
+                                    <strong>Teléfono</strong>
+                                    <span><?= htmlspecialchars($usuario['TELEFONO_CONTACTO'] ?? 'No registrado') ?></span>
                                 </div>
 
-                                <div>
-                                    <h3>Teléfono</h3>
-                                    <span
-                                        class="profileInfoBox"><?= htmlspecialchars($usuario['TELEFONO_CONTACTO'] ?? 'No registrado') ?></span>
-                                </div>
-
-                                <div>
-                                    <h3>Dirección</h3>
-                                    <span class="profileInfoBox">
-                                        <?= htmlspecialchars(($usuario['DIRECCION_SENNAS'] ?? '') .
-                                            ', ' . ($usuario['NOMBRE_DISTRITO'] ?? '') .
-                                            ', ' . ($usuario['NOMBRE_CANTON'] ?? '') .
-                                            ', ' . ($usuario['NOMBRE_PROVINCIA'] ?? '')) ?>
+                                <div class="profileInfoBox">
+                                    <strong>Dirección</strong>
+                                    <span>
+                                        <?php
+                                        if (
+                                            empty($usuario['DIRECCION_SENNAS']) &&
+                                            empty($usuario['NOMBRE_DISTRITO']) &&
+                                            empty($usuario['NOMBRE_CANTON']) &&
+                                            empty($usuario['NOMBRE_PROVINCIA'])
+                                        ) {
+                                            echo "No registrado";
+                                        } else {
+                                            echo htmlspecialchars(
+                                                ($usuario['DIRECCION_SENNAS'] ?? '') . ', ' .
+                                                ($usuario['NOMBRE_DISTRITO'] ?? '') . ', ' .
+                                                ($usuario['NOMBRE_CANTON'] ?? '') . ', ' .
+                                                ($usuario['NOMBRE_PROVINCIA'] ?? '')
+                                            );
+                                        }
+                                        ?>
                                     </span>
                                 </div>
-
                                 <hr>
                                 <div>
                                     <div class="btnEditUser">
-                                        <a class="btn-blue"
-                                            href="../../../app/controllers/client/userController.php?action=edit&id=<?= $usuario['ID_USUARIO_PK'] ?>">
-                                            <i class="bi bi-pencil-fill"></i> Agregar Método de Pago
-                                        </a>
+                                        <div>
+                                            <h2>Metodos de Pago</h2>
+                                        </div>
+                                        <div>
+                                            <a class="btn-blue"
+                                                href="../../../app/controllers/client/paymentMethodControler.php?action=addpaymentMethod&id=<?= $usuario['ID_USUARIO_PK'] ?>">
+                                                Agregar Metodo de Pago</a>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3>Métodos de Pago</h3>
-                                        <span class="profileInfoBox">No disponible</span>
+                                    <div class="methodPay-item">
+                                        <span>No disponible</span>
                                     </div>
                                 </div>
                             </div>

@@ -605,6 +605,9 @@ BEGIN
         r.DESCRIPCION_ROL_USUARIO AS ROL,
         t.TELEFONO_CONTACTO,
         d.DIRECCION_SENNAS,
+        d.ID_DIRECCION_PROVINCIA_FK,
+        d.ID_DIRECCION_CANTON_FK,
+        d.ID_DIRECCION_DISTRITO_FK,
         p.NOMBRE_PROVINCIA,
         c.NOMBRE_CANTON,
         di.NOMBRE_DISTRITO
@@ -620,11 +623,13 @@ END//
 DELIMITER ;
 /
 
+
 -- ==========================================
 -- NOMBRE: HUELLITAS_ACTUALIZAR_PERFIL_USUARIO_SP
 -- DESCRIPCIÓN: Procedimiento para actualizar el perfil completo del usuario
 -- ==========================================
 DELIMITER //
+
 CREATE PROCEDURE HUELLITAS_ACTUALIZAR_PERFIL_USUARIO_SP(
     IN P_ID_USUARIO_PK INT,
     IN P_USUARIO_NOMBRE VARCHAR(100),
@@ -642,71 +647,72 @@ CREATE PROCEDURE HUELLITAS_ACTUALIZAR_PERFIL_USUARIO_SP(
 BEGIN
     DECLARE V_ID_DIRECCION INT;
     DECLARE V_ID_TELEFONO INT;
-    DECLARE V_ID_ESTADO_ACTIVO INT DEFAULT 1; -- Suponiendo que 1 = ACTIVO
+    DECLARE V_ID_ESTADO_ACTIVO INT DEFAULT 1;
 
-    -- Verificar si el usuario existe
+    -- Verificar que el usuario existe
     IF NOT EXISTS (SELECT 1 FROM HUELLITAS_USUARIOS_TB WHERE ID_USUARIO_PK = P_ID_USUARIO_PK) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario especificado no existe.';
     END IF;
 
-    -- Verificar si ya tiene dirección asociada
+    -- ---- Dirección ----
     SELECT ID_DIRECCION_FK INTO V_ID_DIRECCION
     FROM HUELLITAS_USUARIOS_TB
     WHERE ID_USUARIO_PK = P_ID_USUARIO_PK;
 
-    -- Si no tiene dirección, se inserta una nueva
-    IF V_ID_DIRECCION IS NULL THEN
-        INSERT INTO HUELLITAS_DIRECCION_TB (
-            ID_ESTADO_FK, 
-            ID_DIRECCION_PROVINCIA_FK, 
-            ID_DIRECCION_CANTON_FK, 
-            ID_DIRECCION_DISTRITO_FK, 
-            DIRECCION_SENNAS
-        ) VALUES (
-            V_ID_ESTADO_ACTIVO, 
-            P_ID_PROVINCIA_FK, 
-            P_ID_CANTON_FK, 
-            P_ID_DISTRITO_FK, 
-            P_DIRECCION_SENNAS
-        );
-        SET V_ID_DIRECCION = LAST_INSERT_ID();
-    ELSE
-        -- Si ya tiene dirección, la actualizamos
-        UPDATE HUELLITAS_DIRECCION_TB
-        SET 
-            ID_DIRECCION_PROVINCIA_FK = P_ID_PROVINCIA_FK,
-            ID_DIRECCION_CANTON_FK = P_ID_CANTON_FK,
-            ID_DIRECCION_DISTRITO_FK = P_ID_DISTRITO_FK,
-            DIRECCION_SENNAS = P_DIRECCION_SENNAS
-        WHERE ID_DIRECCION_PK = V_ID_DIRECCION;
+    -- Solo insertar o actualizar si hay datos de dirección
+    IF P_ID_PROVINCIA_FK > 0 AND P_ID_CANTON_FK > 0 AND P_ID_DISTRITO_FK > 0 THEN
+        IF V_ID_DIRECCION IS NULL THEN
+            INSERT INTO HUELLITAS_DIRECCION_TB (
+                ID_ESTADO_FK, 
+                ID_DIRECCION_PROVINCIA_FK, 
+                ID_DIRECCION_CANTON_FK, 
+                ID_DIRECCION_DISTRITO_FK, 
+                DIRECCION_SENNAS
+            ) VALUES (
+                V_ID_ESTADO_ACTIVO,
+                P_ID_PROVINCIA_FK,
+                P_ID_CANTON_FK,
+                P_ID_DISTRITO_FK,
+                P_DIRECCION_SENNAS
+            );
+            SET V_ID_DIRECCION = LAST_INSERT_ID();
+        ELSE
+            UPDATE HUELLITAS_DIRECCION_TB
+            SET 
+                ID_DIRECCION_PROVINCIA_FK = P_ID_PROVINCIA_FK,
+                ID_DIRECCION_CANTON_FK = P_ID_CANTON_FK,
+                ID_DIRECCION_DISTRITO_FK = P_ID_DISTRITO_FK,
+                DIRECCION_SENNAS = P_DIRECCION_SENNAS
+            WHERE ID_DIRECCION_PK = V_ID_DIRECCION;
+        END IF;
     END IF;
 
-    -- Verificar si ya tiene teléfono asociado
+    -- ---- Teléfono ----
     SELECT ID_TELEFONO_CONTACTO_FK INTO V_ID_TELEFONO
     FROM HUELLITAS_USUARIOS_TB
     WHERE ID_USUARIO_PK = P_ID_USUARIO_PK;
 
-    -- Si no tiene teléfono, insertamos uno nuevo
-    IF V_ID_TELEFONO IS NULL THEN
-        INSERT INTO HUELLITAS_TELEFONO_CONTACTO_TB (ID_ESTADO_FK, TELEFONO_CONTACTO)
-        VALUES (V_ID_ESTADO_ACTIVO, P_TELEFONO_CONTACTO);
-        SET V_ID_TELEFONO = LAST_INSERT_ID();
-    ELSE
-        -- Si ya tiene teléfono, se actualiza
-        UPDATE HUELLITAS_TELEFONO_CONTACTO_TB
-        SET TELEFONO_CONTACTO = P_TELEFONO_CONTACTO
-        WHERE ID_TELEFONO_CONTACTO_PK = V_ID_TELEFONO;
+    IF P_TELEFONO_CONTACTO IS NOT NULL AND P_TELEFONO_CONTACTO > 0 THEN
+        IF V_ID_TELEFONO IS NULL THEN
+            INSERT INTO HUELLITAS_TELEFONO_CONTACTO_TB (ID_ESTADO_FK, TELEFONO_CONTACTO)
+            VALUES (V_ID_ESTADO_ACTIVO, P_TELEFONO_CONTACTO);
+            SET V_ID_TELEFONO = LAST_INSERT_ID();
+        ELSE
+            UPDATE HUELLITAS_TELEFONO_CONTACTO_TB
+            SET TELEFONO_CONTACTO = P_TELEFONO_CONTACTO
+            WHERE ID_TELEFONO_CONTACTO_PK = V_ID_TELEFONO;
+        END IF;
     END IF;
 
-    -- Finalmente, actualizar los datos del usuario
+    -- ---- Actualizar usuario ----
     UPDATE HUELLITAS_USUARIOS_TB
     SET
         USUARIO_NOMBRE = P_USUARIO_NOMBRE,
         USUARIO_IDENTIFICACION = P_USUARIO_IDENTIFICACION,
         USUARIO_CUENTA_BANCARIA = P_USUARIO_CUENTA_BANCARIA,
         USUARIO_IMAGEN_URL = P_USUARIO_IMAGEN_URL,
-        ID_DIRECCION_FK = V_ID_DIRECCION,
-        ID_TELEFONO_CONTACTO_FK = V_ID_TELEFONO
+        ID_DIRECCION_FK = COALESCE(V_ID_DIRECCION, ID_DIRECCION_FK),
+        ID_TELEFONO_CONTACTO_FK = COALESCE(V_ID_TELEFONO, ID_TELEFONO_CONTACTO_FK)
     WHERE ID_USUARIO_PK = P_ID_USUARIO_PK;
 
     SELECT 
@@ -715,8 +721,10 @@ BEGIN
         V_ID_DIRECCION AS ID_DIRECCION,
         V_ID_TELEFONO AS ID_TELEFONO;
 END//
+
 DELIMITER ;
 /
+
 -- ==========================================
 -- NOMBRE: HUELLITAS_CREAR_DESCUENTO_SP
 -- DESCRIPCIÓN: Procedimiento para crear nuevos descuentos temporales en productos
@@ -1167,6 +1175,211 @@ END//
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_PRODUCTOS_ADMIN_SP
+-- DESCRIPCIÓN: Procedimiento para buscar productos por parte del admin con paginación.
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_BUSCAR_PRODUCTOS_ADMIN_SP(
+    IN searchTerm VARCHAR(100),
+    IN limitRows INT,
+    IN offsetRows INT
+)
+BEGIN
+    SELECT 
+        p.ID_PRODUCTO_PK,
+        p.PRODUCTO_NOMBRE,
+        p.PRODUCTO_DESCRIPCION,
+        p.PRODUCTO_PRECIO_UNITARIO,
+        p.PRODUCTO_STOCK,
+        p.IMAGEN_URL,
+        c.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        pr.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_PRODUCTOS_TB p
+    INNER JOIN HUELLITAS_PRODUCTOS_CATEGORIA_TB c ON p.ID_CATEGORIA_FK = c.ID_CATEGORIA_PK
+    INNER JOIN HUELLITAS_PROVEEDORES_TB pr ON p.ID_PROVEEDOR_FK = pr.ID_PROVEEDOR_PK
+    INNER JOIN HUELLITAS_ESTADO_TB e ON p.ID_ESTADO_FK = e.ID_ESTADO_PK
+    WHERE 
+        p.PRODUCTO_NOMBRE LIKE CONCAT('%', searchTerm, '%')
+        OR c.DESCRIPCION_CATEGORIA LIKE CONCAT('%', searchTerm, '%')
+        OR pr.PROVEEDOR_NOMBRE LIKE CONCAT('%', searchTerm, '%')
+    ORDER BY p.PRODUCTO_NOMBRE ASC
+    LIMIT limitRows OFFSET offsetRows;
+END //
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_CATEGORIAS_ADMIN_SP
+-- DESCRIPCIÓN: Procedimiento para buscar categorías con paginación.
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_BUSCAR_CATEGORIAS_ADMIN_SP(
+    IN searchTerm VARCHAR(100),
+    IN limitRows INT,
+    IN offsetRows INT
+)
+BEGIN
+    SELECT 
+        c.ID_CATEGORIA_PK,
+        c.DESCRIPCION_CATEGORIA,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_PRODUCTOS_CATEGORIA_TB c
+    INNER JOIN HUELLITAS_ESTADO_TB e ON c.ID_ESTADO_FK = e.ID_ESTADO_PK
+    WHERE 
+        c.DESCRIPCION_CATEGORIA LIKE CONCAT('%', searchTerm, '%')
+        OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', searchTerm, '%')
+    ORDER BY c.DESCRIPCION_CATEGORIA ASC
+    LIMIT limitRows OFFSET offsetRows;
+END //
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_MARCAS_ADMIN_SP
+-- DESCRIPCIÓN: Procedimiento para buscar marcas con paginación.
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_BUSCAR_MARCAS_ADMIN_SP(
+    IN searchTerm VARCHAR(100),
+    IN limitRows INT,
+    IN offsetRows INT
+)
+BEGIN
+    SELECT 
+        m.ID_MARCA_PK,
+        m.NOMBRE_MARCA,
+        m.MARCA_IMAGEN_URL,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_MARCAS_TB m
+    INNER JOIN HUELLITAS_ESTADO_TB e ON m.ID_ESTADO_FK = e.ID_ESTADO_PK
+    WHERE 
+        m.NOMBRE_MARCA LIKE CONCAT('%', searchTerm, '%')
+        OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', searchTerm, '%')
+    ORDER BY m.NOMBRE_MARCA ASC
+    LIMIT limitRows OFFSET offsetRows;
+END //
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_USUARIOS_ADMIN_SP
+-- DESCRIPCIÓN: Procedimiento para buscar usuarios con paginación.
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_BUSCAR_USUARIOS_ADMIN_SP(
+    IN searchTerm VARCHAR(100),
+    IN limitRows INT,
+    IN offsetRows INT
+)
+BEGIN
+    SELECT 
+        u.ID_USUARIO_PK,
+        u.USUARIO_NOMBRE,
+        u.USUARIO_CORREO,
+        u.USUARIO_IDENTIFICACION,
+        r.DESCRIPCION_ROL_USUARIO AS ROL,
+        e.ESTADO_DESCRIPCION AS ESTADO,
+        COALESCE(t.TELEFONO_CONTACTO, 'No registrado') AS TELEFONO,
+        COALESCE(d.DIRECCION_SENNAS, 'No registrada') AS DIRECCION,
+        COALESCE(prov.NOMBRE_PROVINCIA, '') AS PROVINCIA,
+        COALESCE(cant.NOMBRE_CANTON, '') AS CANTON,
+        COALESCE(dist.NOMBRE_DISTRITO, '') AS DISTRITO
+    FROM HUELLITAS_USUARIOS_TB u
+    INNER JOIN HUELLITAS_ROL_USUARIO_TB r ON u.ID_ROL_USUARIO_FK = r.ID_ROL_USUARIO_PK
+    INNER JOIN HUELLITAS_ESTADO_TB e ON u.ID_ESTADO_FK = e.ID_ESTADO_PK
+    LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB t ON u.ID_TELEFONO_CONTACTO_FK = t.ID_TELEFONO_CONTACTO_PK
+    LEFT JOIN HUELLITAS_DIRECCION_TB d ON u.ID_DIRECCION_FK = d.ID_DIRECCION_PK
+    LEFT JOIN HUELLITAS_DIRECCION_PROVINCIA_TB prov ON d.ID_DIRECCION_PROVINCIA_FK = prov.ID_DIRECCION_PROVINCIA_PK
+    LEFT JOIN HUELLITAS_DIRECCION_CANTON_TB cant ON d.ID_DIRECCION_CANTON_FK = cant.ID_DIRECCION_CANTON_PK
+    LEFT JOIN HUELLITAS_DIRECCION_DISTRITO_TB dist ON d.ID_DIRECCION_DISTRITO_FK = dist.ID_DIRECCION_DISTRITO_PK
+    WHERE 
+        u.USUARIO_NOMBRE LIKE CONCAT('%', searchTerm, '%')
+        OR u.USUARIO_CORREO LIKE CONCAT('%', searchTerm, '%')
+        OR r.DESCRIPCION_ROL_USUARIO LIKE CONCAT('%', searchTerm, '%')
+        OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', searchTerm, '%')
+        OR prov.NOMBRE_PROVINCIA LIKE CONCAT('%', searchTerm, '%')
+        OR cant.NOMBRE_CANTON LIKE CONCAT('%', searchTerm, '%')
+        OR dist.NOMBRE_DISTRITO LIKE CONCAT('%', searchTerm, '%')
+    ORDER BY u.USUARIO_NOMBRE ASC
+    LIMIT limitRows OFFSET offsetRows;
+END //
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_PROVEEDORES_ADMIN_SP
+-- DESCRIPCIÓN: Procedimiento para buscar proveedores con paginación.
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_BUSCAR_PROVEEDORES_ADMIN_SP(
+    IN searchTerm VARCHAR(100),
+    IN limitRows INT,
+    IN offsetRows INT
+)
+BEGIN
+    SELECT 
+        p.ID_PROVEEDOR_PK,
+        p.PROVEEDOR_NOMBRE,
+        p.PROVEEDOR_CORREO,
+        p.NOMBRE_REPRESENTANTE,
+        p.PROVEEDOR_DESCRIPCION_PRODUCTOS,
+        e.ESTADO_DESCRIPCION AS ESTADO,
+        COALESCE(t.TELEFONO_CONTACTO, 'No registrado') AS TELEFONO,
+        COALESCE(d.DIRECCION_SENNAS, 'No registrada') AS DIRECCION,
+        COALESCE(prov.NOMBRE_PROVINCIA, '') AS PROVINCIA,
+        COALESCE(cant.NOMBRE_CANTON, '') AS CANTON,
+        COALESCE(dist.NOMBRE_DISTRITO, '') AS DISTRITO
+    FROM HUELLITAS_PROVEEDORES_TB p
+    INNER JOIN HUELLITAS_ESTADO_TB e ON p.ID_ESTADO_FK = e.ID_ESTADO_PK
+    LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB t ON p.ID_TELEFONO_CONTACTO_FK = t.ID_TELEFONO_CONTACTO_PK
+    LEFT JOIN HUELLITAS_DIRECCION_TB d ON p.ID_DIRECCION_FK = d.ID_DIRECCION_PK
+    LEFT JOIN HUELLITAS_DIRECCION_PROVINCIA_TB prov ON d.ID_DIRECCION_PROVINCIA_FK = prov.ID_DIRECCION_PROVINCIA_PK
+    LEFT JOIN HUELLITAS_DIRECCION_CANTON_TB cant ON d.ID_DIRECCION_CANTON_FK = cant.ID_DIRECCION_CANTON_PK
+    LEFT JOIN HUELLITAS_DIRECCION_DISTRITO_TB dist ON d.ID_DIRECCION_DISTRITO_FK = dist.ID_DIRECCION_DISTRITO_PK
+    WHERE 
+        p.PROVEEDOR_NOMBRE LIKE CONCAT('%', searchTerm, '%')
+        OR p.PROVEEDOR_CORREO LIKE CONCAT('%', searchTerm, '%')
+        OR p.NOMBRE_REPRESENTANTE LIKE CONCAT('%', searchTerm, '%')
+        OR p.PROVEEDOR_DESCRIPCION_PRODUCTOS LIKE CONCAT('%', searchTerm, '%')
+        OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', searchTerm, '%')
+        OR prov.NOMBRE_PROVINCIA LIKE CONCAT('%', searchTerm, '%')
+        OR cant.NOMBRE_CANTON LIKE CONCAT('%', searchTerm, '%')
+        OR dist.NOMBRE_DISTRITO LIKE CONCAT('%', searchTerm, '%')
+    ORDER BY p.PROVEEDOR_NOMBRE ASC
+    LIMIT limitRows OFFSET offsetRows;
+END //
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_ROLES_ADMIN_SP
+-- DESCRIPCIÓN: Procedimiento para buscar roles con paginación.
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_BUSCAR_ROLES_ADMIN_SP(
+    IN searchTerm VARCHAR(100),
+    IN limitRows INT,
+    IN offsetRows INT
+)
+BEGIN
+    SELECT 
+        r.ID_ROL_USUARIO_PK,
+        r.DESCRIPCION_ROL_USUARIO,
+        e.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_ROL_USUARIO_TB r
+    INNER JOIN HUELLITAS_ESTADO_TB e ON r.ID_ESTADO_FK = e.ID_ESTADO_PK
+    WHERE 
+        r.DESCRIPCION_ROL_USUARIO LIKE CONCAT('%', searchTerm, '%')
+        OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', searchTerm, '%')
+    ORDER BY r.DESCRIPCION_ROL_USUARIO ASC
+    LIMIT limitRows OFFSET offsetRows;
+END //
+DELIMITER ;
+
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_LISTAR_COMENTARIOS_ACTIVOS_POR_PRODUCTO_SP
 -- DESCRIPCIÓN: Procedimiento para listar los comentarios de un producto en especifico.
 -- ==========================================
@@ -1191,3 +1404,88 @@ BEGIN
     ORDER BY C.FECHA_CREACION DESC;
 END //
 DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_TARJETA_SP
+-- DESCRIPCIÓN: Procedimiento para agregar tarjeta
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_AGREGAR_TARJETA_SP (
+    IN  P_ID_USUARIO INT,
+    IN  P_TIPO_TARJETA VARCHAR(10),       -- 'CREDITO' | 'DEBITO'
+    IN  P_MARCA_TARJETA VARCHAR(20),      -- 'VISA','MASTERCARD','AMEX','DINERS','OTHER'
+    IN  P_NOMBRE_TITULAR VARCHAR(255),
+    IN  P_NUMERO_TARJETA VARCHAR(25),     -- plano, trigger cifra
+    IN  P_FECHA_VENC_YM CHAR(7),          -- 'YYYY-MM'
+    IN  P_CVV VARCHAR(4),                 -- plano, trigger cifra
+    IN  P_ES_PREDETERMINADO TINYINT(1),
+    IN  P_IP VARCHAR(45),
+    OUT P_ID_TARJETA INT
+)
+MODIFIES SQL DATA
+BEGIN
+    DECLARE V_FECHA_VENC DATE;
+
+    -- Validación básica de usuario
+    IF (SELECT COUNT(*) FROM HUELLITAS_USUARIOS_TB WHERE ID_USUARIO_PK = P_ID_USUARIO) = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuario no existe';
+    END IF;
+
+    -- Convertir YYYY-MM a último día del mes
+    SET V_FECHA_VENC = LAST_DAY(STR_TO_DATE(CONCAT(P_FECHA_VENC_YM,'-01'), '%Y-%m-%d'));
+
+    -- Si será predeterminado, apagar el resto del usuario
+    IF P_ES_PREDETERMINADO = 1 THEN
+        UPDATE HUELLITAS_TARJETAS_TB
+           SET ES_PREDETERMINADO = 0
+         WHERE ID_USUARIO_FK = P_ID_USUARIO;
+    END IF;
+
+    INSERT INTO HUELLITAS_TARJETAS_TB (
+        ID_USUARIO_FK, TIPO_TARJETA, MARCA_TARJETA, NOMBRE_TITULAR,
+        NUMERO_TARJETA_ENCRIPTADO, ULTIMOS_CUATRO_DIGITOS,
+        FECHA_VENCIMIENTO, CVV_ENCRIPTADO, ES_PREDETERMINADO,
+        ESTA_ACTIVO, IP_REGISTRO
+    ) VALUES (
+        P_ID_USUARIO, UPPER(P_TIPO_TARJETA), UPPER(P_MARCA_TARJETA), P_NOMBRE_TITULAR,
+        P_NUMERO_TARJETA, RIGHT(P_NUMERO_TARJETA,4),
+        V_FECHA_VENC, P_CVV, P_ES_PREDETERMINADO,
+        TRUE, P_IP
+    );
+
+    SET P_ID_TARJETA = LAST_INSERT_ID();
+END//
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_NOTIFICACION_SP
+-- DESCRIPCIÓN: Inserta una notificación para un usuario específico.
+-- ==========================================
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_AGREGAR_NOTIFICACION_SP(
+    IN p_id_usuario INT,
+    IN p_titulo VARCHAR(150),
+    IN p_mensaje VARCHAR(1000),
+    IN p_tipo ENUM('SISTEMA','PEDIDO','CITA','PROMOCION','SEGURIDAD','OTRO'),
+    IN p_prioridad ENUM('BAJA','MEDIA','ALTA')
+)
+BEGIN
+    INSERT INTO HUELLITAS_NOTIFICACIONES_TB (
+        ID_USUARIO_FK,
+        ID_ESTADO_FK,
+        TITULO_NOTIFICACION,
+        MENSAJE_NOTIFICACION,
+        TIPO_NOTIFICACION,
+        PRIORIDAD
+    )
+    VALUES (
+        p_id_usuario,
+        1, -- Estado: Activa
+        p_titulo,
+        p_mensaje,
+        p_tipo,
+        p_prioridad
+    );
+END //
+DELIMITER ;
+

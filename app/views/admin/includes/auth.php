@@ -7,10 +7,11 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Función para verificar rol
-function checkRole($rolesPermitidos) {
+function checkRole($rolesPermitidos)
+{
     if (!in_array($_SESSION['user_role'], $rolesPermitidos)) {
         // Si el rol no está permitido, redirigir o mostrar error
-        header('Location: /error403.php'); // Página de acceso denegado
+        header('Location: /huellitasdigital/app/views/error403.php'); // Página de acceso denegado
         exit;
     }
 }

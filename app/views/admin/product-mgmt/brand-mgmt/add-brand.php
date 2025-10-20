@@ -71,8 +71,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                 </select>
                             </div>
 
-                            <button type="submit" class="btn-blue"><strong>Agregar Producto</strong><i
-                                    class="bi bi-bag-plus-fill"></i></button>
+                            <button type="submit" class="btn-blue"><strong>Agregar Marca</strong>
+                                <i class="bi bi-sticky-fill"></i></button>
                         </div>
                     </form>
                 </div>

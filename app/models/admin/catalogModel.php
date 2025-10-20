@@ -55,5 +55,45 @@ class CatalogModel
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
+
+    public function getAllProvincias()
+    {
+        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_PROVINCIA_PK, NOMBRE_PROVINCIA FROM HUELLITAS_DIRECCION_PROVINCIA_TB");
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getAllCantones()
+    {
+        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_CANTON_PK, ID_PROVINCIA_FK, NOMBRE_CANTON FROM HUELLITAS_DIRECCION_CANTON_TB");
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getAllDistritos()
+    {
+        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_DISTRITO_PK, ID_CANTON_FK, NOMBRE_DISTRITO FROM HUELLITAS_DIRECCION_DISTRITO_TB");
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getCantonesByProvincia($idProvincia)
+    {
+        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_CANTON_PK, NOMBRE_CANTON FROM HUELLITAS_DIRECCION_CANTON_TB WHERE ID_PROVINCIA_FK = ?");
+        $stmt->bind_param("i", $idProvincia);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getDistritosByCanton($idCanton)
+    {
+        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_DISTRITO_PK, NOMBRE_DISTRITO FROM HUELLITAS_DIRECCION_DISTRITO_TB WHERE ID_CANTON_FK = ?");
+        $stmt->bind_param("i", $idCanton);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
 }
 ?>

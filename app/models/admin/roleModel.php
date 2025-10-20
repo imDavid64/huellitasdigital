@@ -64,5 +64,31 @@ class RoleModel
 
         return $stmt->execute();
     }
+
+    public function searchRolePaginated($query, $limit, $offset)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_BUSCAR_ROLES_ADMIN_SP(?, ?, ?)");
+        $stmt->bind_param("sii", $query, $limit, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function countRoles($query)
+    {
+        $stmt = $this->conn->prepare("
+        SELECT COUNT(*) AS total
+        FROM HUELLITAS_ROL_USUARIO_TB r
+        INNER JOIN HUELLITAS_ESTADO_TB e ON r.ID_ESTADO_FK = e.ID_ESTADO_PK
+        WHERE 
+            r.DESCRIPCION_ROL_USUARIO LIKE CONCAT('%', ?, '%')
+            OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', ?, '%')
+    ");
+        $stmt->bind_param("ss", $query, $query);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        return $result['total'] ?? 0;
+    }
+
 }
 ?>

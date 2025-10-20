@@ -11,7 +11,66 @@ $catalogModel = new CatalogModel($conn);
 $action = $_GET['action'] ?? 'index';
 
 switch ($action) {
-    // Dentro de tu switch en productController.php
+
+    case 'search':
+        $query = trim($_GET['query'] ?? '');
+        $page = intval($_GET['page'] ?? 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $products = $productModel->searchProductsPaginated($query, $limit, $offset);
+        $total = $productModel->countProducts($query);
+        $totalPages = ceil($total / $limit);
+
+        // Si es AJAX, devolver solo tabla + paginación
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            require __DIR__ . "/../../views/admin/product-mgmt/partials/product-table.php";
+            exit;
+        }
+
+        require __DIR__ . "/../../views/admin/product-mgmt/product-mgmt.php";
+        break;
+
+
+
+    case 'searchCategory':
+        $query = trim($_GET['query'] ?? '');
+        $page = intval($_GET['page'] ?? 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $categories = $productModel->searchCategoryPaginated($query, $limit, $offset);
+        $total = $productModel->countProducts($query);
+        $totalPages = ceil($total / $limit);
+
+        // Si es AJAX, devolver solo tabla + paginación
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            require __DIR__ . "/../../views/admin/product-mgmt/partials/category-table.php";
+            exit;
+        }
+
+        require __DIR__ . "/../../views/admin/product-mgmt/category-mgmt/category-mgmt.php";
+        break;
+
+    case 'searchBrand':
+        $query = trim($_GET['query'] ?? '');
+        $page = intval($_GET['page'] ?? 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $brands = $productModel->searchBrandPaginated($query, $limit, $offset);
+        $total = $productModel->countProducts($query);
+        $totalPages = ceil($total / $limit);
+
+        // Si es AJAX, devolver solo tabla + paginación
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            require __DIR__ . "/../../views/admin/product-mgmt/partials/brand-table.php";
+            exit;
+        }
+
+        require __DIR__ . "/../../views/admin/product-mgmt/brand-mgmt/brand-mgmt.php";
+        break;
+
 
     case 'update':
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -52,7 +111,7 @@ switch ($action) {
                 }
             }
 
-            
+
             // 3. Actualizar la base de datos
             try {
                 $result = $productModel->updateProduct(
@@ -147,7 +206,14 @@ switch ($action) {
         break;
 
     case 'categoryMgmt':
-        $categories = $catalogModel->getAllCategorias();
+        $query = ''; // sin filtro
+        $page = 1;
+        $limit = 10;
+        $offset = 0;
+
+        $categories = $productModel->searchCategoryPaginated($query, $limit, $offset);
+        $total = $productModel->countCategories($query);
+        $totalPages = ceil($total / $limit);
         require __DIR__ . "/../../views/admin/product-mgmt/category-mgmt/category-mgmt.php";
         break;
 
@@ -206,7 +272,14 @@ switch ($action) {
         break;
 
     case 'brandMgmt':
-        $brands = $catalogModel->getAllMarcas();
+        $query = ''; // sin filtro
+        $page = 1;
+        $limit = 10;
+        $offset = 0;
+
+        $brands = $productModel->searchBrandPaginated($query, $limit, $offset);
+        $total = $productModel->countBrands($query);
+        $totalPages = ceil($total / $limit);
         require __DIR__ . "/../../views/admin/product-mgmt/brand-mgmt/brand-mgmt.php";
         break;
 
@@ -303,7 +376,15 @@ switch ($action) {
     case 'index':
 
     default:
-        $products = $productModel->getAllProducts();
+        $query = ''; // sin filtro
+        $page = 1;
+        $limit = 10;
+        $offset = 0;
+
+        $products = $productModel->searchProductsPaginated($query, $limit, $offset);
+        $total = $productModel->countProducts($query);
+        $totalPages = ceil($total / $limit);
+
         require __DIR__ . "/../../views/admin/product-mgmt/product-mgmt.php";
         break;
 }

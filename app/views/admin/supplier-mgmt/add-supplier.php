@@ -1,3 +1,9 @@
+<?php
+//Este include verifica si hay sesión activa
+include_once __DIR__ . '/../includes/auth.php';
+checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 

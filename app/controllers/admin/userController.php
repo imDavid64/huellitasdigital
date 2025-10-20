@@ -12,10 +12,26 @@ $catalogModel = new CatalogModel($conn);
 $action = $_GET['action'] ?? 'index';
 
 switch ($action) {
-    case 'index':
-        $usuarios = $usuarioModel->getAllUsuarios();
-        require '../../views/admin/user-mgmt/user-mgmt.php';
+
+    case 'search':
+        $query = trim($_GET['query'] ?? '');
+        $page = intval($_GET['page'] ?? 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $usuarios = $usuarioModel->searchUserPaginated($query, $limit, $offset);
+        $total = $usuarioModel->countUsers($query);
+        $totalPages = ceil($total / $limit);
+
+        // Si la solicitud es AJAX (búsqueda o cambio de página)
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            require __DIR__ . "/../../views/admin/user-mgmt/partials/user-table.php";
+            exit;
+        }
+
+        require __DIR__ . "/../../views/admin/user-mgmt/user-mgmt.php";
         break;
+
 
     case 'edit':
         $id = intval($_GET['id']);
@@ -34,7 +50,7 @@ switch ($action) {
             $estado = $_POST['state'];
             $rol = $_POST['role'];
 
-            // Manejo de foto
+            // Manejo de foto de perfil
             $profile_pic = null;
             if (isset($_FILES['profile-pic']) && $_FILES['profile-pic']['error'] == 0) {
                 $ext = pathinfo($_FILES['profile-pic']['name'], PATHINFO_EXTENSION);
@@ -90,8 +106,18 @@ switch ($action) {
         }
         break;
 
-
+    // --- 📋 LISTADO INICIAL (CON PAGINACIÓN BASE) ---
+    case 'index':
     default:
-        echo "Acción no válida";
-}
+        $query = '';
+        $page = 1;
+        $limit = 10;
+        $offset = 0;
 
+        $usuarios = $usuarioModel->searchUserPaginated($query, $limit, $offset);
+        $total = $usuarioModel->countUsers($query);
+        $totalPages = ceil($total / $limit);
+
+        require __DIR__ . "/../../views/admin/user-mgmt/user-mgmt.php";
+        break;
+}

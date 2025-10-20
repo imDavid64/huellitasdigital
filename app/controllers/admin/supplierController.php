@@ -12,9 +12,23 @@ $catalogModel = new CatalogModel($conn);
 $action = $_GET['action'] ?? 'index';
 
 switch ($action) {
-    case 'index':
-        $suppliers = $supplierModel->getAllSuppliers();
-        require '../../views/admin/supplier-mgmt/supplier-mgmt.php';
+    case 'search':
+        $query = trim($_GET['query'] ?? '');
+        $page = intval($_GET['page'] ?? 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $suppliers = $supplierModel->searchSupplierPaginated($query, $limit, $offset);
+        $total = $supplierModel->countSuppliers($query);
+        $totalPages = ceil($total / $limit);
+
+        // Si es AJAX (búsqueda o cambio de página)
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            require __DIR__ . "/../../views/admin/supplier-mgmt/partials/supplier-table.php";
+            exit;
+        }
+
+        require __DIR__ . "/../../views/admin/supplier-mgmt/supplier-mgmt.php";
         break;
 
     case 'edit':
@@ -74,7 +88,17 @@ switch ($action) {
         }
         break;
 
-
+    case 'index':
     default:
-        echo "Acción no válida";
+        $query = '';
+        $page = 1;
+        $limit = 10;
+        $offset = 0;
+
+        $suppliers = $supplierModel->searchSupplierPaginated($query, $limit, $offset);
+        $total = $supplierModel->countSuppliers($query);
+        $totalPages = ceil($total / $limit);
+
+        require __DIR__ . "/../../views/admin/supplier-mgmt/supplier-mgmt.php";
+        break;
 }

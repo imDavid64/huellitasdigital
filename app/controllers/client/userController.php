@@ -2,10 +2,12 @@
 session_start();
 include_once __DIR__ . "/../../models/conexionDB.php";
 require_once __DIR__ . "/../../models/client/userModel.php";
+require_once __DIR__ . "/../../models/admin/catalogModel.php";
 
 $db = new ConexionDatabase();
 $conn = $db->connectDB();
 $usuarioModel = new UsuarioModel($conn);
+$catalogModel = new CatalogModel($conn);
 
 $action = $_GET['action'] ?? 'index';
 
@@ -27,6 +29,9 @@ switch ($action) {
     case 'edit':
         // ✅ Cargar los datos reales del usuario desde la BD
         $usuario = $usuarioModel->getUsuarioById($id_usuario);
+        $provincias = $catalogModel->getAllProvincias();
+        $cantones = $catalogModel->getAllCantones();
+        $distritos = $catalogModel->getAllDistritos();
         require '../../views/client/userProfile/editProfile.php';
         break;
 
@@ -36,10 +41,10 @@ switch ($action) {
             $identificacion = intval($_POST['usuario_identificacion']);
             $cuenta_bancaria = trim($_POST['usuario_cuenta_bancaria']);
             $telefono = intval($_POST['usuario_telefono']);
-            $id_provincia = intval($_POST['id_provincia']);
-            $id_canton = intval($_POST['id_canton']);
-            $id_distrito = intval($_POST['id_distrito']);
-            $senas = trim($_POST['direccion_senas']);
+            $id_provincia = intval($_POST['provincia']);
+            $id_canton = intval($_POST['canton']);
+            $id_distrito = intval($_POST['distrito']);
+            $senas = trim($_POST['senas']);
             $imagen_url = $_SESSION['user_img'] ?? null;
 
             $currentUserData = $usuarioModel->getUsuarioById($id_usuario);

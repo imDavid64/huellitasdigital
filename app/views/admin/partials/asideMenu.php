@@ -15,7 +15,7 @@
                     </div>
                     <hr />
                     <div class="aside-footer">
-                        <a class="btn-dark-blue" href="../../processes/logout.php"><strong>
+                        <a class="btn-dark-blue" href="/huellitasdigital/app/routes/web.php?action=logout"><strong>
                                 Cerrar Sesión</strong></a>
                     </div>
                 </div>

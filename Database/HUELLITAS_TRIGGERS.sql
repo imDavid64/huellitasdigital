@@ -154,6 +154,80 @@ END//
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_ALERTA_BAJO_STOCK_TR
+-- DESCRIPCIÓN: Envía notificaciones a todos los administradores cuando un producto tiene bajo stock.
+-- ==========================================
+DELIMITER //
+CREATE TRIGGER HUELLITAS_ALERTA_BAJO_STOCK_TR
+AFTER UPDATE ON HUELLITAS_PRODUCTOS_TB
+FOR EACH ROW
+BEGIN
+    -- Notificar solo cuando el stock cayó por debajo o igual a 5
+    -- y antes estaba por encima (evita notificaciones repetidas).
+    IF NEW.PRODUCTO_STOCK <= 5
+       AND (OLD.PRODUCTO_STOCK IS NULL OR OLD.PRODUCTO_STOCK > 5) THEN
+
+        INSERT INTO HUELLITAS_NOTIFICACIONES_TB
+        (
+            ID_USUARIO_FK,
+            ID_ESTADO_FK,
+            TITULO_NOTIFICACION,
+            MENSAJE_NOTIFICACION,
+            TIPO_NOTIFICACION,
+            PRIORIDAD,
+            URL_REDIRECCION
+        )
+        SELECT
+            u.ID_USUARIO_PK,
+            1, -- Activa
+            CONCAT('Stock bajo: ', NEW.PRODUCTO_NOMBRE),
+            CONCAT('El producto "', NEW.PRODUCTO_NOMBRE, '" tiene solo ',
+                   NEW.PRODUCTO_STOCK, ' unidades en inventario.'),
+            'SISTEMA',
+            'ALTA',
+            CONCAT('/huellitasdigital/app/controllers/admin/productController.php?action=edit&id=', NEW.ID_PRODUCTO_PK)
+        FROM HUELLITAS_USUARIOS_TB u
+        JOIN HUELLITAS_ROL_USUARIO_TB r
+              ON r.ID_ROL_USUARIO_PK = u.ID_ROL_USUARIO_FK
+        WHERE r.DESCRIPCION_ROL_USUARIO = 'Administrador';
+    END IF;
+END//
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ALERTA_BAJO_STOCK_INS_TR
+-- DESCRIPCIÓN: Envía notificaciones a todos los administradores cuando se agregar un producto con bajo stock.
+-- ==========================================
+DELIMITER //
+CREATE TRIGGER HUELLITAS_ALERTA_BAJO_STOCK_INS_TR
+AFTER INSERT ON HUELLITAS_PRODUCTOS_TB
+FOR EACH ROW
+BEGIN
+    IF NEW.PRODUCTO_STOCK <= 5 THEN
+        INSERT INTO HUELLITAS_NOTIFICACIONES_TB
+        (
+            ID_USUARIO_FK, ID_ESTADO_FK, TITULO_NOTIFICACION, MENSAJE_NOTIFICACION,
+            TIPO_NOTIFICACION, PRIORIDAD, URL_REDIRECCION
+        )
+        SELECT
+            u.ID_USUARIO_PK, 1,
+            CONCAT('Stock bajo: ', NEW.PRODUCTO_NOMBRE),
+            CONCAT('El producto "', NEW.PRODUCTO_NOMBRE, '" tiene solo ',
+                   NEW.PRODUCTO_STOCK, ' unidades en inventario.'),
+            'SISTEMA', 'ALTA',
+            CONCAT('/huellitasdigital/app/controllers/admin/productController.php?action=edit&id=', NEW.ID_PRODUCTO_PK)
+        FROM HUELLITAS_USUARIOS_TB u
+        JOIN HUELLITAS_ROL_USUARIO_TB r
+              ON r.ID_ROL_USUARIO_PK = u.ID_ROL_USUARIO_FK
+        WHERE r.DESCRIPCION_ROL_USUARIO = 'Administrador';
+    END IF;
+END//
+DELIMITER ;
+
+
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_VALIDAR_COMENTARIO_TR
 -- DESCRIPCIÓN: Trigger para Validar Comentarios de Productos
 -- ==========================================

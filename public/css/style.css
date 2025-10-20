@@ -319,6 +319,11 @@ header {
     background-color: #6fbf00;
 }
 
+.btn-green a {
+    display: flex;
+    align-items: center;
+}
+
 .btn-green i {
     font-size: 20px;
     padding-left: 0.5rem;
@@ -346,6 +351,11 @@ header {
 
 .btn-blue:hover {
     background-color: #003f92;
+}
+
+.btn-blue a {
+    display: flex;
+    align-items: center;
 }
 
 .btn-blue i {
@@ -851,39 +861,64 @@ header {
     justify-content: center;
 }
 
+/*
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
+    border-radius: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+    max-width: 1290px;
+    min-width: 700px;
+    */
+
 .infoProfile {
     display: flex;
     justify-content: center;
-    width: 60rem;
-    background-color: #003780;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
     border-radius: 10px;
     padding: 2rem;
-    color: white;
+    color: #002557;
     gap: 2rem;
     margin-top: 2rem;
     margin-bottom: 2rem;
     box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
-}
-
-.profileImgContainer {
-    display: flex;
-    justify-content: center;
-    align-items: start;
-    padding-top: 3rem;
-    min-width: 300px;
+    max-width: 1290px;
+    min-width: 1290px;
 }
 
 .profileImg {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 250px;
-    min-width: 250px;
-    max-height: 250px;
-    max-width: 250px;
     border-radius: 100%;
     color: #002557;
-    background-color: white;
+    width: 100%;
+}
+
+.profileImg img {
+    min-height: 300px;
+    min-width: 300px;
+    max-height: 300px;
+    max-width: 300px;
+    border-radius: 100%;
+    margin: 2rem;
+}
+
+.profileItem {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
+
 }
 
 .profileImg i {
@@ -908,36 +943,79 @@ header {
 
 .profileInfoBox {
     display: flex;
-    align-items: center;
-    padding-left: 1rem;
-    margin-bottom: 2rem;
-    height: 42px;
-    width: 100%;
-    color: #000000;
+    flex-direction: column;
+    font-size: 22px;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.methodPay-item {
+    display: flex;
+    flex-direction: column;
+    font-size: 22px;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
     border-radius: 10px;
-    background-color: white;
-    opacity: 70%;
-    font-size: 20px;
+    padding: 1rem;
 }
 
 .btnEditUser {
     display: flex;
-    justify-content: end;
+    justify-content: space-between;
+    align-items: center;
 }
+
+.btnEditUser h2 {
+    margin-bottom: 0rem !important;
+    font-weight: bold;
+}
+
+.btnEditUser .btn-blue {
+    display: inline;
+}
+
 
 .editProfile {
     display: flex;
     flex-direction: column;
-    justify-items: center;
-    background-color: #003780;
-    border-radius: 10px;
     padding: 2rem;
-    width: 600px;
-    color: white;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
+    border-radius: 10px;
     box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+    max-width: 1290px;
+    min-width: 700px;
 }
+
+.editProfile .profileImg {
+    display: flex;
+    justify-self: center;
+}
+
+.editProfile-footer {
+    display: flex !important;
+    justify-content: space-between;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+/*
+.editProfile {
+    width: 100%;
+    padding: 2rem;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
+    border-radius: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+}
+    */
 
 /*PANTALLA DEL PERFIL DE USUARIO*/
 
@@ -1520,6 +1598,54 @@ header {
 
 .header-menu-icon {
     padding: 0.5rem;
+}
+
+.admin-header-user-menu {
+    display: none;
+        border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    position: absolute;
+    background-color: #ffffff;
+    top: 60px;
+    right: 2vw;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+}
+
+.admin-header-user-menu ul {
+    list-style: none;
+    align-items: center;
+    margin-bottom: 0px;
+    padding: 1rem;
+    min-width: 130px;
+}
+
+.admin-header-user-menu li {
+    padding: 0.5rem;
+    font-weight: bold;
+    min-width: 130px;
+}
+
+.admin-header-user-menu ul li a {
+    text-decoration: none;
+    color: #002557;
+    padding: 0.5rem;
+    min-width: 200px;
+}
+
+.admin-header-user-menu li:hover {
+    background-color: #0026572d;
+    border-radius: 10px;
+}
+
+.admin-notification-icon {
+    text-decoration: none;
+    font-size: 25px;
+    padding-right: 2rem;
+}
+
+.admin-notification-icon i {
+    color: white;
 }
 
 .admin-main {
@@ -2591,5 +2717,80 @@ input[type=number]::-webkit-outer-spin-button {
     border-radius: 10px;
     height: 490px;
 }
+
+/*Pagina de ERROR*/
+.error-main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+    background-color: #ffffff;
+}
+
+.error-main-content h1 {
+    display: flex;
+    position: absolute;
+    z-index: 9999;
+    font-weight: bold;
+}
+
+.error-main-content img {
+    width: 600px;
+    opacity: 0.3;
+}
+
+/*NOTIFICACIONES*/
+.notification-dropdown {
+    position: absolute;
+    right: 20px;
+    top: 60px;
+    background: #fff;
+    border: 1px solid #ddd;
+    width: 300px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    z-index: 2000;
+}
+.notification-header {
+    padding: 10px;
+    color: #002557;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+    background: #f8f8f8;
+}
+.notification-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.notification-item {
+    padding: 10px;
+    font-size: 15px;
+    color: #002557;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+.notification-item:hover {
+    background: #f3f3f3;
+}
+.notification-footer {
+    text-align: center;
+    padding: 8px;
+}
+.notification-count {
+    position: absolute;
+    top: 7px;
+    right: 190px;
+    background: #e63946;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    padding: 2px 6px;
+    min-width: 18px;
+    text-align: center;
+    font-weight: bold;
+    display: none;
+}
+
 
 /*MAIN CONTENT/

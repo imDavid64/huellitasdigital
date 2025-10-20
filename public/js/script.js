@@ -188,6 +188,257 @@ $(function () {
         }
     });
 
+    // --- SELECTS DEPENDIENTES (Provincia → Cantón → Distrito) ---
+    $("#provincia").on("change", function () {
+        const idProvincia = $(this).val();
+
+        if (idProvincia) {
+            $.ajax({
+                url: "/huellitasdigital/app/controllers/admin/catalogController.php",
+                method: "GET",
+                data: { action: "getCantones", idProvincia },
+                dataType: "json",
+                beforeSend: function () {
+                    $("#canton").html("<option>Cargando cantones...</option>");
+                    $("#distrito").html("<option>Seleccione un cantón primero</option>");
+                },
+                success: function (cantones) {
+                    console.log("Cantones cargados:", cantones); // debug
+                    $("#canton").empty().append('<option value="">Seleccione un cantón</option>');
+                    cantones.forEach(c => {
+                        $("#canton").append(`<option value="${c.ID_DIRECCION_CANTON_PK}">${c.NOMBRE_CANTON}</option>`);
+                    });
+                },
+                error: function () {
+                    $("#canton").html("<option>Error al cargar cantones</option>");
+                }
+            });
+        } else {
+            $("#canton").html('<option value="">Seleccione una provincia primero</option>');
+            $("#distrito").html('<option value="">Seleccione un cantón primero</option>');
+        }
+    });
+
+    $("#canton").on("change", function () {
+        const idCanton = $(this).val();
+
+        if (idCanton) {
+            $.ajax({
+                url: "/huellitasdigital/app/controllers/admin/catalogController.php",
+                method: "GET",
+                data: { action: "getDistritos", idCanton },
+                dataType: "json",
+                beforeSend: function () {
+                    $("#distrito").html("<option>Cargando distritos...</option>");
+                },
+                success: function (distritos) {
+                    console.log("Distritos cargados:", distritos); // debug
+                    $("#distrito").empty().append('<option value="">Seleccione un distrito</option>');
+                    distritos.forEach(d => {
+                        $("#distrito").append(`<option value="${d.ID_DIRECCION_DISTRITO_PK}">${d.NOMBRE_DISTRITO}</option>`);
+                    });
+                },
+                error: function () {
+                    $("#distrito").html("<option>Error al cargar distritos</option>");
+                }
+            });
+        } else {
+            $("#distrito").html('<option value="">Seleccione un cantón primero</option>');
+        }
+    });
+
+
+
+    // --- PARA LAS NOTIFICAIONES ---
+    $("#btnNotifications").on("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $dropdown = $("#notificationDropdown");
+        $dropdown.toggle();
+
+        if ($dropdown.is(":visible")) {
+            cargarNotificaciones();
+        }
+    });
+
+    // Función para cargar notificaciones
+    function cargarNotificaciones() {
+        $.ajax({
+            url: "/huellitasdigital/app/controllers/admin/notificationController.php",
+            method: "GET",
+            data: { action: "getNotifications" },
+            dataType: "json",
+            success: function (data) {
+                const $list = $(".notification-list");
+                $list.empty();
+
+                if (!data || data.length === 0) {
+                    $list.html("<p style='padding:10px;'>Sin notificaciones nuevas</p>");
+                    return;
+                }
+
+                data.forEach(n => {
+                    const item = $(`
+                        <div class="notification-item" data-url="${n.URL_REDIRECCION || '#'}">
+                            <strong>${n.TITULO_NOTIFICACION}</strong><br>
+                            <small>${n.MENSAJE_NOTIFICACION}</small>
+                            <div><small>${new Date(n.FECHA_CREACION).toLocaleString()}</small></div>
+                        </div>
+                    `);
+
+                    item.on("click", function () {
+                        const url = $(this).data("url");
+                        if (url && url !== "#") window.location.href = url;
+                    });
+
+                    $list.append(item);
+                });
+            },
+            error: function (err) {
+                console.error("Error al cargar notificaciones", err);
+            }
+        });
+    }
+
+    // Marcar todas como leídas
+    $("#markAsRead").on("click", function () {
+        $.ajax({
+            url: "/huellitasdigital/app/controllers/admin/notificationController.php",
+            method: "POST",
+            data: { action: "markAsRead" },
+            success: function () {
+                $(".notification-list").html("<p style='padding:10px;'>Sin notificaciones nuevas</p>");
+            }
+        });
+    });
+
+    // === 🔄 FUNCIÓN PARA ACTUALIZAR CONTADOR ===
+    function actualizarContadorNotificaciones() {
+        $.ajax({
+            url: "/huellitasdigital/app/controllers/admin/notificationController.php",
+            method: "GET",
+            data: { action: "getUnreadCount" },
+            dataType: "json",
+            success: function (data) {
+                const count = parseInt(data.total) || 0;
+                const $badge = $("#notification-count");
+
+                if (count > 0) {
+                    $badge.text(count);
+                    $badge.show();
+                } else {
+                    $badge.hide();
+                }
+            },
+            error: function (err) {
+                console.error("Error al obtener el contador de notificaciones", err);
+            }
+        });
+    }
+
+    // === Actualizar cada 60 segundos automáticamente ===
+    setInterval(actualizarContadorNotificaciones, 60000);
+
+    // === Disminuir contador al marcar todas como leídas ===
+    $("#markAsRead").on("click", function () {
+        $.ajax({
+            url: "/huellitasdigital/app/controllers/admin/notificationController.php",
+            method: "POST",
+            data: { action: "markAsRead" },
+            success: function () {
+                $(".notification-list").html("<p style='padding:10px;'>Sin notificaciones nuevas</p>");
+                $("#notification-count").hide(); // ocultar contador
+            }
+        });
+    });
+
+    // === Inicializar contador al cargar la página ===
+    actualizarContadorNotificaciones();
+
+
+    // Sistema de búsqueda por parte del admin
+    $(document).on("keyup", ".admin-search-input", function (e) {
+        // Si el usuario presiona Enter o escribe más de 2 letras
+        if (e.key === "Enter" || $(this).val().length >= 2 || $(this).val().length === 0) {
+            const $input = $(this);
+            const query = $input.val().trim();
+            const target = $input.data("target"); // ej: 'product', 'brand', 'category', etc.
+
+            // Mapeo de controladores y acciones según el destino
+            const controllerMap = {
+                product: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "search" },
+                brand: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "searchBrand" },
+                category: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "searchCategory" },
+                user: { url: "/huellitasdigital/app/controllers/admin/userController.php", action: "search" },
+                role: { url: "/huellitasdigital/app/controllers/admin/roleController.php", action: "search" },
+                supplier: { url: "/huellitasdigital/app/controllers/admin/supplierController.php", action: "search" }
+            };
+
+            const config = controllerMap[target];
+            if (!config) {
+                console.warn("❌ Tipo de búsqueda no definido:", target);
+                return;
+            }
+
+            // --- Petición AJAX ---
+            $.ajax({
+                url: config.url,
+                method: "GET",
+                data: { action: config.action, query: query },
+                success: function (response) {
+                    $(".admin-mgmt-table").html(response);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error al realizar la búsqueda:", error);
+                }
+            });
+        }
+    });
+
+    // --- (Opcional) Permitir clic en el ícono de búsqueda ---
+    $(document).on("click", ".search i", function () {
+        $(this).siblings(".admin-search-input").trigger("keyup");
+    });
+
+    // --- Manejador de paginación AJAX ---
+    $(document).on("click", ".pagination-link", function (e) {
+        e.preventDefault();
+
+        var page = $(this).data("page");
+        var $input = $(".admin-search-input");
+        var query = $.trim($input.val());
+        var target = $input.data("target");
+
+        // Mismo mapa de controladores que antes
+        var controllerMap = {
+            product: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "search" },
+            brand: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "searchBrand" },
+            category: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "searchCategory" },
+            user: { url: "/huellitasdigital/app/controllers/admin/userController.php", action: "search" },
+            role: { url: "/huellitasdigital/app/controllers/admin/roleController.php", action: "search" },
+            supplier: { url: "/huellitasdigital/app/controllers/admin/supplierController.php", action: "search" }
+        };
+
+        var config = controllerMap[target];
+        if (!config) return;
+
+        $.ajax({
+            url: config.url,
+            type: "GET",
+            data: { action: config.action, query: query, page: page },
+            beforeSend: function () {
+                $(".admin-mgmt-table").html("<div style='padding:10px;text-align:center;'>Cargando página...</div>");
+            },
+            success: function (response) {
+                $(".admin-mgmt-table").html(response);
+                $("html, body").animate({ scrollTop: $(".admin-mgmt-table").offset().top - 100 }, 300);
+            },
+            error: function () {
+                alert("Error al cambiar de página");
+            }
+        });
+    });
 
 
 

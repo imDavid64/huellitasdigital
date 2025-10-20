@@ -47,7 +47,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                 <section class="admin-main-content-mgmt">
                     <div class="search-container">
                         <div class="search">
-                            <input type="text" id="header-search" placeholder="Buscar producto...">
+                            <input type="text" class="admin-search-input" data-target="product"
+                                placeholder="Buscar producto...">
                             <i class="bi bi-search"></i>
                         </div>
 
@@ -98,7 +99,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </td>
                                         <td>
                                             <div class="admin-table-text-limit">
-                                                <?= htmlspecialchars($product['CATEGORIA']) ?></div>
+                                                <?= htmlspecialchars($product['CATEGORIA']) ?>
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="admin-table-text-limit">₡<?= $product['PRODUCTO_PRECIO_UNITARIO'] ?>
@@ -116,7 +118,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </td>
                                         <td>
                                             <div class="admin-table-text-limit">
-                                                <?= htmlspecialchars($product['PROVEEDOR']) ?></div>
+                                                <?= htmlspecialchars($product['PROVEEDOR']) ?>
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="admin-table-text-limit"><?= htmlspecialchars($product['ESTADO']) ?>
@@ -137,19 +140,17 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                         </table>
                     </div>
                     <div>
-                        <nav aria-label="Page navigation example">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
-                                </li>
-                                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Siguiente</a>
-                                </li>
-                            </ul>
-                        </nav>
+                        <?php if ($totalPages > 1): ?>
+                            <div class="pagination-container text-center mt-3">
+                                <ul class="pagination justify-content-center">
+                                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                        <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                            <a class="page-link pagination-link" href="#" data-page="<?= $i ?>"><?= $i ?></a>
+                                        </li>
+                                    <?php endfor; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </section>
             </section>
