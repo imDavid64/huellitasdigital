@@ -1,107 +1,144 @@
+<style>
+  .error-text {
+    color: red;
+    font-size: 0.85rem;
+    display: none; /* oculto por defecto */
+    margin: 2px 0; /* margen pequeño arriba y abajo */
+    line-height: 1.1; /* compacto */
+  }
+</style>
+
 <!--Ventana Emergente "LOGIN"-->
 <section class="display-login" id="display-login">
-    <div class="form-login">
-        <div class="login-head">
-            <span class="title-login">Inicio de Sesión</span>
-            <i id="btnCloseXLogin" class="bi bi-x"></i>
-        </div>
-        <div class="input-login">
-            <form action="/huellitasdigital/app/routes/web.php?action=login" method="POST">
-                <div>
-                    <label for="login-user-email">Correo Electrónico</label>
-                    <input type="email" id="login-user-email" name="login-user-email" placeholder="ejemplo@gmail.com"
-                        required>
-                </div>
-                <div>
-                    <label for="login-user-password">Contraseña</label>
-                    <input type="password" id="login-user-password" name="login-user-password" placeholder="contraseña"
-                        required>
-                </div>
-                <div>
-                    <a id="btnResetPass" href="#">¿Olvidastes tu contraseña?</a>
-                </div>
-                <div class="btns-login">
-                    <div>
-                        <div>
-                            <button type="submit" class="btn-blue" id="btnStartLogin">Iniciar Sesión</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
+  <div class="form-login">
+    <div class="login-head">
+      <span class="title-login">Inicio de Sesión</span>
+      <i id="btnCloseXLogin" class="bi bi-x"></i>
     </div>
+    <div class="input-login">
+      <form id="loginForm" action="/huellitasdigital/app/routes/web.php?action=login" method="POST" onsubmit="return validateForm('loginForm')">
+        <div>
+          <label for="login-user-email">Correo Electrónico</label>
+          <span class="error-text" id="error-login-user-email">Ingrese un correo válido</span>
+          <input type="email" id="login-user-email" name="login-user-email" placeholder="ejemplo@gmail.com" required onblur="validateEmail(this)">
+        </div>
+        <div>
+          <label for="login-user-password">Contraseña</label>
+          <span class="error-text" id="error-login-user-password">Ingrese su contraseña</span>
+          <input type="password" id="login-user-password" name="login-user-password" placeholder="contraseña" required onblur="validateNotEmpty(this)">
+        </div>
+        <div>
+          <a id="btnResetPass" href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+        <div class="btns-login">
+          <button type="submit" class="btn-blue" id="btnStartLogin">Iniciar Sesión</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </section>
-<!--Ventana Emergente "LOGIN"-->
 
 <!--Ventana Emergente "REGISTRO"-->
 <section class="display-register" id="display-register">
-    <div class="form-register">
-        <div class="register-head">
-            <span class="title-register">Registro</span>
-            <i id="btnCloseXRegister" class="bi bi-x"></i>
-        </div>
-        <div class="input-register">
-            <form action="/huellitasdigital/app/routes/web.php?action=register" method="POST">
-                <div>
-                    <label for="register-user-name">Nombre Completo</label>
-                    <input type="text" id="register-user-name" name="register-user-name" required>
-                </div>
-                <div>
-                    <label for="register-user-email">Correo Electrónico</label>
-                    <input type="email" id="register-user-email" name="register-user-email"
-                        placeholder="ejemplo@gmail.com" required>
-                </div>
-                <div>
-                    <label for="register-user-identification">Identificación</label>
-                    <input type="number" name="register-user-identification" id="register-user-identification" required>
-                </div>
-                <div>
-                    <label for="register-user-password">Contraseña</label>
-                    <input type="password" id="register-user-password" name="register-user-password"
-                        placeholder="contraseña" required>
-                </div>
-                <div class="btns-register">
-                    <div>
-                        <div>
-                            <button type="submit" class="btn-blue" id="btnStartRegister">Registrarse</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
+  <div class="form-register">
+    <div class="register-head">
+      <span class="title-register">Registro</span>
+      <i id="btnCloseXRegister" class="bi bi-x"></i>
     </div>
+    <div class="input-register">
+      <form id="registerForm" action="/huellitasdigital/app/routes/web.php?action=register" method="POST" onsubmit="return validateForm('registerForm')">
+        <div>
+          <label for="register-user-name">Nombre Completo</label>
+          <span class="error-text" id="error-register-user-name">Ingrese su nombre completo</span>
+          <input type="text" id="register-user-name" name="register-user-name" required onblur="validateNotEmpty(this)">
+        </div>
+        <div>
+          <label for="register-user-email">Correo Electrónico</label>
+          <span class="error-text" id="error-register-user-email">Ingrese un correo válido</span>
+          <input type="email" id="register-user-email" name="register-user-email" placeholder="ejemplo@gmail.com" required onblur="validateEmail(this)">
+        </div>
+        <div>
+          <label for="register-user-identification">Identificación</label>
+          <span class="error-text" id="error-register-user-identification">Ingrese su identificación</span>
+          <input type="number" name="register-user-identification" id="register-user-identification" required onblur="validateNotEmpty(this)">
+        </div>
+        <div>
+          <label for="register-user-password">Contraseña</label>
+          <span class="error-text" id="error-register-user-password">Ingrese su contraseña</span>
+          <input type="password" id="register-user-password" name="register-user-password" placeholder="contraseña" required onblur="validateNotEmpty(this)">
+        </div>
+        <div class="btns-register">
+          <button type="submit" class="btn-blue" id="btnStartRegister">Registrarse</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </section>
-<!--Ventana Emergente "REGISTRO"-->
 
 <!--Ventana Emergente "RECUPERACION CONTRASEÑA"-->
 <section class="display-resetPass" id="display-resetPass">
-    <div class="form-resetPass">
-        <div class="resetPass-head">
-            <span class="title-resetPass">Recuperación de Contraseña</span>
-            <i id="btnCloseXResetPass" class="bi bi-x"></i>
-        </div>
-        <div class="input-resetPass">
-            <form action="app/recovery.php" method="POST">
-                <div>
-                    <label for="resetPass-user-email">Correo Electrónico</label>
-                    <input type="email" id="resetPass-user-email" name="resetPass-user-email"
-                        placeholder="ejemplo@gmail.com" required>
-                </div>
-                <div>
-                    <span>*Le enviamos un correo para que pueda restablecer su contraseña.</span>
-                </div>
-                <div class="btns-resetPass">
-                    <div>
-                        <div>
-                            <button type="submit" class="btn-blue" id="btnStartResetPass">Recuperar</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
+  <div class="form-resetPass">
+    <div class="resetPass-head">
+      <span class="title-resetPass">Recuperación de Contraseña</span>
+      <i id="btnCloseXResetPass" class="bi bi-x"></i>
     </div>
+    <div class="input-resetPass">
+      <form id="resetPassForm" action="app/recovery.php" method="POST" onsubmit="return validateForm('resetPassForm')">
+        <div>
+          <label for="resetPass-user-email">Correo Electrónico</label>
+          <span class="error-text" id="error-resetPass-user-email">Ingrese un correo válido</span>
+          <input type="email" id="resetPass-user-email" name="resetPass-user-email" placeholder="ejemplo@gmail.com" required onblur="validateEmail(this)">
+        </div>
+        <div>
+          <span>*Le enviamos un correo para que pueda restablecer su contraseña.</span>
+        </div>
+        <div class="btns-resetPass">
+          <button type="submit" class="btn-blue" id="btnStartResetPass">Recuperar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </section>
-<!--Ventana Emergente "RECUPERACION CONTRASEÑA"-->
+
+<script>
+  // Validación de correo
+  function validateEmail(input) {
+    const errorSpan = document.getElementById('error-' + input.id);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(input.value.trim())) {
+      errorSpan.style.display = 'block';
+      return false;
+    } else {
+      errorSpan.style.display = 'none';
+      return true;
+    }
+  }
+
+  // Validación de campos no vacíos
+  function validateNotEmpty(input) {
+    const errorSpan = document.getElementById('error-' + input.id);
+    if (input.value.trim() === '') {
+      errorSpan.style.display = 'block';
+      return false;
+    } else {
+      errorSpan.style.display = 'none';
+      return true;
+    }
+  }
+
+  // Validación completa antes de enviar el formulario
+  function validateForm(formId) {
+    const form = document.getElementById(formId);
+    let valid = true;
+    form.querySelectorAll('input[required]').forEach(input => {
+      if (input.type === 'email') valid = validateEmail(input) && valid;
+      else valid = validateNotEmpty(input) && valid;
+    });
+    return valid;
+  }
+</script>
+
+
 
 <!--Logica para el Modal de recuperación de contraseña-->
 <?php

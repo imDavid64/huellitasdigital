@@ -12,59 +12,66 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 
 <body>
 
-    <!--Include para el herder-->
     <!--HEADER-->
     <?php include_once __DIR__ . "/../partials/header.php"; ?>
     <!--HEADER-->
 
-
-    <!--CONTENIDO CENTRAL-->
     <main>
         <section class="admin-main">
-            <!--Include para el menu aside-->
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
             <section class="admin-main-content-add-user">
-                <div>
-                    <div class="tittles">
-                        <h2><i class="bi bi-pencil-square"></i><strong> Editar Producto</strong></h2>
-                    </div>
+                <div class="tittles">
+                    <h2><i class="bi bi-pencil-square"></i><strong> Editar Producto</strong></h2>
                 </div>
                 <div class="admin-form-container">
-                    <form action="/huellitasdigital/app/controllers/admin/productController.php?action=update"
-                        method="POST" enctype="multipart/form-data">
+                    <form id="editProductForm" 
+                          action="/huellitasdigital/app/controllers/admin/productController.php?action=update"
+                          method="POST" enctype="multipart/form-data" novalidate>
+
                         <input type="hidden" name="id_product" value="<?= $product['ID_PRODUCTO_PK'] ?>">
-                        <input type="hidden" name="current_image_url"
-                            value="<?= htmlspecialchars($product['IMAGEN_URL']) ?>">
+                        <input type="hidden" name="current_image_url" value="<?= htmlspecialchars($product['IMAGEN_URL']) ?>">
+
                         <div class="form-container">
+
                             <div class="form-item">
-                                <img id="imagePreview" src="<?= htmlspecialchars($product['IMAGEN_URL']) ?>"
-                                    alt="Imagen del Producto"
-                                    style="width: 150px; height: auto; display: block; margin-bottom: 10px;">
+                                <img id="imagePreview" src="<?= htmlspecialchars($product['IMAGEN_URL']) ?>" 
+                                     alt="Imagen del Producto"
+                                     style="width: 150px; height: auto; display: block; margin-bottom: 10px;">
                             </div>
+
                             <div class="form-item">
                                 <label for="productname">Nombre del Producto</label>
                                 <input type="text" id="productname" name="productname"
-                                    value="<?= htmlspecialchars($product['PRODUCTO_NOMBRE']) ?>" required>
+                                       value="<?= htmlspecialchars($product['PRODUCTO_NOMBRE']) ?>" required>
+                                <small class="error" id="error-productname"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="productdescription">Descripción</label>
-                                <textarea id="productdescription" name="productdescription"
-                                    required><?= htmlspecialchars($product['PRODUCTO_DESCRIPCION']) ?></textarea>
+                                <textarea id="productdescription" name="productdescription" required><?= htmlspecialchars($product['PRODUCTO_DESCRIPCION']) ?></textarea>
+                                <small class="error" id="error-productdescription"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="productimg">Cambiar Foto del Producto (Opcional)</label>
                                 <input type="file" id="productimg" name="productimg" accept="image/*">
+                                <small class="error" id="error-productimg"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="productprice">Precio (₡)</label>
                                 <input type="text" id="productprice" name="productprice"
-                                    value="<?= htmlspecialchars($product['PRODUCTO_PRECIO_UNITARIO']) ?>" required>
+                                       value="<?= htmlspecialchars($product['PRODUCTO_PRECIO_UNITARIO']) ?>" required>
+                                <small class="error" id="error-productprice"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="productstock">Cantidad en Stock</label>
                                 <input type="number" id="productstock" name="productstock"
-                                    value="<?= htmlspecialchars($product['PRODUCTO_STOCK']) ?>" required>
+                                       value="<?= htmlspecialchars($product['PRODUCTO_STOCK']) ?>" required>
+                                <small class="error" id="error-productstock"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="productbrand">Marca del Producto</label>
                                 <select id="productbrand" name="productbrand" required>
@@ -76,7 +83,9 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-productbrand"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="productcategory">Categoría del Producto</label>
                                 <select id="productcategory" name="productcategory" required>
@@ -88,7 +97,9 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-productcategory"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="productsupplier">Proveedor</label>
                                 <select id="productsupplier" name="productsupplier" required>
@@ -100,7 +111,9 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-productsupplier"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="productisnew">¿Es Nuevo?</label>
                                 <select id="productisnew" name="productisnew" required>
@@ -112,7 +125,9 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-productisnew"></small>
                             </div>
+
                             <div class="form-item">
                                 <label for="state">Estado</label>
                                 <select id="state" name="state" required>
@@ -124,9 +139,14 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-state"></small>
                             </div>
-                            <button type="submit" class="btn-dark-blue"><strong>Guardar Cambios</strong><i
-                                    class="bi bi-floppy2"></i></button>
+
+                            <button type="submit" class="btn-dark-blue">
+                                <strong>Guardar Cambios</strong>
+                                <i class="bi bi-floppy2"></i>
+                            </button>
+
                         </div>
                     </form>
 
@@ -142,21 +162,61 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                 }
                             }
                         });
+
+                        // VALIDACIONES
+                        document.getElementById('editProductForm').addEventListener('submit', function(e) {
+                            let valid = true;
+
+                            document.querySelectorAll('.error').forEach(err => err.textContent = '');
+
+                            const fields = [
+                                'productname', 'productdescription', 'productprice', 'productstock',
+                                'productbrand', 'productcategory', 'productsupplier', 'productisnew',
+                                'state'
+                            ];
+
+                            fields.forEach(id => {
+                                const el = document.getElementById(id);
+                                if (!el.value || el.value.trim() === '') {
+                                    document.getElementById('error-' + id).textContent = 'Este campo es obligatorio.';
+                                    valid = false;
+                                }
+                            });
+
+                            // Validación precio y stock
+                            const price = parseFloat(document.getElementById('productprice').value);
+                            if (isNaN(price) || price <= 0) {
+                                document.getElementById('error-productprice').textContent = 'Ingrese un precio válido.';
+                                valid = false;
+                            }
+
+                            const stock = parseInt(document.getElementById('productstock').value);
+                            if (isNaN(stock) || stock < 0) {
+                                document.getElementById('error-productstock').textContent = 'Ingrese una cantidad válida.';
+                                valid = false;
+                            }
+
+                            if (!valid) e.preventDefault();
+                        });
                     </script>
+
                 </div>
             </section>
         </section>
     </main>
-    <!--CONTENIDO CENTRAL-->
 </body>
 
-<!--FOOTER-->
 <footer>
     <div class="post-footer" style="background-color: #002557; color: white;">
         <span>&copy; 2025 - Dra Huellitas</span>
     </div>
 </footer>
-<!--FOOTER-->
 
+<style>
+    .error {
+        color: red;
+        font-size: 0.9em;
+    }
+</style>
 
 </html>

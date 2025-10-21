@@ -7,52 +7,54 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 <!DOCTYPE html>
 <html lang="es">
 
-<!--Include para el head-->
+<!--HEAD-->
 <?php include_once __DIR__ . "/../partials/adminHead.php"; ?>
+<!--HEAD-->
 
 <body>
-
-    <!--Include para el herder-->
     <!--HEADER-->
     <?php include_once __DIR__ . "/../partials/header.php"; ?>
     <!--HEADER-->
 
-
-    <!--CONTENIDO CENTRAL-->
     <main>
         <section class="admin-main">
-            <!--Include para el menu aside-->
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
             <section class="admin-main-content-add-user">
-                <div>
-                    <div class="tittles">
-                        <h2><i class="bi bi-bag-plus-fill"></i><strong>Agregar Producto</strong></h2>
-                        <div></div>
-                    </div>
+                <div class="tittles">
+                    <h2><i class="bi bi-bag-plus-fill"></i><strong>Agregar Producto</strong></h2>
                 </div>
+
                 <div class="admin-form-container">
-                    <form action="/huellitasdigital/app/controllers/admin/productController.php?action=store"
-                        method="POST" enctype="multipart/form-data">
+                    <form id="productForm" 
+                          action="/huellitasdigital/app/controllers/admin/productController.php?action=store" 
+                          method="POST" 
+                          enctype="multipart/form-data"
+                          novalidate>
+
                         <div class="form-container">
 
                             <div class="form-item">
                                 <label for="nombre">Nombre del Producto</label>
                                 <input type="text" id="nombre" name="nombre" required>
+                                <small class="error" id="error-nombre"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="descripcion">Descripción</label>
                                 <textarea id="descripcion" name="descripcion" required></textarea>
+                                <small class="error" id="error-descripcion"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="precio">Precio (₡)</label>
                                 <input type="number" step="0.01" id="precio" name="precio" required>
+                                <small class="error" id="error-precio"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="stock">Cantidad en Stock</label>
                                 <input type="number" id="stock" name="stock" required>
+                                <small class="error" id="error-stock"></small>
                             </div>
 
                             <div class="form-item">
@@ -65,6 +67,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-marca"></small>
                             </div>
 
                             <div class="form-item">
@@ -77,6 +80,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-categoria"></small>
                             </div>
 
                             <div class="form-item">
@@ -89,6 +93,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-proveedor"></small>
                             </div>
 
                             <div class="form-item">
@@ -101,6 +106,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-nuevo"></small>
                             </div>
 
                             <div class="form-item">
@@ -113,31 +119,76 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="error" id="error-estado"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="imagen">Imagen del Producto</label>
                                 <input type="file" id="imagen" name="imagen" accept="image/*" required>
+                                <small class="error" id="error-imagen"></small>
                             </div>
 
-                            <button type="submit" class="btn-blue"><strong>Agregar Producto</strong><i
-                                    class="bi bi-bag-plus-fill"></i></button>
+                            <button type="submit" class="btn-blue">
+                                <strong>Agregar Producto</strong>
+                                <i class="bi bi-bag-plus-fill"></i>
+                            </button>
                         </div>
                     </form>
                 </div>
             </section>
         </section>
     </main>
-    <!--CONTENIDO CENTRAL-->
+
+    <footer>
+        <div class="post-footer" style="background-color: #002557; color: white;">
+            <span>&copy; 2025 - Dra Huellitas</span>
+        </div>
+    </footer>
+
+    <!--VALIDACIONES-->
+    <script>
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            let valid = true;
+
+            // Limpiar mensajes previos
+            document.querySelectorAll('.error').forEach(err => err.textContent = '');
+
+            const fields = [
+                'nombre', 'descripcion', 'precio', 'stock',
+                'marca', 'categoria', 'proveedor', 'nuevo',
+                'estado', 'imagen'
+            ];
+
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el.value || el.value.trim() === '') {
+                    document.getElementById('error-' + id).textContent = 'Este campo es obligatorio.';
+                    valid = false;
+                }
+            });
+
+            // Validación de precio y stock numéricos positivos
+            const precio = document.getElementById('precio');
+            if (precio.value <= 0) {
+                document.getElementById('error-precio').textContent = 'Ingrese un precio válido.';
+                valid = false;
+            }
+
+            const stock = document.getElementById('stock');
+            if (stock.value < 0) {
+                document.getElementById('error-stock').textContent = 'Ingrese una cantidad válida.';
+                valid = false;
+            }
+
+            if (!valid) e.preventDefault();
+        });
+    </script>
+
+    <style>
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+    </style>
 </body>
-
-<!--FOOTER-->
-<footer>
-    <div class="post-footer" style="background-color: #002557; color: white;">
-        <span>&copy; 2025 - Dra Huellitas</span>
-    </div>
-</footer>
-<!--FOOTER-->
-
-
 </html>
