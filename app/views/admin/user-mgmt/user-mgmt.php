@@ -31,8 +31,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <nav class="breadcrumbs-container">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a
-                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                                <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
                             </li>
                             <li class="breadcrumb-item current-page">Gestión de Usuarios</li>
                         </ol>
@@ -40,7 +39,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <div class="tittles">
                         <h2><i class="bi bi-people-fill"></i><strong> Gestión de Usuarios</strong></h2>
                         <div>
-                            <a href="../../../app/controllers/admin/userController.php?action=create"
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminUser&action=create"
                                 class="btn-blue"><strong>Agregar Usuario</strong>
                                 <i class="bi bi-person-fill-add"></i></a>
                         </div>
@@ -93,7 +92,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                                <a href="../../../app/controllers/admin/userController.php?action=edit&id=<?= $usuario['ID_USUARIO_PK'] ?>"
+                                                <a href="<?= BASE_URL ?>/index.php?controller=adminUser&action=edit&id=<?= $usuario['ID_USUARIO_PK'] ?>"
                                                     class="btn btn-dark-blue btn-sm">Editar <i
                                                         class="bi bi-pencil-square"></i></a>
                                             </div>

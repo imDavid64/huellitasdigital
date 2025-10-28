@@ -31,8 +31,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <nav class="breadcrumbs-container">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a
-                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                                <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
                             </li>
                             <li class="breadcrumb-item current-page">Gestión de Proveedores</li>
                         </ol>
@@ -40,7 +39,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <div class="tittles">
                         <h2><i class="bi bi-building-fill"></i><strong> Gestión de Proveedores</strong></h2>
                         <div>
-                            <a href="../../../app/controllers/admin/supplierController.php?action=create"
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminSupplier&action=create"
                                 class="btn-blue"><strong>Agregar Proveedor</strong>
                                 <i class="bi bi-building-fill-add"></i></a>
                         </div>
@@ -59,7 +58,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <thead>
                                 <tr>
                                     <th scope="col">ID</th>
-                                    <th scope="col">Nombre de la Empresa</th>
+                                    <th scope="col">Empresa</th>
                                     <th scope="col">Contacto</th>
                                     <th scope="col">Teléfono</th>
                                     <th scope="col">Correo Electrónico</th>
@@ -87,7 +86,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </td>
                                         <td>
                                             <div class="admin-table-text-limit">
-                                                <?= htmlspecialchars($supplier['TELEFONO_CONTACTO']) ?>
+                                                <?= htmlspecialchars($supplier['TELEFONO']) ?>
                                             </div>
                                         </td>
                                         <td>
@@ -102,7 +101,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                                <a href="../../../app/controllers/admin/supplierController.php?action=edit&id=<?= $supplier['ID_PROVEEDOR_PK'] ?>"
+                                                <a href="<?= BASE_URL ?>/index.php?controller=adminSupplier&action=edit&id=<?= $supplier['ID_PROVEEDOR_PK'] ?>"
                                                     class="btn btn-dark-blue btn-sm">
                                                     Editar <i class="bi bi-pencil-square"></i>
                                                 </a>

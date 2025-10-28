@@ -18,57 +18,73 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 
     <main>
         <section class="admin-main">
+            <!--Include para el menu aside-->
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
-            <section class="admin-main-content-add-user">
+            <section class="admin-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=index">Gestión de
+                                Productos</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Editar Producto</li>
+                    </ol>
+                </nav>
                 <div class="tittles">
                     <h2><i class="bi bi-pencil-square"></i><strong> Editar Producto</strong></h2>
                 </div>
                 <div class="admin-form-container">
-                    <form id="editProductForm" 
-                          action="/huellitasdigital/app/controllers/admin/productController.php?action=update"
-                          method="POST" enctype="multipart/form-data" novalidate>
+                    <form id="editProductForm" action="<?= BASE_URL ?>/index.php?controller=adminProduct&action=update"
+                        method="POST" enctype="multipart/form-data" novalidate>
 
                         <input type="hidden" name="id_product" value="<?= $product['ID_PRODUCTO_PK'] ?>">
-                        <input type="hidden" name="current_image_url" value="<?= htmlspecialchars($product['IMAGEN_URL']) ?>">
+                        <input type="hidden" name="current_image_url"
+                            value="<?= htmlspecialchars($product['IMAGEN_URL']) ?>">
 
                         <div class="form-container">
 
                             <div class="form-item">
-                                <img id="imagePreview" src="<?= htmlspecialchars($product['IMAGEN_URL']) ?>" 
-                                     alt="Imagen del Producto"
-                                     style="width: 150px; height: auto; display: block; margin-bottom: 10px;">
+                                <img id="previewProducto" class="image-preview"
+                                    src="<?= htmlspecialchars($product['IMAGEN_URL']) ?>" alt="Imagen del Producto"
+                                    style="width: 150px; height: auto; display: block; margin-bottom: 10px;">
                             </div>
 
                             <div class="form-item">
                                 <label for="productname">Nombre del Producto</label>
                                 <input type="text" id="productname" name="productname"
-                                       value="<?= htmlspecialchars($product['PRODUCTO_NOMBRE']) ?>" required>
+                                    value="<?= htmlspecialchars($product['PRODUCTO_NOMBRE']) ?>" required>
                                 <small class="error" id="error-productname"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="productdescription">Descripción</label>
-                                <textarea id="productdescription" name="productdescription" required><?= htmlspecialchars($product['PRODUCTO_DESCRIPCION']) ?></textarea>
+                                <textarea id="productdescription" name="productdescription"
+                                    required><?= htmlspecialchars($product['PRODUCTO_DESCRIPCION']) ?></textarea>
                                 <small class="error" id="error-productdescription"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="productimg">Cambiar Foto del Producto (Opcional)</label>
-                                <input type="file" id="productimg" name="productimg" accept="image/*">
+                                <input type="file" class="image-input" data-preview="#previewProducto" id="productimg"
+                                    name="productimg" accept="image/*">
                                 <small class="error" id="error-productimg"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="productprice">Precio (₡)</label>
                                 <input type="text" id="productprice" name="productprice"
-                                       value="<?= htmlspecialchars($product['PRODUCTO_PRECIO_UNITARIO']) ?>" required>
+                                    value="<?= htmlspecialchars($product['PRODUCTO_PRECIO_UNITARIO']) ?>" required>
                                 <small class="error" id="error-productprice"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="productstock">Cantidad en Stock</label>
                                 <input type="number" id="productstock" name="productstock"
-                                       value="<?= htmlspecialchars($product['PRODUCTO_STOCK']) ?>" required>
+                                    value="<?= htmlspecialchars($product['PRODUCTO_STOCK']) ?>" required>
                                 <small class="error" id="error-productstock"></small>
                             </div>
 
@@ -150,21 +166,9 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                         </div>
                     </form>
 
-                    <!-- Script para previsualizar la imagen seleccionada -->
                     <script>
-                        document.getElementById('productimg').addEventListener('change', function (event) {
-                            const [file] = event.target.files;
-                            if (file) {
-                                const preview = document.getElementById('imagePreview');
-                                preview.src = URL.createObjectURL(file);
-                                preview.onload = () => {
-                                    URL.revokeObjectURL(preview.src); //Libera memoria
-                                }
-                            }
-                        });
-
                         // VALIDACIONES
-                        document.getElementById('editProductForm').addEventListener('submit', function(e) {
+                        document.getElementById('editProductForm').addEventListener('submit', function (e) {
                             let valid = true;
 
                             document.querySelectorAll('.error').forEach(err => err.textContent = '');

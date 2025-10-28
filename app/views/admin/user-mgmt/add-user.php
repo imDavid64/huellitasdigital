@@ -24,27 +24,44 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
             <!--ASIDE MENU-->
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
 
-            <section class="admin-main-content-add-user">
+            <section class="admin-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminUser&action=index">Gestión de
+                                Usuarios</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Agregar Usuario</li>
+                    </ol>
+                </nav>
                 <div class="tittles">
                     <h2><i class="bi bi-person-fill-add"></i><strong> Agregar Usuario</strong></h2>
                 </div>
 
                 <div class="admin-form-container">
-                    <form id="addUserForm"
-                          action="/huellitasdigital/app/controllers/admin/userController.php?action=store"
-                          method="POST" enctype="multipart/form-data" novalidate>
+                    <form id="addUserForm" action="<?= BASE_URL ?>/index.php?controller=adminUser&action=store"
+                        method="POST" enctype="multipart/form-data" novalidate>
 
                         <div class="form-container">
                             <!-- Nombre de usuario -->
                             <div class="form-item">
                                 <label for="username">Nombre de usuario</label>
-                                <input type="text" id="username" name="username"
-                                       required minlength="3" maxlength="50"
-                                       pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                                       title="Solo se permiten letras y espacios.">
+                                <input type="text" id="username" name="username" required minlength="3" maxlength="50"
+                                    pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+" title="Solo se permiten letras y espacios.">
                                 <small id="usernameError" style="color:red; display:none;">
-                                    El nombre debe tener entre 3 y 50 caracteres y solo puede contener letras y espacios.
+                                    El nombre debe tener entre 3 y 50 caracteres y solo puede contener letras y
+                                    espacios.
                                 </small>
+                            </div>
+
+                            <div class="form-item">
+                                <label for="user_identification">Identificación</label>
+                                <input type="text" name="user_identification" maxlength="9" inputmode="numeric"
+                                    placeholder="Ej: 301020456" required>
                             </div>
 
                             <!-- Correo electrónico -->
@@ -56,20 +73,21 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                 </small>
                             </div>
 
+                            <div class="form-item">
+                                <label>Teléfono</label>
+                                <input type="text" name="user_phone" maxlength="8" inputmode="numeric"
+                                    placeholder="Ej: 88888888" required>
+                            </div>
+
                             <!-- Contraseña -->
                             <div class="form-item">
                                 <label for="password">Contraseña</label>
                                 <input type="password" id="password" name="password" required minlength="8"
-                                       title="Debe contener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.">
+                                    title="Debe contener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.">
                                 <small id="passwordError" style="color:red; display:none;">
-                                    La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un símbolo.
+                                    La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una
+                                    minúscula, un número y un símbolo.
                                 </small>
-                            </div>
-
-                            <!-- Foto de perfil -->
-                            <div class="form-item">
-                                <label for="profile-pic">Foto de perfil</label>
-                                <input type="file" id="profile-pic" name="profile-pic" accept="image/*">
                             </div>
 
                             <!-- Estado -->

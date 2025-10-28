@@ -15,7 +15,7 @@
                 <td><?= htmlspecialchars($category['ESTADO']) ?></td>
                 <td class="text-center">
                     <div class="btn-group" category="group">
-                        <a href="/huellitasdigital/app/controllers/admin/productController.php?action=editCategory&id=<?= $category['ID_CATEGORIA_PK'] ?>"
+                        <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=editCategory&id=<?= $category['ID_CATEGORIA_PK'] ?>"
                             class="btn btn-dark-blue btn-sm">
                             Editar <i class="bi bi-pencil-square"></i>
                         </a>

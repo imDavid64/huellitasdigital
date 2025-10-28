@@ -1,43 +1,49 @@
 <?php
-include_once __DIR__ . "/../../models/conexionDB.php";
-require_once __DIR__ . "/../../models/admin/catalogModel.php";
+namespace App\Controllers\Admin;
 
-header('Content-Type: application/json; charset=utf-8');
+use App\Models\Admin\CatalogModel;
 
-$db = new ConexionDatabase();
-$conn = $db->connectDB();
-$catalogModel = new CatalogModel($conn);
+class CatalogController
+{
+    private CatalogModel $catalogModel;
 
-// --- Validar acción ---
-if (isset($_GET['action'])) {
-    $action = $_GET['action'];
+    public function __construct()
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        $this->catalogModel = new CatalogModel();
 
-    switch ($action) {
-        case 'getCantones':
-            if (isset($_GET['idProvincia'])) {
-                $idProvincia = intval($_GET['idProvincia']);
-                $cantones = $catalogModel->getCantonesByProvincia($idProvincia);
-                echo json_encode($cantones);
-            } else {
-                echo json_encode(['error' => 'Falta idProvincia']);
-            }
-            break;
-
-        case 'getDistritos':
-            if (isset($_GET['idCanton'])) {
-                $idCanton = intval($_GET['idCanton']);
-                $distritos = $catalogModel->getDistritosByCanton($idCanton);
-                echo json_encode($distritos);
-            } else {
-                echo json_encode(['error' => 'Falta idCanton']);
-            }
-            break;
-
-        default:
-            echo json_encode(['error' => 'Acción no válida']);
-            break;
+        // Seguridad básica: Solo Admin o Empleado puede usarlo
+        if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['ADMINISTRADOR', 'EMPLEADO'])) {
+            echo json_encode(['error' => 'Acceso no autorizado']);
+            exit;
+        }
     }
-} else {
-    echo json_encode(['error' => 'No se especificó acción']);
+
+    // ✅ AJAX: Obtener Cantones por Provincia
+    public function getCantones()
+    {
+        $provincia = intval($_GET['idProvincia'] ?? 0);
+
+        if (!$provincia) {
+            echo json_encode(['error' => 'Falta idProvincia']);
+            return;
+        }
+
+        $data = $this->catalogModel->getCantonesByProvincia($provincia);
+        echo json_encode($data);
+    }
+
+    // ✅ AJAX: Obtener Distritos por Cantón
+    public function getDistritos()
+    {
+        $canton = intval($_GET['idCanton'] ?? 0);
+
+        if (!$canton) {
+            echo json_encode(['error' => 'Falta idCanton']);
+            return;
+        }
+
+        $data = $this->catalogModel->getDistritosByCanton($canton);
+        echo json_encode($data);
+    }
 }
-?>

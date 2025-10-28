@@ -75,7 +75,7 @@ $(function () {
 
 
 
-    // --- FILTROS DE PRODUCTOS (Categoría / Marca) ---
+    /// --- FILTROS DE PRODUCTOS (Categoría / Marca) ---
     $(".filter-category, .filter-brand").on("change", function () {
         // Obtener los filtros seleccionados
         const selectedCategories = $(".filter-category:checked").map(function () {
@@ -85,12 +85,17 @@ $(function () {
         const selectedBrands = $(".filter-brand:checked").map(function () {
             return $(this).val();
         }).get();
-        console.log(selectedCategories)
-        // Enviar al backend
+
+        console.log("Categorías:", selectedCategories);
+        console.log("Marcas:", selectedBrands);
+
+        // Enviar al backend mediante el router
         $.ajax({
-            url: "/huellitasdigital/app/controllers/client/productController.php?action=filterProducts",
+            url: `${BASE_URL}/index.php`,
             method: "POST",
             data: {
+                controller: "product",
+                action: "filterProducts",
                 categories: selectedCategories,
                 brands: selectedBrands
             },
@@ -100,33 +105,32 @@ $(function () {
             success: function (response) {
                 $(".cards-list-main-catalog").html(response);
             },
-            error: function () {
+            error: function (xhr, status, error) {
+                console.error("Error al filtrar productos:", error, xhr.responseText);
                 $(".cards-list-main-catalog").html("<p>Error al cargar los productos.</p>");
             }
         });
     });
 
     // --- Aplicar automáticamente el filtro si viene una categoría seleccionada ---
-    $(document).ready(function () {
-        const selectedCategory = $(".filter-category:checked").map(function () {
-            return $(this).val();
-        }).get();
-
-        if (selectedCategory.length > 0) {
-            // Simular el cambio para activar el filtro automáticamente
-            $(".filter-category:first").trigger("change");
+    $(function () {
+        const $checked = $(".filter-category:checked");
+        if ($checked.length) {
+            $checked.first().trigger("change");
         }
-    });
+    })
 
-    // --- BUSCADOR EN TIEMPO REAL ---
+
+    // --- BUSCADOR EN EL CLIENTE ---
     $("#header-search").on("keyup", function () {
         const query = $(this).val().trim();
 
         if (query.length >= 2) {
             $.ajax({
-                url: "/huellitasdigital/app/controllers/client/productController.php",
+                url: `${BASE_URL}/index.php`,
                 method: "GET",
                 data: {
+                    controller: "product",
                     action: "searchProducts",
                     query: query
                 },
@@ -134,19 +138,18 @@ $(function () {
                 success: function (productos) {
                     mostrarResultadosBusqueda(productos);
                 },
-                error: function () {
-                    console.error("Error en la búsqueda AJAX");
+                error: function (xhr, status, error) {
+                    console.error("Error en la búsqueda AJAX:", error, xhr.responseText);
                 }
             });
         } else {
-            mostrarResultadosBusqueda([]); // limpia resultados si el input se borra
+            mostrarResultadosBusqueda([]);
         }
     });
 
     function mostrarResultadosBusqueda(productos) {
         let $contenedor = $("#resultados-busqueda");
 
-        // Si no existe el contenedor, se crea dinámicamente dentro del div .header-search
         if ($contenedor.length === 0) {
             $contenedor = $("<div>", {
                 id: "resultados-busqueda",
@@ -163,30 +166,29 @@ $(function () {
 
         productos.forEach(p => {
             const item = $(`
-                <div class="item-busqueda">
-                    <img src="${p.IMAGEN_URL}" alt="${p.PRODUCTO_NOMBRE}">
-                    <div>
-                        <strong>${p.PRODUCTO_NOMBRE}</strong><br>
-                        <span>₡${parseFloat(p.PRODUCTO_PRECIO_UNITARIO).toLocaleString()}</span>
-                    </div>
+            <div class="item-busqueda">
+                <img src="${p.IMAGEN_URL}" alt="${p.PRODUCTO_NOMBRE}">
+                <div>
+                    <strong>${p.PRODUCTO_NOMBRE}</strong><br>
+                    <span>₡${parseFloat(p.PRODUCTO_PRECIO_UNITARIO).toLocaleString()}</span>
                 </div>
-            `);
+            </div>
+        `);
 
-            // ✅ Al hacer clic en un resultado, redirige a la página de detalle (opcional)
             item.on("click", function () {
-                window.location.href = "/huellitasdigital/app/views/client/products/productDetail.php?action=productsDetails&id=" + p.ID_PRODUCTO_PK;
+                window.location.href = `${BASE_URL}/index.php?controller=product&action=productsDetails&id=${p.ID_PRODUCTO_PK}`;
             });
 
             $contenedor.append(item);
         });
     }
 
-    // --- Cerrar el contenedor si se hace clic fuera ---
     $(document).on("click", function (e) {
         if (!$(e.target).closest(".header-search").length) {
             $("#resultados-busqueda").remove();
         }
     });
+
 
     // --- SELECTS DEPENDIENTES (Provincia → Cantón → Distrito) ---
     $("#provincia").on("change", function () {
@@ -194,7 +196,7 @@ $(function () {
 
         if (idProvincia) {
             $.ajax({
-                url: "/huellitasdigital/app/controllers/admin/catalogController.php",
+                url: "/../app/controllers/admin/catalogController.php",
                 method: "GET",
                 data: { action: "getCantones", idProvincia },
                 dataType: "json",
@@ -224,7 +226,7 @@ $(function () {
 
         if (idCanton) {
             $.ajax({
-                url: "/huellitasdigital/app/controllers/admin/catalogController.php",
+                url: "/../app/controllers/admin/catalogController.php",
                 method: "GET",
                 data: { action: "getDistritos", idCanton },
                 dataType: "json",
@@ -263,13 +265,18 @@ $(function () {
     });
 
     // Función para cargar notificaciones
+    // === Cargar notificaciones ===
     function cargarNotificaciones() {
         $.ajax({
-            url: "/huellitasdigital/app/controllers/admin/notificationController.php",
+            url: `${BASE_URL}/index.php`,
             method: "GET",
-            data: { action: "getNotifications" },
+            data: {
+                controller: "adminNotification",
+                action: "getNotifications"
+            },
             dataType: "json",
             success: function (data) {
+                console.log(data);
                 const $list = $(".notification-list");
                 $list.empty();
 
@@ -280,23 +287,40 @@ $(function () {
 
                 data.forEach(n => {
                     const item = $(`
-                        <div class="notification-item" data-url="${n.URL_REDIRECCION || '#'}">
-                            <strong>${n.TITULO_NOTIFICACION}</strong><br>
-                            <small>${n.MENSAJE_NOTIFICACION}</small>
-                            <div><small>${new Date(n.FECHA_CREACION).toLocaleString()}</small></div>
-                        </div>
-                    `);
+                    <div class="notification-item" 
+                        data-id="${n.ID_NOTIFICACION_PK}"
+                        data-url="${n.URL_REDIRECCION || '#'}">
+                        <strong>${n.TITULO_NOTIFICACION}</strong><br>
+                        <small>${n.MENSAJE_NOTIFICACION}</small><br>
+                        <small>${new Date(n.FECHA_CREACION).toLocaleString()}</small>
+                    </div>
+                `);
 
+                    // ✅ Click para marcar y redirigir
                     item.on("click", function () {
-                        const url = $(this).data("url");
-                        if (url && url !== "#") window.location.href = url;
+                        let url = $(this).data("url");
+                        const id = $(this).data("id");
+
+                        $.post(`${BASE_URL}/index.php`, {
+                            controller: "adminNotification",
+                            action: "markOneAsRead",
+                            id: id
+                        });
+
+                        if (url) {
+                            if (!url.startsWith("http")) {
+                                url = `${BASE_URL}${url}`;
+                            }
+                            window.location.href = url;
+                        }
                     });
+
 
                     $list.append(item);
                 });
             },
-            error: function (err) {
-                console.error("Error al cargar notificaciones", err);
+            error: function (xhr) {
+                console.error("Error al cargar notificaciones:", xhr.responseText);
             }
         });
     }
@@ -304,51 +328,66 @@ $(function () {
     // Marcar todas como leídas
     $("#markAsRead").on("click", function () {
         $.ajax({
-            url: "/huellitasdigital/app/controllers/admin/notificationController.php",
+            url: `${BASE_URL}/index.php`,
             method: "POST",
-            data: { action: "markAsRead" },
+            data: {
+                controller: "adminNotification",
+                action: "markAsRead"
+            },
             success: function () {
                 $(".notification-list").html("<p style='padding:10px;'>Sin notificaciones nuevas</p>");
+                $("#notification-count").hide();
             }
         });
     });
 
+
     // === 🔄 FUNCIÓN PARA ACTUALIZAR CONTADOR ===
     function actualizarContadorNotificaciones() {
         $.ajax({
-            url: "/huellitasdigital/app/controllers/admin/notificationController.php",
+            url: `${BASE_URL}/index.php`,
             method: "GET",
-            data: { action: "getUnreadCount" },
+            data: {
+                controller: "adminNotification",
+                action: "getUnreadCount"
+            },
             dataType: "json",
             success: function (data) {
                 const count = parseInt(data.total) || 0;
                 const $badge = $("#notification-count");
 
                 if (count > 0) {
-                    $badge.text(count);
-                    $badge.show();
+                    $badge.text(count).show();
                 } else {
                     $badge.hide();
                 }
             },
-            error: function (err) {
-                console.error("Error al obtener el contador de notificaciones", err);
+            error: function (xhr) {
+                console.error("Error contador:", xhr.responseText);
             }
         });
     }
 
-    // === Actualizar cada 60 segundos automáticamente ===
+
+    // === Actualizar contador cada 60 segundos automáticamente ===
     setInterval(actualizarContadorNotificaciones, 60000);
 
     // === Disminuir contador al marcar todas como leídas ===
     $("#markAsRead").on("click", function () {
         $.ajax({
-            url: "/huellitasdigital/app/controllers/admin/notificationController.php",
+            url: `${BASE_URL}/index.php`,
             method: "POST",
-            data: { action: "markAsRead" },
+            data: {
+                controller: "adminNotification",
+                action: "markAsRead"
+            },
             success: function () {
-                $(".notification-list").html("<p style='padding:10px;'>Sin notificaciones nuevas</p>");
-                $("#notification-count").hide(); // ocultar contador
+                $(".notification-list")
+                    .html("<p style='padding:10px;'>Sin notificaciones nuevas</p>");
+                $("#notification-count").hide(); // ✅ ocultar contador a 0
+            },
+            error: function (xhr) {
+                console.error("Error al marcar como leídas:", xhr.responseText);
             }
         });
     });
@@ -367,12 +406,36 @@ $(function () {
 
             // Mapeo de controladores y acciones según el destino
             const controllerMap = {
-                product: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "search" },
-                brand: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "searchBrand" },
-                category: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "searchCategory" },
-                user: { url: "/huellitasdigital/app/controllers/admin/userController.php", action: "search" },
-                role: { url: "/huellitasdigital/app/controllers/admin/roleController.php", action: "search" },
-                supplier: { url: "/huellitasdigital/app/controllers/admin/supplierController.php", action: "search" }
+                user: {
+                    url: `${BASE_URL}/index.php`,
+                    action: "search",
+                    controller: "adminUser"
+                },
+                role: {
+                    url: `${BASE_URL}/index.php`,
+                    action: "search",
+                    controller: "adminRole"
+                },
+                supplier: {
+                    url: `${BASE_URL}/index.php`,
+                    action: "search",
+                    controller: "adminSupplier"
+                },
+                product: {
+                    url: `${BASE_URL}/index.php`,
+                    action: "search",
+                    controller: "adminProduct"
+                },
+                brand: {
+                    url: `${BASE_URL}/index.php`,
+                    action: "searchBrand",
+                    controller: "adminProduct"
+                },
+                category: {
+                    url: `${BASE_URL}/index.php`,
+                    action: "searchCategory",
+                    controller: "adminProduct"
+                }
             };
 
             const config = controllerMap[target];
@@ -385,14 +448,20 @@ $(function () {
             $.ajax({
                 url: config.url,
                 method: "GET",
-                data: { action: config.action, query: query },
+                data: {
+                    controller: config.controller,
+                    action: config.action,
+                    query: query,
+                    page: 1
+                },
                 success: function (response) {
                     $(".admin-mgmt-table").html(response);
                 },
                 error: function (xhr, status, error) {
-                    console.error("Error al realizar la búsqueda:", error);
+                    console.error("Error al realizar la búsqueda:", error, xhr.responseText);
                 }
             });
+
         }
     });
 
@@ -411,13 +480,37 @@ $(function () {
         var target = $input.data("target");
 
         // Mismo mapa de controladores que antes
-        var controllerMap = {
-            product: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "search" },
-            brand: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "searchBrand" },
-            category: { url: "/huellitasdigital/app/controllers/admin/productController.php", action: "searchCategory" },
-            user: { url: "/huellitasdigital/app/controllers/admin/userController.php", action: "search" },
-            role: { url: "/huellitasdigital/app/controllers/admin/roleController.php", action: "search" },
-            supplier: { url: "/huellitasdigital/app/controllers/admin/supplierController.php", action: "search" }
+        const controllerMap = {
+            user: {
+                url: `${BASE_URL}/index.php`,
+                action: "search",
+                controller: "adminUser"
+            },
+            role: {
+                url: `${BASE_URL}/index.php`,
+                action: "search",
+                controller: "adminRole"
+            },
+            supplier: {
+                url: `${BASE_URL}/index.php`,
+                action: "search",
+                controller: "adminSupplier"
+            },
+            product: {
+                url: `${BASE_URL}/index.php`,
+                action: "search",
+                controller: "adminProduct"
+            },
+            brand: {
+                url: `${BASE_URL}/index.php`,
+                action: "searchBrand",
+                controller: "adminProduct"
+            },
+            category: {
+                url: `${BASE_URL}/index.php`,
+                action: "searchCategory",
+                controller: "adminProduct"
+            }
         };
 
         var config = controllerMap[target];
@@ -425,21 +518,163 @@ $(function () {
 
         $.ajax({
             url: config.url,
-            type: "GET",
-            data: { action: config.action, query: query, page: page },
+            method: "GET",
+            data: {
+                controller: config.controller,
+                action: config.action,
+                query: query,
+                page: page
+            },
             beforeSend: function () {
-                $(".admin-mgmt-table").html("<div style='padding:10px;text-align:center;'>Cargando página...</div>");
+                $(".admin-mgmt-table").html("<div style='padding:10px;text-align:center;'>Cargando...</div>");
             },
             success: function (response) {
                 $(".admin-mgmt-table").html(response);
-                $("html, body").animate({ scrollTop: $(".admin-mgmt-table").offset().top - 100 }, 300);
-            },
-            error: function () {
-                alert("Error al cambiar de página");
             }
         });
     });
 
+    // === previewImage.js ===
+    // Script genérico para previsualizar imágenes en formularios de edición
+    $(document).on('change', '.image-input', function (event) {
+        const input = event.target;
+        const file = input.files[0];
+
+        // Buscamos la vista previa más cercana dentro del mismo contenedor o formulario
+        const preview = $(input).closest('form, .form-container').find('.image-preview').first();
+
+        // Si el usuario seleccionó una nueva imagen
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // Si el input fue limpiado, restauramos la imagen original (si existe campo hidden)
+            const currentImageUrl = $(input).closest('form').find('input[name="current_image_url"]').val();
+            if (currentImageUrl) {
+                preview.attr('src', currentImageUrl);
+            }
+        }
+    });
+
+    // --- AGREGAR COMENTARIO EN DETALLE DEL PRODUCTO ---
+    $("#formAddComment").on("submit", function () {
+
+        const comment = $("#commentText").val();
+        const rating = $("#rating").val();
+        const productId = new URLSearchParams(window.location.search).get("id");
+
+        if (!comment.trim()) {
+            alert("⚠️ El comentario no puede estar vacío");
+            return;
+        }
+
+        $.ajax({
+            url: `${BASE_URL}/index.php`,
+            type: "POST",
+            data: {
+                controller: "product",
+                action: "addComment",
+                id_producto: productId,
+                comentario: comment,
+                calificacion: rating
+            },
+            dataType: "json",
+            success: function (res) {
+                if (res.success) {
+                    alert("✅ Comentario agregado correctamente");
+                    location.reload();
+                } else {
+                    alert("❌ " + res.error);
+                }
+            },
+            error: function (xhr) {
+                alert("⚠️ Error al enviar el comentario: " + xhr.responseText);
+            }
+        });
+
+    });
+
+    // Sistema de estrellas para calificación
+    $(".rating-stars i").on("click", function () {
+        const value = $(this).data("value");
+        $("#rating").val(value);
+
+        $(".rating-stars i").each(function () {
+            $(this).toggleClass("bi-star-fill", $(this).data("value") <= value)
+                .toggleClass("text-warning", $(this).data("value") <= value)
+                .toggleClass("text-secondary", $(this).data("value") > value);
+        });
+    });
+
+    // Editar comentario - abrir modal
+    $(document).on("click", ".btnEdit", function () {
+        const comment = $(this).closest(".comment-card");
+        $("#editCommentId").val($(this).data("id"));
+        $("#editCommentText").val(comment.find("p").text());
+
+        const currentStars = comment.find(".bi-star-fill").length;
+        $("#editRating").val(currentStars);
+
+        $(".edit-stars i").each(function () {
+            $(this).toggleClass("bi-star-fill", $(this).data("value") <= currentStars)
+                .toggleClass("text-warning", $(this).data("value") <= currentStars)
+                .toggleClass("text-secondary", $(this).data("value") > currentStars);
+        });
+
+        $("#editCommentModal").modal("show");
+    });
+
+    // Editar comentario - sistema de estrellas en modal
+    $("#updateCommentBtn").on("click", function () {
+        $.post(`${BASE_URL}/index.php`, {
+            controller: "product",
+            action: "editComment",
+            id_comentario: $("#editCommentId").val(),
+            comentario: $("#editCommentText").val(),
+            calificacion: $("#editRating").val()
+        }, function (res) {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert("⚠ Error al actualizar");
+            }
+        }, "json");
+    });
+
+    // Seleccionar estrellas dentro del modal
+    $(".edit-stars i").on("click", function () {
+        const valor = $(this).data("value");
+        $("#editRating").val(valor);
+
+        $(".edit-stars i").each(function () {
+            $(this)
+                .toggleClass("bi-star-fill", $(this).data("value") <= valor)
+                .toggleClass("text-warning", $(this).data("value") <= valor)
+                .toggleClass("bi-star", $(this).data("value") > valor);
+        });
+    });
+
+    // Eliminar comentario - con confirmación
+    $(document).on("click", ".btnDelete", function () {
+        const id = $(this).data("id");
+
+        if (confirm("¿Seguro que deseas eliminarlo?")) {
+            $.post(`${BASE_URL}/index.php`, {
+                controller: "product",
+                action: "deleteComment",
+                id_comentario: id
+            }, function (res) {
+                if (res.success) {
+                    $("#comment-" + id).fadeOut();
+                } else {
+                    alert("Error al eliminar 😥");
+                }
+            }, "json");
+        }
+    });
 
 
 

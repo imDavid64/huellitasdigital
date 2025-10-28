@@ -12,63 +12,65 @@ use HUELLITASDIGITAL;
 -- NOMBRE: HUELLITAS_ANTES_INSERTAR_USUARIO_TR
 -- DESCRIPCIÓN: Trigger para encriptar contraseña automáticamente al insertar usuario
 -- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_ANTES_INSERTAR_USUARIO_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_ANTES_INSERTAR_USUARIO_TR
-BEFORE INSERT ON HUELLITAS_USUARIOS_TB
+BEFORE INSERT ON huellitas_usuarios_tb
 FOR EACH ROW
 BEGIN
     DECLARE V_SALT VARCHAR(100);
     
-    -- Generar salt único para cada usuario
+    -- GENERAR SALT ÚNICO PARA CADA USUARIO
     SET V_SALT = HUELLITAS_GENERAR_SALT_FN();
     SET NEW.USUARIO_SALT = V_SALT;
     
-    -- Encriptar contraseña
+    -- ENCRIPTAR CONTRASEÑA
     IF NEW.USUARIO_CONTRASENNA IS NOT NULL THEN
         SET NEW.USUARIO_CONTRASENNA_ENCRIPTADA = HUELLITAS_ENCRIPTAR_CONTRASENNA_FN(
             NEW.USUARIO_CONTRASENNA, 
             V_SALT
         );
-        -- Limpiar contraseña en texto plano (opcional por seguridad)
+        -- LIMPIAR CONTRASEÑA EN TEXTO PLANO (OPCIONAL POR SEGURIDAD)
         SET NEW.USUARIO_CONTRASENNA = NULL;
     END IF;
 END//
 DELIMITER ;
-/
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_ANTES_ACTUALIZAR_USUARIO_TR
 -- DESCRIPCIÓN: Trigger para encriptar contraseña automáticamente al actualizar usuario
 -- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_ANTES_ACTUALIZAR_USUARIO_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_ANTES_ACTUALIZAR_USUARIO_TR
-BEFORE UPDATE ON HUELLITAS_USUARIOS_TB
+BEFORE UPDATE ON huellitas_usuarios_tb
 FOR EACH ROW
 BEGIN
-    -- Si se está asignando una nueva contraseña (no nula)
+    -- SI SE ESTÁ ASIGNANDO UNA NUEVA CONTRASEÑA (NO NULA)
     IF NEW.USUARIO_CONTRASENNA IS NOT NULL THEN
-        -- Generar nuevo salt
+        -- GENERAR NUEVO SALT
         SET NEW.USUARIO_SALT = HUELLITAS_GENERAR_SALT_FN();
         
-        -- Encriptar nueva contraseña
+        -- ENCRIPTAR NUEVA CONTRASEÑA
         SET NEW.USUARIO_CONTRASENNA_ENCRIPTADA = HUELLITAS_ENCRIPTAR_CONTRASENNA_FN(
             NEW.USUARIO_CONTRASENNA, 
             NEW.USUARIO_SALT
         );
         
-        -- Limpiar contraseña en texto plano
+        -- LIMPIAR CONTRASEÑA EN TEXTO PLANO
         SET NEW.USUARIO_CONTRASENNA = NULL;
     END IF;
 END//
 DELIMITER ;
-/
+
 -- ==========================================
 -- NOMBRE: HUELLITAS_ANTES_INSERTAR_TARJETA_TR
 -- DESCRIPCIÓN: Trigger para encriptar automáticamente datos de tarjeta al insertar
 -- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_ANTES_INSERTAR_TARJETA_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_ANTES_INSERTAR_TARJETA_TR
-BEFORE INSERT ON HUELLITAS_TARJETAS_TB
+BEFORE INSERT ON huellitas_tarjetas_tb
 FOR EACH ROW
 BEGIN
     -- SOLO ENCRIPTACIÓN, SIN VALIDACIONES DE FECHA
@@ -87,17 +89,17 @@ BEGIN
     IF NEW.ULTIMOS_CUATRO_DIGITOS IS NULL AND NEW.NUMERO_TARJETA_ENCRIPTADO IS NOT NULL THEN
         SET NEW.ULTIMOS_CUATRO_DIGITOS = RIGHT(NEW.NUMERO_TARJETA_ENCRIPTADO, 4);
     END IF;
-END// 
+END//
 DELIMITER ;
-/
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_ANTES_ACTUALIZAR_TARJETA_TR
 -- DESCRIPCIÓN: Trigger para encriptar automáticamente datos de tarjeta al actualizar
 -- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_ANTES_ACTUALIZAR_TARJETA_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_ANTES_ACTUALIZAR_TARJETA_TR
-BEFORE UPDATE ON HUELLITAS_TARJETAS_TB
+BEFORE UPDATE ON huellitas_tarjetas_tb
 FOR EACH ROW
 BEGIN
     -- SOLO ENCRIPTACIÓN, SIN VALIDACIONES DE FECHA
@@ -120,14 +122,16 @@ DELIMITER ;
 -- NOMBRE: HUELLITAS_VALIDAR_TARJETA_TR
 -- DESCRIPCIÓN: Trigger para Validar Fechas de Tarjetas (integridad lógica)
 -- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_VALIDAR_TARJETA_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_VALIDAR_TARJETA_TR
-BEFORE INSERT ON HUELLITAS_TARJETAS_TB
+BEFORE INSERT ON huellitas_tarjetas_tb
 FOR EACH ROW
 BEGIN
+    -- VALIDAR QUE LA TARJETA NO ESTÉ VENCIDA ANTES DE INSERTAR
     IF NEW.FECHA_VENCIMIENTO < CURDATE() THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = '❌ No se puede registrar una tarjeta vencida.';
+        SET MESSAGE_TEXT = '❌ NO SE PUEDE REGISTRAR UNA TARJETA VENCIDA.';
     END IF;
 END//
 DELIMITER ;
@@ -137,18 +141,21 @@ DELIMITER ;
 -- NOMBRE: HUELLITAS_DISMINUIR_STOCK_TR
 -- DESCRIPCIÓN: Trigger para Control de Stock Automático
 -- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_DISMINUIR_STOCK_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_DISMINUIR_STOCK_TR
-AFTER INSERT ON HUELLITAS_DETALLE_FACTURA_TB
+AFTER INSERT ON huellitas_detalle_factura_tb
 FOR EACH ROW
 BEGIN
-    UPDATE HUELLITAS_PRODUCTOS_TB
+    -- DISMINUIR EL STOCK DEL PRODUCTO DESPUÉS DE REGISTRAR UN DETALLE DE FACTURA
+    UPDATE huellitas_productos_tb
     SET PRODUCTO_STOCK = PRODUCTO_STOCK - NEW.CANTIDAD
     WHERE ID_PRODUCTO_PK = NEW.ID_PRODUCTO_FK;
 
-    IF (SELECT PRODUCTO_STOCK FROM HUELLITAS_PRODUCTOS_TB WHERE ID_PRODUCTO_PK = NEW.ID_PRODUCTO_FK) < 0 THEN
+    -- VALIDAR QUE EL STOCK NO SEA NEGATIVO
+    IF (SELECT PRODUCTO_STOCK FROM huellitas_productos_tb WHERE ID_PRODUCTO_PK = NEW.ID_PRODUCTO_FK) < 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = '⚠️ El stock del producto no puede ser negativo.';
+        SET MESSAGE_TEXT = '⚠️ EL STOCK DEL PRODUCTO NO PUEDE SER NEGATIVO.';
     END IF;
 END//
 DELIMITER ;
@@ -157,17 +164,18 @@ DELIMITER ;
 -- NOMBRE: HUELLITAS_ALERTA_BAJO_STOCK_TR
 -- DESCRIPCIÓN: Envía notificaciones a todos los administradores cuando un producto tiene bajo stock.
 -- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_ALERTA_BAJO_STOCK_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_ALERTA_BAJO_STOCK_TR
-AFTER UPDATE ON HUELLITAS_PRODUCTOS_TB
+AFTER UPDATE ON huellitas_productos_tb
 FOR EACH ROW
 BEGIN
-    -- Notificar solo cuando el stock cayó por debajo o igual a 5
-    -- y antes estaba por encima (evita notificaciones repetidas).
+    -- NOTIFICAR SOLO CUANDO EL STOCK CAE POR DEBAJO O IGUAL A 5
+    -- Y ANTES ESTABA POR ENCIMA (EVITA NOTIFICACIONES REPETIDAS)
     IF NEW.PRODUCTO_STOCK <= 5
        AND (OLD.PRODUCTO_STOCK IS NULL OR OLD.PRODUCTO_STOCK > 5) THEN
 
-        INSERT INTO HUELLITAS_NOTIFICACIONES_TB
+        INSERT INTO huellitas_notificaciones_tb
         (
             ID_USUARIO_FK,
             ID_ESTADO_FK,
@@ -178,18 +186,18 @@ BEGIN
             URL_REDIRECCION
         )
         SELECT
-            u.ID_USUARIO_PK,
-            1, -- Activa
-            CONCAT('Stock bajo: ', NEW.PRODUCTO_NOMBRE),
-            CONCAT('El producto "', NEW.PRODUCTO_NOMBRE, '" tiene solo ',
-                   NEW.PRODUCTO_STOCK, ' unidades en inventario.'),
+            U.ID_USUARIO_PK,
+            1, -- ACTIVA
+            CONCAT('STOCK BAJO: ', NEW.PRODUCTO_NOMBRE),
+            CONCAT('EL PRODUCTO "', NEW.PRODUCTO_NOMBRE, '" TIENE SOLO ',
+                   NEW.PRODUCTO_STOCK, ' UNIDADES EN INVENTARIO.'),
             'SISTEMA',
             'ALTA',
-            CONCAT('/huellitasdigital/app/controllers/admin/productController.php?action=edit&id=', NEW.ID_PRODUCTO_PK)
-        FROM HUELLITAS_USUARIOS_TB u
-        JOIN HUELLITAS_ROL_USUARIO_TB r
-              ON r.ID_ROL_USUARIO_PK = u.ID_ROL_USUARIO_FK
-        WHERE r.DESCRIPCION_ROL_USUARIO = 'Administrador';
+            CONCAT('/index.php?controller=adminProduct&action=edit&id=', NEW.ID_PRODUCTO_PK)
+        FROM huellitas_usuarios_tb U
+        JOIN huellitas_rol_usuario_tb R
+              ON R.ID_ROL_USUARIO_PK = U.ID_ROL_USUARIO_FK
+        WHERE R.DESCRIPCION_ROL_USUARIO = 'Administrador';
     END IF;
 END//
 DELIMITER ;
@@ -198,59 +206,70 @@ DELIMITER ;
 -- NOMBRE: HUELLITAS_ALERTA_BAJO_STOCK_INS_TR
 -- DESCRIPCIÓN: Envía notificaciones a todos los administradores cuando se agregar un producto con bajo stock.
 -- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_ALERTA_BAJO_STOCK_INS_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_ALERTA_BAJO_STOCK_INS_TR
-AFTER INSERT ON HUELLITAS_PRODUCTOS_TB
+AFTER INSERT ON huellitas_productos_tb
 FOR EACH ROW
 BEGIN
+    -- NOTIFICAR CUANDO UN NUEVO PRODUCTO SE INSERTA CON STOCK BAJO (≤ 5)
     IF NEW.PRODUCTO_STOCK <= 5 THEN
-        INSERT INTO HUELLITAS_NOTIFICACIONES_TB
+        INSERT INTO huellitas_notificaciones_tb
         (
-            ID_USUARIO_FK, ID_ESTADO_FK, TITULO_NOTIFICACION, MENSAJE_NOTIFICACION,
-            TIPO_NOTIFICACION, PRIORIDAD, URL_REDIRECCION
+            ID_USUARIO_FK,
+            ID_ESTADO_FK,
+            TITULO_NOTIFICACION,
+            MENSAJE_NOTIFICACION,
+            TIPO_NOTIFICACION,
+            PRIORIDAD,
+            URL_REDIRECCION
         )
         SELECT
-            u.ID_USUARIO_PK, 1,
-            CONCAT('Stock bajo: ', NEW.PRODUCTO_NOMBRE),
-            CONCAT('El producto "', NEW.PRODUCTO_NOMBRE, '" tiene solo ',
-                   NEW.PRODUCTO_STOCK, ' unidades en inventario.'),
-            'SISTEMA', 'ALTA',
-            CONCAT('/huellitasdigital/app/controllers/admin/productController.php?action=edit&id=', NEW.ID_PRODUCTO_PK)
-        FROM HUELLITAS_USUARIOS_TB u
-        JOIN HUELLITAS_ROL_USUARIO_TB r
-              ON r.ID_ROL_USUARIO_PK = u.ID_ROL_USUARIO_FK
-        WHERE r.DESCRIPCION_ROL_USUARIO = 'Administrador';
+            U.ID_USUARIO_PK,
+            1, -- ACTIVA
+            CONCAT('STOCK BAJO: ', NEW.PRODUCTO_NOMBRE),
+            CONCAT('EL PRODUCTO "', NEW.PRODUCTO_NOMBRE, '" TIENE SOLO ',
+                   NEW.PRODUCTO_STOCK, ' UNIDADES EN INVENTARIO.'),
+            'SISTEMA',
+            'ALTA',
+            CONCAT('/index.php?controller=adminProduct&action=edit&id=', NEW.ID_PRODUCTO_PK)
+        FROM huellitas_usuarios_tb U
+        JOIN huellitas_rol_usuario_tb R
+              ON R.ID_ROL_USUARIO_PK = U.ID_ROL_USUARIO_FK
+        WHERE R.DESCRIPCION_ROL_USUARIO = 'Administrador';
     END IF;
 END//
 DELIMITER ;
 
 
 
-
+/*----------------- DESCOMENTAR Y EJECUTAR CUANDO YA SE PUEDAN REGISTRAR ORDENES DE COMPRA -----------------*/
+/*
 -- ==========================================
 -- NOMBRE: HUELLITAS_VALIDAR_COMENTARIO_TR
 -- DESCRIPCIÓN: Trigger para Validar Comentarios de Productos
 -- ==========================================
-/*
+DROP TRIGGER IF EXISTS HUELLITAS_VALIDAR_COMENTARIO_TR;
 DELIMITER //
 CREATE TRIGGER HUELLITAS_VALIDAR_COMENTARIO_TR
-BEFORE INSERT ON HUELLITAS_PRODUCTOS_COMENTARIOS_TB
+BEFORE INSERT ON huellitas_productos_comentarios_tb
 FOR EACH ROW
 BEGIN
     DECLARE V_EXISTE_COMPRA INT;
 
+    -- VERIFICAR QUE EL USUARIO HAYA COMPRADO EL PRODUCTO ANTES DE COMENTAR
     SELECT COUNT(*) INTO V_EXISTE_COMPRA
-    FROM HUELLITAS_DETALLE_FACTURA_TB DF
-    INNER JOIN HUELLITAS_FACTURACIONES_TB F ON DF.ID_FACTURA_FK = F.ID_FACTURA_PK
+    FROM huellitas_detalle_factura_tb DF
+    INNER JOIN huellitas_facturaciones_tb F ON DF.ID_FACTURA_FK = F.ID_FACTURA_PK
     WHERE DF.ID_PRODUCTO_FK = NEW.ID_PRODUCTO_FK
       AND F.ID_USUARIO_FK = NEW.ID_USUARIO_FK;
 
+    -- BLOQUEAR COMENTARIOS DE USUARIOS SIN COMPRA PREVIA
     IF V_EXISTE_COMPRA = 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = '❌ Solo los clientes que hayan comprado el producto pueden comentar.';
+        SET MESSAGE_TEXT = '❌ SOLO LOS CLIENTES QUE HAYAN COMPRADO EL PRODUCTO PUEDEN COMENTAR.';
     END IF;
 END//
 DELIMITER ;
+
 */
-
-

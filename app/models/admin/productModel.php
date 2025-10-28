@@ -1,25 +1,18 @@
 <?php
-class ProductModel
+namespace App\Models\Admin;
+
+use App\Models\BaseModel;
+
+class ProductModel extends BaseModel
 {
-    private $conn;
 
-    public function __construct($db)
-    {
-        $this->conn = $db;
-    }
-
-    // Dentro de la clase ProductModel en productModel.php
-
+    // ======================================
+    // PRODUCTOS
+    // ======================================
     public function updateProduct($id, $id_proveedor, $id_estado, $id_categoria, $id_marca, $id_nuevo, $nombre, $descripcion, $precio, $stock, $imagen_url)
     {
         $query = "CALL HUELLITAS_ACTUALIZAR_PRODUCTO_SP(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($query);
-
-        if (!$stmt) {
-            throw new Exception("❌ Error en prepare: " . $this->conn->error);
-        }
-
-        // Tipos corregidos: 6 enteros, nombre y descripcion strings, precio double, stock int, imagen string
         $stmt->bind_param(
             "iiiiiissdis",
             $id,
@@ -34,26 +27,18 @@ class ProductModel
             $stock,
             $imagen_url
         );
-
         $result = $stmt->execute();
-        if (!$result) {
-            throw new Exception("❌ Error al ejecutar el procedimiento: " . $stmt->error);
-        }
-
         $stmt->close();
         return $result;
     }
 
-
-    public function getProductById($id_producto)
+    public function getProductById($id)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM HUELLITAS_PRODUCTOS_TB WHERE ID_PRODUCTO_PK = ?");
-        $stmt->bind_param("i", $id_producto);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_PRODUCTO_POR_ID_SP(?)");
+        $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
-        $producto = $result->fetch_assoc();
-        $stmt->close();
-        return $producto;
+        return $result->fetch_assoc();
     }
 
     public function getAllProducts()
@@ -68,11 +53,6 @@ class ProductModel
     {
         $sql = "CALL HUELLITAS_AGREGAR_PRODUCTO_SP(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-
-        if (!$stmt) {
-            throw new Exception("Error al preparar la consulta: " . $this->conn->error);
-        }
-
         $stmt->bind_param(
             "iiiiissdis",
             $id_proveedor,
@@ -86,94 +66,119 @@ class ProductModel
             $stock,
             $imagen_url
         );
-
         $result = $stmt->execute();
-
-        if (!$result) {
-            throw new Exception("Error al ejecutar el procedimiento almacenado: " . $stmt->error);
-        }
-
         $stmt->close();
         return $result;
     }
 
+    public function searchProducts($query)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_BUSCAR_PRODUCTOS_ADMIN_SP(?)");
+        $stmt->bind_param("s", $query);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+
+    // =================================================
+    // CATEGORÍAS (CRUD + AJAX)
+    // =================================================
     public function addCategory($nombreCategoria, $estado)
     {
         $sql = "CALL HUELLITAS_AGREGAR_CATEGORIA_SP(?, ?)";
         $stmt = $this->conn->prepare($sql);
-
-        if (!$stmt) {
-            throw new Exception("Error al preparar la consulta: " . $this->conn->error);
-        }
-
         $stmt->bind_param("is", $estado, $nombreCategoria);
-
         $result = $stmt->execute();
-
-        if (!$result) {
-            throw new Exception("Error al ejecutar el procedimiento almacenado: " . $stmt->error);
-        }
-
         $stmt->close();
         return $result;
     }
 
     public function getCategoryById($id_categoria)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM HUELLITAS_PRODUCTOS_CATEGORIA_TB WHERE ID_CATEGORIA_PK = ?");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_CATEGORIA_POR_ID_SP(?)");
         $stmt->bind_param("i", $id_categoria);
         $stmt->execute();
         $result = $stmt->get_result();
         $categoria = $result->fetch_assoc();
+
+        $stmt->free_result();
         $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
         return $categoria;
     }
+
+    public function getActiveCategories()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP()");
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $categorias = $result->fetch_all(MYSQLI_ASSOC);
+
+        // Limpieza de buffers de procedimientos almacenados
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+
+        return $categorias;
+    }
+
 
     public function updateCategory($id_categoria, $estado, $nombreCategoria)
     {
         $query = "CALL HUELLITAS_ACTUALIZAR_CATEGORIA_SP(?, ?, ?)";
         $stmt = $this->conn->prepare($query);
-
-        if (!$stmt) {
-            throw new Exception("❌ Error en prepare: " . $this->conn->error);
-        }
-
         $stmt->bind_param(
             "iis",
             $id_categoria,
             $estado,
             $nombreCategoria
         );
-
         $result = $stmt->execute();
-        if (!$result) {
-            throw new Exception("❌ Error al ejecutar el procedimiento: " . $stmt->error);
-        }
-
         $stmt->close();
         return $result;
     }
 
+    public function searchCategory($query)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_BUSCAR_CATEGORIAS_ADMIN_SP(?)");
+        $stmt->bind_param("s", $query);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    // =================================================
+    // MARCAS (CRUD + AJAX + Imágenes)
+    // =================================================
     function addBrand($nombre, $estado, $imagen_url)
     {
         $sql = "CALL HUELLITAS_AGREGAR_MARCA_SP(?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-
-        if (!$stmt) {
-            throw new Exception("Error al preparar la consulta: " . $this->conn->error);
-        }
-
         $stmt->bind_param("sis", $nombre, $estado, $imagen_url);
-
         $result = $stmt->execute();
-
-        if (!$result) {
-            throw new Exception("Error al ejecutar el procedimiento almacenado: " . $stmt->error);
-        }
-
         $stmt->close();
         return $result;
     }
+
+    public function getActiveBrands()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_MARCAS_ACTIVAS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $brands = $result->fetch_all(MYSQLI_ASSOC);
+
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+
+        return $brands;
+    }
+
 
     function getBrandById($id_marca)
     {
@@ -190,49 +195,17 @@ class ProductModel
     {
         $query = "CALL HUELLITAS_ACTUALIZAR_MARCA_SP(?, ?, ?, ?)";
         $stmt = $this->conn->prepare($query);
-
-        if (!$stmt) {
-            throw new Exception("❌ Error en prepare: " . $this->conn->error);
-        }
-
-        $stmt->bind_param(
-            "isis",
-            $id_marca,
-            $nombre,
-            $estado,
-            $imagen_url
-        );
-
+        $stmt->bind_param("isis", $id_marca, $nombre, $estado, $imagen_url);
         $result = $stmt->execute();
-        if (!$result) {
-            throw new Exception("❌ Error al ejecutar el procedimiento: " . $stmt->error);
-        }
-
         $stmt->close();
         return $result;
     }
 
-
-    public function searchProducts($query)
-    {
-        $stmt = $this->conn->prepare("CALL HUELLITAS_BUSCAR_PRODUCTOS_ADMIN_SP(?)");
-        $stmt->bind_param("s", $query);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function searchCategory($query)
-    {
-        $stmt = $this->conn->prepare("CALL HUELLITAS_BUSCAR_CATEGORIAS_ADMIN_SP(?)");
-        $stmt->bind_param("s", $query);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
     // =======================
-    // 🔍 BÚSQUEDAS Y PAGINACIÓN
+    // BÚSQUEDAS Y PAGINACIÓN
+    // =======================
+    // =======================
+    // PRODUCTOS CON PAGINACIÓN
     // =======================
     public function searchProductsPaginated($query, $limit, $offset)
     {
@@ -262,7 +235,7 @@ class ProductModel
     }
 
     // =======================
-    // 🧩 CATEGORÍAS CON PAGINACIÓN
+    // CATEGORÍAS CON PAGINACIÓN
     // =======================
 
     public function searchCategoryPaginated($query, $limit, $offset)
@@ -289,7 +262,7 @@ class ProductModel
     }
 
     // =======================
-    // 🏷️ MARCAS CON PAGINACIÓN
+    // MARCAS CON PAGINACIÓN
     // =======================
 
     public function searchBrandPaginated($query, $limit, $offset)

@@ -29,8 +29,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <nav class="breadcrumbs-container">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a
-                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                                <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
                             </li>
                             <li class="breadcrumb-item current-page">Gestión de Productos</li>
                         </ol>
@@ -38,7 +37,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <div class="tittles">
                         <h2><i class="bi bi-box2-fill"></i><strong> Gestión de Productos</strong></h2>
                         <div>
-                            <a href="/huellitasdigital/app/controllers/admin/productController.php?action=create"
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=create"
                                 class="btn-blue"><strong>Agregar Producto</strong>
                                 <i class="bi bi-bag-plus-fill"></i></a>
                         </div>
@@ -53,13 +52,13 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                         </div>
 
                         <div class="mgmt-header-buttons">
-                            <a href="/huellitasdigital/app/controllers/admin/productController.php?action=categoryMgmt"
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=categoryMgmt"
                                 class="btn-dark-blue"><strong>Gestionar Categorías</strong>
                                 <i class="bi bi-collection-fill"></i></a>
-                            <a href="/huellitasdigital/app/controllers/admin/productController.php?action=brandMgmt"
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=brandMgmt"
                                 class="btn-dark-blue"><strong>Gestionar Marcas</strong>
                                 <i class="bi bi-sticky-fill"></i></a>
-                            <a href="/huellitasdigital/app/controllers/admin/productController.php?action=addDiscount"
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=addDiscount"
                                 class="btn-dark-blue"><strong>Agregar Descuento</strong>
                                 <i class="bi bi-tag-fill">+</i></a>
                         </div>
@@ -127,7 +126,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group" product="group">
-                                                <a href="/huellitasdigital/app/controllers/admin/productController.php?action=edit&id=<?= $product['ID_PRODUCTO_PK'] ?>"
+                                                <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=edit&id=<?= $product['ID_PRODUCTO_PK'] ?>"
                                                     class="btn btn-dark-blue btn-sm">
                                                     Editar <i class="bi bi-pencil-square"></i>
                                                 </a>

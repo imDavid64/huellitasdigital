@@ -1,43 +1,61 @@
 <?php
-include_once __DIR__ . "/../conexionDB.php";
+namespace App\Models\Admin;
 
-$db = new ConexionDatabase();
-$conn = $db->connectDB();
-
-class NotificationModel
+use App\Models\BaseModel;
+class NotificationModel extends BaseModel
 {
-
-    private $conn;
-
-    public function __construct($db)
-    {
-        $this->conn = $db;
-    }
-    
     // Obtener las notificaciones no leídas del usuario
     public function getNotificationsByUser($id_usuario)
     {
-        $sql = "SELECT ID_NOTIFICACION_PK, TITULO_NOTIFICACION, MENSAJE_NOTIFICACION, 
-                       FECHA_CREACION, ES_LEIDA, URL_REDIRECCION
-                FROM HUELLITAS_NOTIFICACIONES_TB
-                WHERE ID_USUARIO_FK = ? 
-                ORDER BY FECHA_CREACION DESC
-                LIMIT 10";
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_NOTIFICACIONES_SP(?)");
         $stmt->bind_param("i", $id_usuario);
         $stmt->execute();
         $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $notificaciones = $result->fetch_all(MYSQLI_ASSOC);
+        // Limpieza
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+
+        return $notificaciones;
     }
 
-    // Marcar notificaciones como leídas
+    // Contar notificaciones no leídas
+    public function getUnreadCount(int $userId)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_CONTAR_NOTIFICACIONES_NO_LEIDAS_SP(?)");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $count = $result->fetch_assoc();
+        // Limpieza
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+
+        return $count;
+    }
+
+    // Marcar una notificación como leída al hacer clic
+    public function markOneAsRead($id_notificacion)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_MARCAR_NOTIFICACION_LEIDA_SP(?)");
+        $stmt->bind_param("i", $id_notificacion);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+
+    // Marcar toda las notificaciones como leídas
     public function markAsRead($id_usuario)
     {
-        $sql = "UPDATE HUELLITAS_NOTIFICACIONES_TB 
-                SET ES_LEIDA = TRUE, FECHA_LECTURA = NOW() 
-                WHERE ID_USUARIO_FK = ? AND ES_LEIDA = FALSE";
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_MARCAR_TODAS_LEIDAS_SP(?)");
         $stmt->bind_param("i", $id_usuario);
-        return $stmt->execute();
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
     }
 }

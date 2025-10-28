@@ -1,13 +1,10 @@
 <?php
-class ProductModel
+namespace App\Models\Client;
+
+use App\Models\BaseModel;
+
+class ProductModel extends BaseModel
 {
-    private $conn;
-
-    public function __construct($db)
-    {
-        $this->conn = $db;
-    }
-
     //Obtener todos los productos
     public function getAllProducts()
     {
@@ -38,7 +35,7 @@ class ProductModel
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function getAllNewAllActiveCategories()
+    public function getAllActiveCategories()
     {
         $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP()");
         $stmt->execute();
@@ -112,6 +109,45 @@ class ProductModel
         $stmt->close();
         return $result->fetch_all(MYSQLI_ASSOC);
     }
+
+    public function addComment($productId, $userId, $comment, $rating)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_AGREGAR_COMENTARIO_SP(?, ?, ?, ?)");
+        $stmt->bind_param("iiss", $productId, $userId, $comment, $rating);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    public function updateComment($commentId, $userId, $comment, $rating)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_ACTUALIZAR_COMENTARIO_SP(?, ?, ?, ?)");
+        $stmt->bind_param("iiss", $commentId, $userId, $comment, $rating);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    public function deleteComment($commentId, $userId)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_ELIMINAR_COMENTARIO_SP(?, ?)");
+        $stmt->bind_param("ii", $commentId, $userId);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    public function getProductRating($id_product)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM huellitas_producto_rating_vw WHERE producto_id = ?");
+        $stmt->bind_param("i", $id_product);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
+
+
 
 }
 ?>

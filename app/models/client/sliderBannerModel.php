@@ -1,16 +1,13 @@
 <?php
-class SliderBannerModel
+namespace App\Models\Client;
+
+use App\Models\BaseModel;
+
+class SliderBannerModel extends BaseModel
 {
-    private $conn;
-
-    public function __construct($db)
+    public function getAllActiveSliderBanner()
     {
-        $this->conn = $db;
-    }
-
-    public function listarBanners()
-    {
-        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_SLIDER_BANNER_SP()");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_SLIDER_BANNER_ACTIVOS_SP()");
         $stmt->execute();
         $result = $stmt->get_result();
         return $result->fetch_all(MYSQLI_ASSOC);

@@ -1,14 +1,12 @@
 <?php
-class BrandModel
+namespace App\Models\Client;
+
+use App\Models\BaseModel;
+
+class BrandModel extends BaseModel
 {
-    private $conn;
 
-    public function __construct($db)
-    {
-        $this->conn = $db;
-    }
-
-    //Obtener todos los productos "Activos"
+    //Obtener todos las marcas "Activas"
     public function getAllActiveBrands()
     {
         $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_MARCAS_ACTIVAS_SP()");

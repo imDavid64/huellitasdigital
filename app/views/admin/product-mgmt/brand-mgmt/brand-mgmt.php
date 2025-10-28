@@ -29,11 +29,10 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <nav class="breadcrumbs-container">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a
-                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                                <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
                             </li>
                             <li class="breadcrumb-item">
-                                <a href="/huellitasdigital/app/controllers/admin/productController.php?action=index">Gestión
+                                <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=index">Gestión
                                     de Productos</a>
                             </li>
                             <li class="breadcrumb-item current-page">Gestión de Marcas</li>
@@ -42,7 +41,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <div class="tittles">
                         <h2><i class="bi bi-sticky-fill"></i><strong> Gestión de Marcas</strong></h2>
                         <div>
-                            <a href="/huellitasdigital/app/controllers/admin/productController.php?action=createBrand"
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=createBrand"
                                 class="btn-blue"><strong>Agregar Marca</strong>
                                 <i class="bi bi-sticky-fill"></i><strong>+</strong></a>
                         </div>
@@ -78,7 +77,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         <td><?= htmlspecialchars($brand['ESTADO']) ?></td>
                                         <td class="text-center">
                                             <div class="btn-group" brand="group">
-                                                <a href="/huellitasdigital/app/controllers/admin/productController.php?action=editBrand&id=<?= $brand['ID_MARCA_PK'] ?>"
+                                                <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=editBrand&id=<?= $brand['ID_MARCA_PK'] ?>"
                                                     class="btn btn-dark-blue btn-sm">
                                                     Editar <i class="bi bi-pencil-square"></i>
                                                 </a>

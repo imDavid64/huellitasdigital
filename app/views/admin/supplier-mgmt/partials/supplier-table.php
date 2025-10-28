@@ -30,7 +30,7 @@
                 </td>
                 <td>
                     <div class="admin-table-text-limit">
-                        <?= htmlspecialchars($supplier['TELEFONO_CONTACTO']) ?>
+                        <?= htmlspecialchars($supplier['TELEFONO']) ?>
                     </div>
                 </td>
                 <td>
@@ -45,7 +45,7 @@
                 </td>
                 <td class="text-center">
                     <div class="btn-group" role="group">
-                        <a href="../../../app/controllers/admin/supplierController.php?action=edit&id=<?= $supplier['ID_PROVEEDOR_PK'] ?>"
+                        <a href="<?= BASE_URL ?>/index.php?controller=adminSupplier&action=edit&id=<?= $supplier['ID_PROVEEDOR_PK'] ?>"
                             class="btn btn-dark-blue btn-sm">
                             Editar <i class="bi bi-pencil-square"></i>
                         </a>

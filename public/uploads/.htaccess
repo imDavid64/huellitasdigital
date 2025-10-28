@@ -1,0 +1,36 @@
+# Desactivar listado de carpetas y firma del servidor
+Options -Indexes
+ServerSignature Off
+
+# --- 🔒 BLOQUEO DE ARCHIVOS SENSIBLES ---
+<FilesMatch "\.(env|json|sql|log|lock|config|ini)$">
+  Require all denied
+</FilesMatch>
+
+# --- 🚫 BLOQUEAR PHP EN UPLOADS ---
+# Si la carpeta no existe aún, esto no causará error
+RewriteRule ^public/uploads/ - [F,L]
+
+# --- ⚙️ MOTOR DE REESCRITURA ---
+RewriteEngine On
+
+# Ajusta esta línea al nombre de tu carpeta principal
+RewriteBase /huellitasdigital/
+
+# --- 🌐 FORZAR HTTPS (solo si el servidor lo soporta) ---
+# ⚠️ Comenta estas dos líneas si estás en localhost sin SSL
+# RewriteCond %{HTTPS} !=on
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# --- 🧭 RUTAS LIMPIAS ---
+# /controlador/accion → index.php?controller=...&action=...
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/([^/]+)/?$ index.php?controller=$1&action=$2 [L,QSA]
+
+# /controlador → index.php?controller=...&action=index
+RewriteRule ^([^/]+)/?$ index.php?controller=$1&action=index [L,QSA]
+
+# --- 📄 ERRORES PERSONALIZADOS ---
+ErrorDocument 403 /error403.php
+ErrorDocument 404 /error404.php

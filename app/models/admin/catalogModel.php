@@ -1,98 +1,156 @@
 <?php
-include_once __DIR__ . "/../conexionDB.php";
+namespace App\Models\Admin;
 
-$db = new ConexionDatabase();
-$conn = $db->connectDB();
+use App\Models\BaseModel;
 
-class CatalogModel
+class CatalogModel extends BaseModel
 {
-    private $conn;
-    public function __construct($db)
-    {
-        $this->conn = $db;
-    }
-
     public function getAllRoles()
     {
-        $stmt = $this->conn->prepare("SELECT ID_ROL_USUARIO_PK, DESCRIPCION_ROL_USUARIO FROM HUELLITAS_ROL_USUARIO_TB");
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function getAllEstados()
-    {
-        $stmt = $this->conn->prepare("SELECT ID_ESTADO_PK, ESTADO_DESCRIPCION FROM HUELLITAS_ESTADO_TB");
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function getAllProveedores()
-    {
-        $stmt = $this->conn->prepare("SELECT ID_PROVEEDOR_PK, PROVEEDOR_NOMBRE FROM HUELLITAS_PROVEEDORES_TB");
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function getAllCategorias()
-    {
-        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_CATEGORIAS_SP()");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_ROLES_ACTIVOS_SP");
         $stmt->execute();
         $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $roles = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $roles;
     }
 
-    public function getAllMarcas()
+    public function getActiveInactiveStates()
     {
-        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_MARCAS_SP()");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_ESTADO_ACTIVO_INACTIVO_SP()");
         $stmt->execute();
         $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $estados = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $estados;
+    }
+
+
+    public function getActiveProviders()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_PROVEEDORES_ACTIVOS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $proveedores = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $proveedores;
+    }
+
+    public function getActiveCategories()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $categorias = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $categorias;
+    }
+
+    public function getActiveBrands()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_MARCAS_ACTIVAS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $brands = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $brands;
     }
 
     public function getAllEsNuevo()
     {
-        $stmt = $this->conn->prepare("SELECT ID_NUEVO_PK, NUEVO_DESCRIPCION FROM HUELLITAS_NUEVO_TB");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_NUEVO_SP()");
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $result = $stmt->get_result();
+        $data = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $data;
     }
+
 
     public function getAllProvincias()
     {
-        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_PROVINCIA_PK, NOMBRE_PROVINCIA FROM HUELLITAS_DIRECCION_PROVINCIA_TB");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_PROVINCIAS_SP()");
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $result = $stmt->get_result();
+        $provincias = $result->fetch_all(MYSQLI_ASSOC);
+        $result->free();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $provincias;
     }
 
     public function getAllCantones()
     {
-        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_CANTON_PK, ID_PROVINCIA_FK, NOMBRE_CANTON FROM HUELLITAS_DIRECCION_CANTON_TB");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_CANTONES_SP()");
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $result = $stmt->get_result();
+        $cantones = $result->fetch_all(MYSQLI_ASSOC);
+        $result->free();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $cantones;
     }
 
     public function getAllDistritos()
     {
-        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_DISTRITO_PK, ID_CANTON_FK, NOMBRE_DISTRITO FROM HUELLITAS_DIRECCION_DISTRITO_TB");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_DISTRITOS_SP()");
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $result = $stmt->get_result();
+        $distritos = $result->fetch_all(MYSQLI_ASSOC);
+        $result->free();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $distritos;
     }
 
     public function getCantonesByProvincia($idProvincia)
     {
-        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_CANTON_PK, NOMBRE_CANTON FROM HUELLITAS_DIRECCION_CANTON_TB WHERE ID_PROVINCIA_FK = ?");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_CANTONES_POR_PROVINCIA_SP(?)");
         $stmt->bind_param("i", $idProvincia);
         $stmt->execute();
         $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $cantones = $result->fetch_all(MYSQLI_ASSOC);
+        $result->free();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $cantones;
     }
 
     public function getDistritosByCanton($idCanton)
     {
-        $stmt = $this->conn->prepare("SELECT ID_DIRECCION_DISTRITO_PK, NOMBRE_DISTRITO FROM HUELLITAS_DIRECCION_DISTRITO_TB WHERE ID_CANTON_FK = ?");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_DISTRITOS_POR_CANTON_SP(?)");
         $stmt->bind_param("i", $idCanton);
         $stmt->execute();
         $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $distritos = $result->fetch_all(MYSQLI_ASSOC);
+        $result->free();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+
+        return $distritos;
     }
 
 }

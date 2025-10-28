@@ -1,34 +1,23 @@
 <?php
-class RoleModel
+namespace App\Models\Admin;
+
+use App\Models\BaseModel;
+
+class RoleModel extends BaseModel
 {
-    private $conn;
-
-    public function __construct($db)
-    {
-        $this->conn = $db;
-    }
-
     public function updateRole($id_rol, $rol_nombre, $estado)
     {
-        $query = "UPDATE HUELLITAS_ROL_USUARIO_TB
-                  SET DESCRIPCION_ROL_USUARIO = ?, ID_ESTADO_FK = ?
-                  WHERE ID_ROL_USUARIO_PK = ?";
-
-        $stmt = $this->conn->prepare($query);
-        if (!$stmt) {
-            throw new Exception("❌ Error en prepare: " . $this->conn->error);
-        }
-
-        $stmt->bind_param("sii", $rol_nombre, $estado, $id_rol);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_ACTUALIZAR_ROL_SP(?, ?, ?)");
+        $stmt->bind_param("isi", $id_rol, $rol_nombre, $estado);
+        $stmt->execute();
         $result = $stmt->execute();
         $stmt->close();
-
         return $result;
     }
 
     public function getRoleById($id_rol)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM HUELLITAS_ROL_USUARIO_TB WHERE ID_ROL_USUARIO_PK = ?");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_ROL_POR_ID_SP(?)");
         $stmt->bind_param("i", $id_rol);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -47,21 +36,14 @@ class RoleModel
 
     public function addRole($rolename, $estado)
     {
-        $sql = "INSERT INTO HUELLITAS_ROL_USUARIO_TB 
-                (DESCRIPCION_ROL_USUARIO, ID_ESTADO_FK)
-                VALUES (?, ?)";
-
-        $stmt = $this->conn->prepare($sql);
-        if ($stmt === false) {
-            die("Error en prepare: " . $this->conn->error);
-        }
-
+        $stmt = $this->conn->prepare("CALL HUELLITAS_AGREGAR_ROL_SP(?, ?)");
+        $stmt->bind_param("si", $rolename, $estado);
+        $stmt->execute();
         $stmt->bind_param(
             "si",
             $rolename,
             $estado,
         );
-
         return $stmt->execute();
     }
 
@@ -74,6 +56,7 @@ class RoleModel
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+    // Contar total de roles para paginación
     public function countRoles($query)
     {
         $stmt = $this->conn->prepare("

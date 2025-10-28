@@ -1,14 +1,9 @@
 <?php
+namespace App\Models\Admin;
 
-class SupplierModel
+use App\Models\BaseModel;
+class SupplierModel extends BaseModel
 {
-    private $conn;
-
-    public function __construct($db)
-    {
-        $this->conn = $db;
-    }
-
     // Función para obtener todos los proveedores
     public function getAllSuppliers()
     {
@@ -21,29 +16,28 @@ class SupplierModel
     // Función para obtener un proveedor por su ID
     public function getSupplierById($id)
     {
-        $query = "
-        SELECT 
-            P.ID_PROVEEDOR_PK,
-            P.NOMBRE_REPRESENTANTE,
-            P.PROVEEDOR_NOMBRE,
-            P.PROVEEDOR_CORREO,
-            P.ID_ESTADO_FK,
-            T.TELEFONO_CONTACTO,
-            D.DIRECCION_SENNAS
-        FROM HUELLITAS_PROVEEDORES_TB P
-        LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB T 
-            ON P.ID_TELEFONO_CONTACTO_FK = T.ID_TELEFONO_CONTACTO_PK
-        LEFT JOIN HUELLITAS_DIRECCION_TB D 
-            ON P.ID_DIRECCION_FK = D.ID_DIRECCION_PK
-        WHERE P.ID_PROVEEDOR_PK = ?
-    ";
-
-        $stmt = $this->conn->prepare($query);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_PROVEEDOR_POR_ID_SP(?)");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
         return $result->fetch_assoc();
     }
+
+    // Función para obtener todos los proveedores activos
+    public function getActiveProviders()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_PROVEEDORES_ACTIVOS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $proveedores = $result->fetch_all(MYSQLI_ASSOC);
+        // Limpiar buffers
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $proveedores;
+    }
+
 
 
     // Función para agregar un nuevo proveedor
@@ -69,8 +63,6 @@ class SupplierModel
         if ($stmt === false) {
             return false;
         }
-
-        // id(int), nombre(string), contacto(string), correo(string), estado(int), telefono(int), direccion(string)
         $stmt->bind_param("isssiis", $id, $nombre, $contacto, $correo, $estado, $telefono, $direccion);
 
         return $stmt->execute();
@@ -85,6 +77,8 @@ class SupplierModel
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+
+    // Contar total de proveedores para paginación
     public function countSuppliers($query)
     {
         $stmt = $this->conn->prepare("

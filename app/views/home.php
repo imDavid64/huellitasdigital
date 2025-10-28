@@ -1,3 +1,9 @@
+<?php
+//NO QUITAR//
+require_once __DIR__ . '/../../app/config/bootstrap.php'; 
+//NO QUITAR//
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -7,13 +13,13 @@
     <title>Huellitas Digital</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="/huellitasdigital/public/css/style.css">
-    <link rel="stylesheet" href="/huellitasdigital/public/assets/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/huellitasdigital/public/js/script.js"></script>
+    <script src="<?= BASE_URL ?>/public/js/script.js"></script>
 </head>
 
 <body>
@@ -23,7 +29,7 @@
 
     <!--CONTENIDO CENTRAL-->
     <main>
-        <section id="sliderBanner" class="carousel slide" data-bs-ride="carousel">
+        <section id="sliderBanner" class="carousel slide mb-5" data-bs-ride="carousel">
             <div class="slider-banner carousel-inner">
                 <?php if (!empty($banners)): ?>
                     <?php foreach ($banners as $index => $banner): ?>
@@ -63,7 +69,7 @@
                     <div class="circle-container-list" id="brand-carousel">
                         <?php if (!empty($brands)): ?>
                             <?php foreach ($brands as $brand): ?>
-                                <div class="brand-item">
+                                <div class="circle-item">
                                     <a href="#">
                                         <div class="circle-container">
                                             <img src="<?= htmlspecialchars($brand['MARCA_IMAGEN_URL']) ?>"
@@ -97,7 +103,7 @@
                         <?php if (!empty($newproducts)): ?>
                             <?php foreach ($newproducts as $newproduct): ?>
                                 <div class="cards product-item">
-                                    <a href="/huellitasdigital/app/controllers/client/productController.php?action=productsDetails&id=<?= $newproduct['ID_PRODUCTO_PK'] ?>">
+                                    <a href="<?= BASE_URL ?>/index.php?controller=product&action=productsDetails&id=<?= $newproduct['ID_PRODUCTO_PK'] ?>">
                                         <div>
                                             <div class="card-img">
                                                 <img src="<?= htmlspecialchars($newproduct['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"

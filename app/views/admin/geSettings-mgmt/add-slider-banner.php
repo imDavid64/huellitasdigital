@@ -23,16 +23,26 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
         <section class="admin-main">
             <!--Include para el menu aside-->
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
-            <section class="admin-main-content-add-user">
-                <div>
-                    <div class="tittles">
-                        <h2><i class="bi bi-file-earmark-plus-fill"></i><strong>Agregar Slider/Banner</strong></h2>
-                        <div></div>
-                    </div>
+            <section class="admin-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminGeneralSetting&action=index">Configuración
+                                General</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Agregar Slider/Banner</li>
+                    </ol>
+                </nav>
+                <div class="tittles">
+                    <h2><i class="bi bi-file-earmark-plus-fill"></i><strong>Agregar Slider/Banner</strong></h2>
+                    <div></div>
                 </div>
                 <div class="admin-form-container">
-                    <form
-                        action="/huellitasdigital/app/controllers/admin/generalSettingController.php?action=store_slider_banner"
+                    <form action="<?= BASE_URL ?>/index.php?controller=adminGeneralSetting&action=storeSliderBanner"
                         method="POST" enctype="multipart/form-data">
                         <div class="form-container">
                             <div class="form-item">

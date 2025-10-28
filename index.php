@@ -1,22 +1,54 @@
 <?php
+declare(strict_types=1);
 session_start();
 
-$controller = $_GET['controller'] ?? 'home';
-$action = $_GET['action'] ?? 'index';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/app/config/bootstrap.php';
 
-// ruta del controlador
-$controllerFile = "app/controllers/{$controller}Controller.php";
+// === Parámetros ===
+$controllerName = ucfirst($_REQUEST['controller'] ?? 'home') . 'Controller';
+$action = $_REQUEST['action'] ?? 'index';
 
-if (file_exists($controllerFile)) {
-    require_once $controllerFile;
-    $controllerClass = ucfirst($controller) . 'Controller';
-    $controllerObj = new $controllerClass();
+// === Carpetas donde buscar ===
+$folders = [
+    '',         // raíz: app/controllers/
+    'client',   // app/controllers/client/
+    'admin',    // app/controllers/admin/
+];
 
-    if (method_exists($controllerObj, $action)) {
-        $controllerObj->$action();
-    } else {
-        die("Acción '$action' no encontrada en el controlador '$controllerClass'.");
+$controllerFile = null;
+$controllerClass = null;
+
+// === Búsqueda dinámica ===
+foreach ($folders as $folder) {
+    $path = $folder ? "/app/controllers/{$folder}/{$controllerName}.php"
+                    : "/app/controllers/{$controllerName}.php";
+
+    $fullPath = __DIR__ . $path;
+
+    if (file_exists($fullPath)) {
+        $controllerFile = $fullPath;
+        $namespace = $folder ? "App\\Controllers\\" . ucfirst($folder)
+                             : "App\\Controllers";
+        $controllerClass = "{$namespace}\\{$controllerName}";
+        break;
     }
-} else {
-    die("Controlador '$controller' no encontrado.");
 }
+
+if (!$controllerFile) {
+    exit("❌ Archivo del controlador '{$controllerName}' no existe.");
+}
+
+require_once $controllerFile;
+
+if (!class_exists($controllerClass)) {
+    exit("❌ Clase de controlador '{$controllerClass}' no encontrada.");
+}
+
+$controller = new $controllerClass();
+
+if (!method_exists($controller, $action)) {
+    exit("❌ Acción '{$action}' no encontrada.");
+}
+
+$controller->$action();

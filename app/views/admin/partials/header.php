@@ -1,10 +1,22 @@
+<?php
+//NO QUITAR//
+if (!defined('BASE_URL')) {
+  require_once __DIR__ . '/../../../config/bootstrap.php';
+}
+
+?>
+<script>
+  const BASE_URL = "<?= BASE_URL ?>";
+</script>
+<!--NO QUITAR-->
+
 <header class="main-header">
     <nav class="header-container-admin">
         <div class="header-container-left">
             <!--Boton del logo-->
             <div>
-                <a href="home.html" class="header-logo-admin">
-                    <img src="/huellitasdigital/public/assets/images/logo.png" alt="Logo Veterinaria Dra.Huellitas">
+                <a href="<?= BASE_URL ?>/index.php?controller=admin&index" class="header-logo-admin">
+                    <img src="<?= BASE_URL ?>/public/assets/images/logo.png" alt="Logo Veterinaria Dra.Huellitas">
                     <span>Huellitas<br><strong>Digital</strong></span>
                 </a>
             </div>
@@ -32,9 +44,9 @@
                 <div class="admin-header-user-menu" id="header-user-menu">
                     <ul>
                         <li><a href="pages/profile.html"><i class="bi bi-person-fill"></i> Mi Pefil</a></li>
-                        <li><a href="/huellitasdigital/app/controller/homeController.php?action=index">
+                        <li><a href="<?= BASE_URL ?>/index.php?controller=home&action=index">
                                 <i class="bi bi-bag-fill"></i> Modo Cliente</a></li>
-                        <li><a href="/huellitasdigital/app/routes/web.php?action=logout">
+                        <li><a href="<?= BASE_URL ?>/index.php?controller=auth&action=logout">
                                 <i class="bi bi-door-open-fill"></i> Cerrar Sesión</a></li>
                     </ul>
                 </div>

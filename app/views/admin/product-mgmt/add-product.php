@@ -18,18 +18,29 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 
     <main>
         <section class="admin-main">
+            <!--Include para el menu aside-->
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
-            <section class="admin-main-content-add-user">
+            <section class="admin-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=index">Gestión de
+                                Productos</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Agregar Producto</li>
+                    </ol>
+                </nav>
                 <div class="tittles">
                     <h2><i class="bi bi-bag-plus-fill"></i><strong>Agregar Producto</strong></h2>
                 </div>
 
                 <div class="admin-form-container">
-                    <form id="productForm" 
-                          action="/huellitasdigital/app/controllers/admin/productController.php?action=store" 
-                          method="POST" 
-                          enctype="multipart/form-data"
-                          novalidate>
+                    <form id="productForm" action="<?= BASE_URL ?>/index.php?controller=adminProduct&action=store"
+                        method="POST" enctype="multipart/form-data" novalidate>
 
                         <div class="form-container">
 
@@ -147,7 +158,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 
     <!--VALIDACIONES-->
     <script>
-        document.getElementById('productForm').addEventListener('submit', function(e) {
+        document.getElementById('productForm').addEventListener('submit', function (e) {
             let valid = true;
 
             // Limpiar mensajes previos
@@ -191,4 +202,5 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
         }
     </style>
 </body>
+
 </html>

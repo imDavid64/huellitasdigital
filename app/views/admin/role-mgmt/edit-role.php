@@ -34,9 +34,9 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 
                 <div class="admin-form-container">
                     <form id="editRoleForm"
-                          action="/huellitasdigital/app/controllers/admin/roleController.php?action=update"
-                          method="POST" enctype="multipart/form-data" novalidate>
-                          
+                        action="<?= BASE_URL ?>/index.php?controller=adminRole&action=update" method="POST"
+                        enctype="multipart/form-data" novalidate>
+
                         <input type="hidden" name="id_rol" value="<?= htmlspecialchars($rol['ID_ROL_USUARIO_PK']) ?>">
 
                         <div class="form-container">
@@ -44,12 +44,12 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <div class="form-item">
                                 <label for="rolename">Nombre del rol</label>
                                 <input type="text" id="rolename" name="rolename"
-                                    value="<?= htmlspecialchars($rol['DESCRIPCION_ROL_USUARIO']) ?>" 
-                                    required minlength="3" maxlength="50"
-                                    pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
+                                    value="<?= htmlspecialchars($rol['DESCRIPCION_ROL_USUARIO']) ?>" required
+                                    minlength="3" maxlength="50" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
                                     title="Solo se permiten letras y espacios.">
                                 <small id="rolenameError" style="color:red; display:none;">
-                                    El nombre del rol debe tener entre 3 y 50 caracteres y solo puede contener letras y espacios.
+                                    El nombre del rol debe tener entre 3 y 50 caracteres y solo puede contener letras y
+                                    espacios.
                                 </small>
                             </div>
 

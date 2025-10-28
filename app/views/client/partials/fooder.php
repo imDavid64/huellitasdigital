@@ -1,3 +1,11 @@
+<?php
+//NO QUITAR//
+if (!defined('BASE_URL')) {
+  require_once __DIR__ . '/../../../config/bootstrap.php';
+}
+//NO QUITAR//
+?>
+
 <!--FOOTER-->
 <footer>
     <div class="pre-footer">

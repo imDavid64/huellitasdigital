@@ -20,16 +20,31 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
         <section class="admin-main">
             <!--Aside Menu-->
             <?php include_once __DIR__ . "/../../partials/asideMenu.php"; ?>
-            
-            <section class="admin-main-content-add-user">
+
+            <section class="admin-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=index">Gestión de
+                                Productos</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=brandMgmt">Gestión de
+                                Marcas</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Agregar Marca</li>
+                    </ol>
+                </nav>
                 <div class="tittles">
                     <h2><i class="bi bi-sticky-fill"></i><strong>+</strong><strong>Agregar Marca</strong></h2>
                 </div>
-
                 <div class="admin-form-container">
-                    <form id="addBrandForm" 
-                          action="/huellitasdigital/app/controllers/admin/productController.php?action=storeBrand" 
-                          method="POST" enctype="multipart/form-data" novalidate>
+                    <form id="addBrandForm" action="<?= BASE_URL ?>/index.php?controller=adminProduct&action=storeBrand"
+                        method="POST" enctype="multipart/form-data" novalidate>
                         <div class="form-container">
 
                             <div class="form-item">
@@ -79,7 +94,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     <script>
         const form = document.getElementById('addBrandForm');
 
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', function (e) {
             let valid = true;
 
             // Limpiar errores previos
@@ -108,17 +123,17 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
         });
 
         // Validaciones onblur
-        document.getElementById('nombre').addEventListener('blur', function() {
+        document.getElementById('nombre').addEventListener('blur', function () {
             const el = document.getElementById('nombre');
             document.getElementById('error-nombre').textContent = el.value.trim() === '' ? 'El nombre de la marca es obligatorio.' : '';
         });
 
-        document.getElementById('imagen').addEventListener('blur', function() {
+        document.getElementById('imagen').addEventListener('blur', function () {
             const el = document.getElementById('imagen');
             document.getElementById('error-imagen').textContent = (!el.files || el.files.length === 0) ? 'Debe seleccionar una imagen.' : '';
         });
 
-        document.getElementById('estado').addEventListener('blur', function() {
+        document.getElementById('estado').addEventListener('blur', function () {
             const el = document.getElementById('estado');
             document.getElementById('error-estado').textContent = (!el.value || el.value === '') ? 'Debe seleccionar un estado.' : '';
         });
@@ -132,4 +147,5 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     </style>
 
 </body>
+
 </html>

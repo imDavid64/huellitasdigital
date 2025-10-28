@@ -19,7 +19,10 @@
 
 <body>
     <div class="error-main-content">
-        <h1>Error 403: Acceso Denegado</h1>
+        <div class="error-main-info">
+            <h1><strong>Error 403: Acceso Denegado</strong></h1>
+            <a class="btn-dark-blue" style="width: 200px;" href="/huellitasdigital/index.php?controller=home&action=index">Regresar al inicio</a>
+        </div>
         <img src="/huellitasdigital/public/assets/images/Logo-AzulOscuro.png">
     </div>
 </body>

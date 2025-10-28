@@ -19,29 +19,34 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     <main>
         <section class="admin-main">
             <?php include_once __DIR__ . "/../../partials/asideMenu.php"; ?>
-            <section class="admin-main-content-add-user">
-                <div>
-                    <!--Breadcrumb-->
-                    <nav class="breadcrumbs-container">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <a href="/huellitasdigital/app/controllers/admin/productController.php?action=index">Gestión de Productos</a>
-                            </li>
-                            <li class="breadcrumb-item current-page">Agregar Categoría</li>
-                        </ol>
-                    </nav>
-                    <div class="tittles">
-                        <h2><i class="bi bi-collection-fill"></i><strong>+</strong><strong>Agregar Categoría</strong></h2>
-                        <div></div>
-                    </div>
+            <section class="admin-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=index">Gestión de
+                                Productos</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=categoryMgmt">Gestión
+                                de
+                                Categorías</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Agregar Categoría</li>
+                    </ol>
+                </nav>
+                <div class="tittles">
+                    <h2>
+                        <i class="bi bi-collection-fill"></i><strong>+</strong><strong>Agregar Categoría</strong>
+                    </h2>
                 </div>
-
                 <div class="admin-form-container">
-                    <form id="categoryForm" action="/huellitasdigital/app/controllers/admin/productController.php?action=storeCategory"
-                          method="POST" enctype="multipart/form-data" novalidate>
+                    <form id="categoryForm"
+                        action="<?= BASE_URL ?>/index.php?controller=adminProduct&action=storeCategory" method="POST"
+                        enctype="multipart/form-data" novalidate>
 
                         <div class="form-container">
 
@@ -85,7 +90,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 
     <!--VALIDACIONES-->
     <script>
-        document.getElementById('categoryForm').addEventListener('submit', function(e) {
+        document.getElementById('categoryForm').addEventListener('submit', function (e) {
             let valid = true;
 
             // Limpiar mensajes previos
@@ -108,12 +113,12 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
         });
 
         // VALIDACIÓN ONBLUR (opcional, aparece al salir del campo)
-        document.getElementById('nombreCategoria').addEventListener('blur', function() {
+        document.getElementById('nombreCategoria').addEventListener('blur', function () {
             const el = document.getElementById('nombreCategoria');
             document.getElementById('error-nombreCategoria').textContent = el.value.trim() === '' ? 'El nombre de la categoría es obligatorio.' : '';
         });
 
-        document.getElementById('estado').addEventListener('blur', function() {
+        document.getElementById('estado').addEventListener('blur', function () {
             const el = document.getElementById('estado');
             document.getElementById('error-estado').textContent = (!el.value || el.value === '') ? 'Debe seleccionar un estado.' : '';
         });
@@ -127,4 +132,5 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     </style>
 
 </body>
+
 </html>

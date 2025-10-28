@@ -1,40 +1,29 @@
 <?php
-require_once __DIR__ . "/../models/conexionDB.php";
-require_once __DIR__ . '/client/sliderBannerController.php';
-require_once __DIR__ . '/../models/client/productModel.php';
-require_once __DIR__ . '/../models/client/brandModel.php';
+namespace App\Controllers;
 
-$action = $_GET['action'] ?? 'index';
+use App\Models\Client\ProductModel;
+use App\Models\Client\BrandModel;
+use App\Models\Client\ServiceModel;
+use App\Models\Client\SliderBannerModel;
 
-// Instancias
-$db = new ConexionDatabase();
-$conn = $db->connectDB();
+require_once __DIR__ . '/../config/bootstrap.php';
 
-$sliderController = new SliderBannerController();
-$brandModel = new BrandModel($conn);
-$productModel = new ProductModel($conn);
+class HomeController
+{
+    public function index()
+    {
+        $productModel = new ProductModel();
+        $brandModel   = new BrandModel();
+        $serviceModel = new ServiceModel();
+        $sliderModel = new SliderBannerModel();
 
-// Ejecutamos la acción correspondiente
-switch ($action) {
-    case 'index':
-        // Obtener banners
-        $banners = $sliderController->obtenerBanners();
-
-        // Obtener marcas activas
-        $brands = $brandModel->getAllActiveBrands();
-        // Obtener productos activos
-        $products = $productModel->getAllActiveProducts();
-        // Obtener productos activos
+        $products = $productModel->getAllNewActiveProducts();
         $newproducts = $productModel->getAllNewActiveProducts();
-        // Obtener categorias activas
-        $categories = $productModel->getAllNewAllActiveCategories();
+        $categories = $productModel->getAllActiveCategories();
+        $brands   = $brandModel->getAllActiveBrands();
+        $services = $serviceModel->getAllActiveServices();
+        $banners = $sliderModel->getAllActiveSliderBanner();
 
-        // Cargar la vista principal del home
-        require_once __DIR__ . '/../views/home.php';
-        break;
-
-    default:
-        // Acción no válida → redirigir al inicio
-        header("Location: /huellitasdigital/index.php");
-        exit;
+        require VIEW_PATH . '/home.php';
+    }
 }

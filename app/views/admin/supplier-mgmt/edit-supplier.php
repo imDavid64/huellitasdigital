@@ -22,43 +22,31 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     <!--CONTENIDO CENTRAL-->
     <main>
         <section class="admin-main">
-            <aside class="admin-aside">
-                <div class="aside-container">
-                    <div class="aside-main">
-                        <ul>
-                            <li><a href="home.php"><i class="bi bi-opencollective"></i>Dashboard</a></li>
-                            <li><a href="user-mgmt.php"><i class="bi bi-people-fill"></i>Gestión de Usuarios</a></li>
-                            <li><a href="role-mgmt.php"><i class="bi bi-diagram-2-fill"></i>Gestión de Roles</a></li>
-                            <li><a href="supplier-mgmt.php"><i class="bi bi-building-fill"></i>Gestión de Proveedores</a></li>
-                            <li><a href="product-mgmt.php"><i class="bi bi-box2-fill"></i>Gestión de productos</a></li>
-                            <li><a href="inventory-mgmt.php"><i class="bi bi-clipboard2-check-fill"></i>Gestión de Inventario</a></li>
-                            <li><a href="accounting-record.php"><i class="bi bi-calculator-fill"></i>Registro Contable</a></li>
-                            <li><a href="order-mgmt.php"><i class="bi bi-cart-fill"></i>Gestión de pedidos</a></li>
-                            <li><a href="appointment-mgmt.php"><i class="bi bi-calendar-week-fill"></i>Gestión de citas</a></li>
-                            <li><a href="general-settings.php"><i class="bi bi-gear-fill"></i>Configuración general</a></li>
-                        </ul>
-                    </div>
-                    <hr />
-                    <div class="aside-footer">
-                        <a class="btn-dark-blue" href="../../processes/logout.php"><strong>
-                                Cerrar Sesión</strong></a>
-                    </div>
-                </div>
-            </aside>
+            <!--Include para el menu aside-->
+            <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
 
-            <section class="admin-main-content-add-user">
-                <div>
-                    <div class="tittles">
-                        <h2><i class="bi bi-pencil-square"></i><strong> Editar Proveedor</strong></h2>
-                    </div>
+            <section class="admin-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminSupplier&action=index">Gestión de
+                                Proveedores</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Editar Proveedor</li>
+                    </ol>
+                </nav>
+                <div class="tittles">
+                    <h2><i class="bi bi-pencil-square"></i><strong> Editar Proveedor</strong></h2>
                 </div>
-
                 <div class="admin-form-container">
-                    <form id="supplierForm"
-                          action="/huellitasdigital/app/controllers/admin/supplierController.php?action=update"
-                          method="POST"
-                          novalidate>
-                        <input type="hidden" name="id_supplier" value="<?= htmlspecialchars($supplier['ID_PROVEEDOR_PK']) ?>">
+                    <form id="supplierForm" action="<?= BASE_URL ?>/index.php?controller=adminSupplier&action=update"
+                        method="POST" novalidate>
+                        <input type="hidden" name="id_supplier"
+                            value="<?= htmlspecialchars($supplier['ID_PROVEEDOR_PK']) ?>">
 
                         <div class="form-container">
                             <div class="form-item">
@@ -78,14 +66,15 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <div class="form-item">
                                 <label for="suppliernumber">Teléfono</label>
                                 <input type="text" id="suppliernumber" name="suppliernumber"
-                                    value="<?= htmlspecialchars($supplier['TELEFONO_CONTACTO']) ?>" required maxlength="15">
+                                    value="<?= htmlspecialchars($supplier['TELEFONO_CONTACTO']) ?>" required
+                                    maxlength="15">
                                 <small class="error" id="error-suppliernumber"></small>
                             </div>
 
                             <div class="form-item">
                                 <label for="supplieraddress">Dirección</label>
                                 <input type="text" id="supplieraddress" name="supplieraddress"
-                                    value="<?= htmlspecialchars($supplier['DIRECCION_SENNAS']) ?>" required>
+                                    value="<?= htmlspecialchars($supplier['DIRECCION']) ?>" required>
                                 <small class="error" id="error-supplieraddress"></small>
                             </div>
 
@@ -185,4 +174,5 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
         }
     </style>
 </body>
+
 </html>

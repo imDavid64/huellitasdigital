@@ -20,15 +20,33 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
         <section class="admin-main">
             <!--Aside Menu-->
             <?php include_once __DIR__ . "/../../partials/asideMenu.php"; ?>
-            
-            <section class="admin-main-content-add-user">
+
+            <section class="admin-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=index">Gestión de
+                                Productos</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=categoryMgmt">Gestión
+                                de
+                                Categorías</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Editar Categoría</li>
+                    </ol>
+                </nav>
                 <div class="tittles">
                     <h2><i class="bi bi-pencil-square"></i><strong> Editar Categoría</strong></h2>
                 </div>
-
                 <div class="admin-form-container">
-                    <form id="editCategoryForm" action="/huellitasdigital/app/controllers/admin/productController.php?action=updateCategory" 
-                          method="POST" enctype="multipart/form-data" novalidate>
+                    <form id="editCategoryForm"
+                        action="<?= BASE_URL ?>/index.php?controller=adminProduct&action=updateCategory" method="POST"
+                        enctype="multipart/form-data" novalidate>
                         <input type="hidden" name="id_categoria" value="<?= $categoria['ID_CATEGORIA_PK'] ?>">
 
                         <div class="form-container">
@@ -77,7 +95,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     <script>
         const form = document.getElementById('editCategoryForm');
 
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', function (e) {
             let valid = true;
 
             // Limpiar errores previos
@@ -100,12 +118,12 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
         });
 
         // Validación onblur
-        document.getElementById('categoryname').addEventListener('blur', function() {
+        document.getElementById('categoryname').addEventListener('blur', function () {
             const el = document.getElementById('categoryname');
             document.getElementById('error-categoryname').textContent = el.value.trim() === '' ? 'El nombre de la categoría es obligatorio.' : '';
         });
 
-        document.getElementById('state').addEventListener('blur', function() {
+        document.getElementById('state').addEventListener('blur', function () {
             const el = document.getElementById('state');
             document.getElementById('error-state').textContent = (!el.value || el.value === '') ? 'Debe seleccionar un estado.' : '';
         });
@@ -119,4 +137,5 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     </style>
 
 </body>
+
 </html>

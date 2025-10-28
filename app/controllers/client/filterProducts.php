@@ -1,15 +1,16 @@
 <?php
-require_once __DIR__ . "/../../models/client/productModel.php";
-require_once __DIR__ . "/../../models/conexionDB.php";
+namespace App\Controllers\Client;
+
+use App\Models\Client\ProductModel;
+
+require_once __DIR__ . '/../../config/bootstrap.php';
 
 header('Content-Type: application/json');
 
-$db = new ConexionDatabase();
-$conn = $db->connectDB();
-$productModel = new ProductModel($conn);
-
 $categories = $_POST['categories'] ?? [];
 $brands = $_POST['brands'] ?? [];
+
+$productModel = new ProductModel();
 
 // Llamar al modelo con los filtros seleccionados
 $products = $productModel->getFilteredProducts($categories, $brands);

@@ -19,7 +19,7 @@
                 <td><?= htmlspecialchars($brand['ESTADO']) ?></td>
                 <td class="text-center">
                     <div class="btn-group" brand="group">
-                        <a href="/huellitasdigital/app/controllers/admin/productController.php?action=editBrand&id=<?= $brand['ID_MARCA_PK'] ?>"
+                        <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=editBrand&id=<?= $brand['ID_MARCA_PK'] ?>"
                             class="btn btn-dark-blue btn-sm">
                             Editar <i class="bi bi-pencil-square"></i>
                         </a>

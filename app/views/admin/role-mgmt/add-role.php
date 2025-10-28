@@ -23,28 +23,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     <!--CONTENIDO CENTRAL-->
     <main>
         <section class="admin-main">
-            <aside class="admin-aside">
-                <div class="aside-container">
-                    <div class="aside-main">
-                        <ul>
-                            <li><a href="home.html"><i class="bi bi-opencollective"></i>Dashboard</a></li>
-                            <li><a href="user-mgmt.html"><i class="bi bi-people-fill"></i>Gestión de Usuarios</a></li>
-                            <li><a href="role-mgmt.html"><i class="bi bi-diagram-2-fill"></i>Gestión de Roles</a></li>
-                            <li><a href="supplier-mgmt.html"><i class="bi bi-building-fill"></i>Gestión de Proveedores</a></li>
-                            <li><a href="product-mgmt.html"><i class="bi bi-box2-fill"></i>Gestión de productos</a></li>
-                            <li><a href="inventory-mgmt.html"><i class="bi bi-clipboard2-check-fill"></i>Gestión de Inventario</a></li>
-                            <li><a href="accounting-record.html"><i class="bi bi-calculator-fill"></i>Registro Contable</a></li>
-                            <li><a href="order-mgmt.html"><i class="bi bi-cart-fill"></i>Gestión de pedidos</a></li>
-                            <li><a href="appointment-mgmt.html"><i class="bi bi-calendar-week-fill"></i>Gestión de citas</a></li>
-                            <li><a href="general-settings.html"><i class="bi bi-gear-fill"></i>Configuración general</a></li>
-                        </ul>
-                    </div>
-                    <hr />
-                    <div class="aside-footer">
-                        <a class="btn-dark-blue" href="../../index_unlogin.html"><strong>Cerrar Sesión</strong></a>
-                    </div>
-                </div>
-            </aside>
+            <!--Include para el menú aside-->
+            <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
 
             <section class="admin-main-content-add-user">
                 <div>
@@ -54,16 +34,18 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                 </div>
 
                 <div class="admin-form-container">
-                    <form id="roleForm" action="/huellitasdigital/app/controllers/admin/roleController.php?action=store" method="POST" novalidate>
+                    <form id="roleForm" action="<?= BASE_URL ?>/index.php?controller=adminRole&action=store"
+                        method="POST" novalidate>
                         <div class="form-container">
 
                             <!-- Campo: Nombre del Rol -->
                             <div class="form-item">
                                 <label for="addrolename">Nombre del Rol</label>
-                                <input type="text" id="addrolename" name="addrolename" required minlength="3" maxlength="50"
-                                       pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                                       title="Solo se permiten letras y espacios.">
-                                <small id="addrolenameError" style="color:red; display:none;">El nombre del rol debe tener entre 3 y 50 caracteres y solo puede contener letras y espacios.</small>
+                                <input type="text" id="addrolename" name="addrolename" required minlength="3"
+                                    maxlength="50" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
+                                    title="Solo se permiten letras y espacios.">
+                                <small id="addrolenameError" style="color:red; display:none;">El nombre del rol debe
+                                    tener entre 3 y 50 caracteres y solo puede contener letras y espacios.</small>
                             </div>
 
                             <!-- Campo: Estado -->
@@ -81,10 +63,12 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         <option disabled>No hay estados disponibles</option>
                                     <?php endif; ?>
                                 </select>
-                                <small id="stateError" style="color:red; display:none;">Debe seleccionar un estado válido.</small>
+                                <small id="stateError" style="color:red; display:none;">Debe seleccionar un estado
+                                    válido.</small>
                             </div>
 
-                            <button type="submit" class="btn-blue"><strong>Agregar Rol</strong><i class="bi bi-node-plus-fill"></i></button>
+                            <button type="submit" class="btn-blue"><strong>Agregar Rol</strong><i
+                                    class="bi bi-node-plus-fill"></i></button>
                         </div>
                     </form>
                 </div>
@@ -96,38 +80,38 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 
 <!--VALIDACIONES CLIENTE-->
 <script>
-document.getElementById("roleForm").addEventListener("submit", function (event) {
-    let valid = true;
+    document.getElementById("roleForm").addEventListener("submit", function (event) {
+        let valid = true;
 
-    // Nombre del Rol
-    const roleInput = document.getElementById("addrolename");
-    const roleError = document.getElementById("addrolenameError");
-    const regexRol = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/;
-    const roleValue = roleInput.value.trim();
+        // Nombre del Rol
+        const roleInput = document.getElementById("addrolename");
+        const roleError = document.getElementById("addrolenameError");
+        const regexRol = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/;
+        const roleValue = roleInput.value.trim();
 
-    if (roleValue.length < 3 || roleValue.length > 50 || !regexRol.test(roleValue)) {
-        roleError.style.display = "block";
-        valid = false;
-    } else {
-        roleError.style.display = "none";
-    }
+        if (roleValue.length < 3 || roleValue.length > 50 || !regexRol.test(roleValue)) {
+            roleError.style.display = "block";
+            valid = false;
+        } else {
+            roleError.style.display = "none";
+        }
 
-    // Estado
-    const stateSelect = document.getElementById("state");
-    const stateError = document.getElementById("stateError");
+        // Estado
+        const stateSelect = document.getElementById("state");
+        const stateError = document.getElementById("stateError");
 
-    if (!stateSelect.value) {
-        stateError.style.display = "block";
-        valid = false;
-    } else {
-        stateError.style.display = "none";
-    }
+        if (!stateSelect.value) {
+            stateError.style.display = "block";
+            valid = false;
+        } else {
+            stateError.style.display = "none";
+        }
 
-    // Evita envío si hay errores
-    if (!valid) {
-        event.preventDefault();
-    }
-});
+        // Evita envío si hay errores
+        if (!valid) {
+            event.preventDefault();
+        }
+    });
 </script>
 <!--FIN VALIDACIONES CLIENTE-->
 

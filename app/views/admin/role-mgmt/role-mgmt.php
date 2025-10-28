@@ -31,8 +31,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <nav class="breadcrumbs-container">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a
-                                    href="/huellitasdigital/app/controllers/admin/dashboardController.php?action=index">Inicio</a>
+                                <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
                             </li>
                             <li class="breadcrumb-item current-page">Gestión de Roles</li>
                         </ol>
@@ -40,7 +39,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <div class="tittles">
                         <h2><i class="bi bi-diagram-2-fill"></i><strong> Gestión de Roles</strong></h2>
                         <div>
-                            <a href="../../../app/controllers/admin/roleController.php?action=create"
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminRole&action=create"
                                 class="btn-blue"><strong>Agregar Rol</strong>
                                 <i class="bi bi-node-plus-fill"></i></a>
                         </div>
@@ -83,7 +82,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                                <a href="../../../app/controllers/admin/roleController.php?action=edit&id=<?= $role['ID_ROL_USUARIO_PK'] ?>"
+                                                <a href="<?= BASE_URL ?>/index.php?controller=adminRole&action=edit&id=<?= $role['ID_ROL_USUARIO_PK'] ?>"
                                                     class="btn btn-dark-blue btn-sm">
                                                     Editar <i class="bi bi-pencil-square"></i>
                                                 </a>
