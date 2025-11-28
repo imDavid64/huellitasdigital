@@ -25,8 +25,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                 <!--Breadcrumb-->
                 <nav class="breadcrumbs-container">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                        <li class="breadcrumb-item">                           
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminDashboard&action=index">Inicio</a>
                         </li>
                         <li class="breadcrumb-item">
                             <a href="<?= BASE_URL ?>/index.php?controller=adminUser&action=index">Gestión de

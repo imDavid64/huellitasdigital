@@ -2,7 +2,7 @@
     <div class="aside-container">
         <div class="aside-main">
             <ul>
-                <li><a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">
+                <li><a href="<?= BASE_URL ?>/index.php?controller=adminDashboard&action=index">
                         <i class="bi bi-opencollective"></i> Dashboard
                     </a></li>
 
