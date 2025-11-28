@@ -78,27 +78,13 @@ class UserModel extends BaseModel
     // Contar total de usuarios para paginación
     public function countUsers($query)
     {
-        $stmt = $this->conn->prepare("
-        SELECT COUNT(*) AS total
-        FROM HUELLITAS_USUARIOS_TB u
-        INNER JOIN HUELLITAS_ROL_USUARIO_TB r ON u.ID_ROL_USUARIO_FK = r.ID_ROL_USUARIO_PK
-        INNER JOIN HUELLITAS_ESTADO_TB e ON u.ID_ESTADO_FK = e.ID_ESTADO_PK
-        LEFT JOIN HUELLITAS_DIRECCION_TB d ON u.ID_DIRECCION_FK = d.ID_DIRECCION_PK
-        LEFT JOIN HUELLITAS_DIRECCION_PROVINCIA_TB prov ON d.ID_DIRECCION_PROVINCIA_FK = prov.ID_DIRECCION_PROVINCIA_PK
-        LEFT JOIN HUELLITAS_DIRECCION_CANTON_TB cant ON d.ID_DIRECCION_CANTON_FK = cant.ID_DIRECCION_CANTON_PK
-        LEFT JOIN HUELLITAS_DIRECCION_DISTRITO_TB dist ON d.ID_DIRECCION_DISTRITO_FK = dist.ID_DIRECCION_DISTRITO_PK
-        WHERE 
-            u.USUARIO_NOMBRE LIKE CONCAT('%', ?, '%')
-            OR u.USUARIO_CORREO LIKE CONCAT('%', ?, '%')
-            OR r.DESCRIPCION_ROL_USUARIO LIKE CONCAT('%', ?, '%')
-            OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', ?, '%')
-            OR prov.NOMBRE_PROVINCIA LIKE CONCAT('%', ?, '%')
-            OR cant.NOMBRE_CANTON LIKE CONCAT('%', ?, '%')
-            OR dist.NOMBRE_DISTRITO LIKE CONCAT('%', ?, '%')
-    ");
-        $stmt->bind_param("sssssss", $query, $query, $query, $query, $query, $query, $query);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_CONTAR_USUARIOS_SP(?)");
+        $stmt->bind_param("s", $query);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
-        return $result['total'] ?? 0;
+        $stmt->close();
+
+        return $result['TOTAL'] ?? 0;
     }
+
 }

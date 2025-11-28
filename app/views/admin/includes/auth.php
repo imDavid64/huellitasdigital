@@ -2,7 +2,7 @@
 
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: /huellitasdigital/index.php');
+    header("Location: " . BASE_URL . "/index.php?controller=home&action=error403");
     exit;
 }
 
@@ -11,7 +11,7 @@ function checkRole($rolesPermitidos)
 {
     if (!in_array($_SESSION['user_role'], $rolesPermitidos)) {
         // Si el rol no está permitido, redirigir o mostrar error
-        header('Location: /huellitasdigital/app/views/error403.php'); // Página de acceso denegado
+        header("Location: " . BASE_URL . "/index.php?controller=home&action=error403"); // Página de acceso denegado
         exit;
     }
 }

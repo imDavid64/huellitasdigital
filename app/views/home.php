@@ -1,6 +1,6 @@
 <?php
 //NO QUITAR//
-require_once __DIR__ . '/../../app/config/bootstrap.php'; 
+require_once __DIR__ . '/../../app/config/bootstrap.php';
 //NO QUITAR//
 ?>
 
@@ -18,6 +18,9 @@ require_once __DIR__ . '/../../app/config/bootstrap.php';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+    <!-- SweetAlert2 local -->
+    <script src="<?= BASE_URL ?>/public/js/libs/sweetalert2.all.min.js"></script>
+    <!-- JQuery y script.js -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="<?= BASE_URL ?>/public/js/script.js"></script>
 </head>
@@ -88,204 +91,228 @@ require_once __DIR__ . '/../../app/config/bootstrap.php';
                 </div>
 
                 <hr />
-
-                <div class="index-tittles">
-                    <h1><strong>Productos Nuevos 🌟</strong></h1>
-                    <div class="btns-arrows">
-                        <a id="product-left"><i class="bi bi-arrow-left-circle"></i></a>
-                        <a id="product-right"><i class="bi bi-arrow-right-circle"></i></a>
+                <?php if (!empty($newproducts) && count($newproducts) > 3): ?>
+                    <div class="index-tittles">
+                        <h1><strong>Productos Nuevos 🌟</strong></h1>
+                        <div class="btns-arrows">
+                            <a id="product-left"><i class="bi bi-arrow-left-circle"></i></a>
+                            <a id="product-right"><i class="bi bi-arrow-right-circle"></i></a>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Carousel productos (muestra 5 por vista, navegación con flechas) -->
-                <div class="cards-carousel-wrapper">
-                    <div class="cards-list-main" id="product-carousel">
-                        <?php if (!empty($newproducts)): ?>
-                            <?php foreach ($newproducts as $newproduct): ?>
-                                <div class="cards product-item">
-                                    <a href="<?= BASE_URL ?>/index.php?controller=product&action=productsDetails&id=<?= $newproduct['ID_PRODUCTO_PK'] ?>">
-                                        <div>
-                                            <div class="card-img">
-                                                <img src="<?= htmlspecialchars($newproduct['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"
-                                                    alt="<?= htmlspecialchars($newproduct['NOMBRE_PRODUCTO'] ?? '') ?>"
-                                                    style="width:100%; height:100%; object-fit:cover;">
+                    <!-- Carousel productos (muestra 5 por vista, navegación con flechas) -->
+                    <div class="cards-carousel-wrapper">
+                        <div class="cards-list-main" id="product-carousel">
+                            <?php if (!empty($newproducts)): ?>
+                                <?php foreach ($newproducts as $newproduct): ?>
+                                    <div class="cards product-item">
+                                        <a
+                                            href="<?= BASE_URL ?>/index.php?controller=product&action=productsDetails&id=<?= $newproduct['ID_PRODUCTO_PK'] ?>">
+                                            <div>
+                                                <div class="card-img">
+                                                    <img src="<?= htmlspecialchars($newproduct['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"
+                                                        alt="<?= htmlspecialchars($newproduct['NOMBRE_PRODUCTO'] ?? '') ?>"
+                                                        style="width:100%; height:100%; object-fit:cover;">
+                                                </div>
+                                                <div class="card-name">
+                                                    <?= htmlspecialchars($newproduct['PRODUCTO_NOMBRE'] ?? 'Sin nombre') ?>
+                                                </div>
+                                                <div class="card-description product-description">
+                                                    <?= htmlspecialchars($newproduct['PRODUCTO_DESCRIPCION'] ?? '') ?>
+                                                </div>
                                             </div>
-                                            <div class="card-name">
-                                                <?= htmlspecialchars($newproduct['PRODUCTO_NOMBRE'] ?? 'Sin nombre') ?>
+                                            <div class="card-price">
+                                                ₡<?= number_format($newproduct['PRODUCTO_PRECIO_UNITARIO'], 2, ',', '.' ?? 'Sin precio') ?>
                                             </div>
-                                            <div class="card-description product-description">
-                                                <?= htmlspecialchars($newproduct['PRODUCTO_DESCRIPCION'] ?? '') ?>
-                                            </div>
+                                        </a>
+                                        <div class="card-button">
+                                            <?php if (isset($_SESSION['user_id'])): ?>
+                                                <button class="btn-orange btnAddToCart"
+                                                    data-id="<?= htmlspecialchars($newproduct['ID_PRODUCTO_PK']) ?>"
+                                                    <?= ($newproduct['PRODUCTO_STOCK'] <= 0 ? 'disabled' : '') ?>>
+                                                    <?= ($newproduct['PRODUCTO_STOCK'] <= 0 ? 'Sin stock' : 'Añadir al Carrito') ?>
+                                                </button>
+                                            <?php else: ?>
+                                                <a class="btn-orange btnLogin" href="#">Añadir al Carrito</a>
+                                            <?php endif; ?>
                                         </div>
-                                        <div class="card-price">
-                                            ₡<?= htmlspecialchars($newproduct['PRODUCTO_PRECIO_UNITARIO'] ?? '$0') ?>
-                                        </div>
-                                    </a>
-                                    <div class="card-button">
-                                        <?php if (isset($_SESSION['user_name'])): ?>
-                                            <a class="btn-orange"
-                                                href="/huellitasdigital/app/controllers/client/productController.php?action=addToCart&id=<?= htmlspecialchars($newproduct['ID_PRODUCTO'] ?? 0) ?>">Añadir
-                                                al Carrito</a>
-                                        <?php else: ?>
-                                            <a class="btn-orange btnLogin" href="#">Añadir al Carrito</a>
-                                        <?php endif; ?>
                                     </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <p>No hay productos nuevos disponibles.</p>
-                        <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p>No hay productos nuevos disponibles.</p>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </div>
 
 
-                <hr />
+                    <hr />
+                <?php endif; ?>
 
-                <div class="index-tittles">
-                    <h1><strong>Productos en Descuento 📣</strong></h1>
-                    <div class="btns-arrows">
-                        <a href="#"><i class="bi bi-arrow-left-circle"></i></a>
-                        <a href="#"><i class="bi bi-arrow-right-circle"></i></a>
+                <?php if (!empty($food) && count($food) > 3): ?>
+                    <div class="index-tittles">
+                        <h1><strong>Alimentos 🐶🍽️</strong></h1>
+                        <div class="btns-arrows">
+                            <a id="food-left"><i class="bi bi-arrow-left-circle"></i></a>
+                            <a id="food-right"><i class="bi bi-arrow-right-circle"></i></a>
+                        </div>
                     </div>
-                </div>
 
-                <!--Lista de productos como ejemplo-->
-                <div class="cards-list-main">
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
+                    <div class="cards-carousel-wrapper">
+                        <div class="cards-list-main" id="food-carousel">
+                            <?php if (!empty($food)): ?>
+                                <?php foreach ($food as $foodItem): ?>
+                                    <div class="cards product-item">
+                                        <a
+                                            href="<?= BASE_URL ?>/index.php?controller=product&action=productsDetails&id=<?= $foodItem['ID_PRODUCTO_PK'] ?>">
+                                            <div>
+                                                <div class="card-img">
+                                                    <img src="<?= htmlspecialchars($foodItem['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"
+                                                        alt="<?= htmlspecialchars($foodItem['NOMBRE_PRODUCTO'] ?? '') ?>"
+                                                        style="width:100%; height:100%; object-fit:cover;">
+                                                </div>
+                                                <div class="card-name">
+                                                    <?= htmlspecialchars($foodItem['PRODUCTO_NOMBRE'] ?? 'Sin nombre') ?>
+                                                </div>
+                                                <div class="card-description product-description">
+                                                    <?= htmlspecialchars($foodItem['PRODUCTO_DESCRIPCION'] ?? '') ?>
+                                                </div>
+                                            </div>
+                                            <div class="card-price">
+                                                ₡<?= number_format($foodItem['PRODUCTO_PRECIO_UNITARIO'], 2, ',', '.' ?? 'Sin precio') ?>
+                                            </div>
+                                        </a>
+                                        <div class="card-button">
+                                            <?php if (isset($_SESSION['user_id'])): ?>
+                                                <button class="btn-orange btnAddToCart"
+                                                    data-id="<?= htmlspecialchars($foodItem['ID_PRODUCTO_PK']) ?>"
+                                                    <?= ($foodItem['PRODUCTO_STOCK'] <= 0 ? 'disabled' : '') ?>>
+                                                    <?= ($foodItem['PRODUCTO_STOCK'] <= 0 ? 'Sin stock' : 'Añadir al Carrito') ?>
+                                                </button>
+                                            <?php else: ?>
+                                                <a class="btn-orange btnLogin" href="#">Añadir al Carrito</a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p>No hay alimentos disponibles.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
-                        </div>
-                    </div>
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
-                        </div>
-                    </div>
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
-                        </div>
-                    </div>
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
-                        </div>
-                    </div>
-                </div>
 
-                <hr />
+                    <hr />
 
-                <div class="index-tittles">
-                    <h1><strong>Medicamentos 💊</strong></h1>
-                    <div class="btns-arrows">
-                        <a href="#"><i class="bi bi-arrow-left-circle"></i></a>
-                        <a href="#"><i class="bi bi-arrow-right-circle"></i></a>
-                    </div>
-                </div>
+                <?php endif; ?>
 
-                <!--Lista de productos como ejemplo-->
-                <div class="cards-list-main">
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
+                <?php if (!empty($accessories) && count($accessories) > 3): ?>
+                    <div class="index-tittles">
+                        <h1><strong>Accesorios 🦮</strong></h1>
+                        <div class="btns-arrows">
+                            <a id="accessory-left"><i class="bi bi-arrow-left-circle"></i></a>
+                            <a id="accessory-right"><i class="bi bi-arrow-right-circle"></i></a>
                         </div>
                     </div>
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
+
+                    <div class="cards-carousel-wrapper">
+                        <div class="cards-list-main" id="accessory-carousel">
+                            <?php if (!empty($accessories)): ?>
+                                <?php foreach ($accessories as $accessory): ?>
+                                    <div class="cards product-item">
+                                        <a
+                                            href="<?= BASE_URL ?>/index.php?controller=product&action=productsDetails&id=<?= $accessory['ID_PRODUCTO_PK'] ?>">
+                                            <div>
+                                                <div class="card-img">
+                                                    <img src="<?= htmlspecialchars($accessory['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"
+                                                        alt="<?= htmlspecialchars($accessory['NOMBRE_PRODUCTO'] ?? '') ?>"
+                                                        style="width:100%; height:100%; object-fit:cover;">
+                                                </div>
+                                                <div class="card-name">
+                                                    <?= htmlspecialchars($accessory['PRODUCTO_NOMBRE'] ?? 'Sin nombre') ?>
+                                                </div>
+                                                <div class="card-description product-description">
+                                                    <?= htmlspecialchars($accessory['PRODUCTO_DESCRIPCION'] ?? '') ?>
+                                                </div>
+                                            </div>
+                                            <div class="card-price">
+                                                ₡<?= number_format($accessory['PRODUCTO_PRECIO_UNITARIO'], 2, ',', '.' ?? 'Sin precio') ?>
+                                            </div>
+                                        </a>
+                                        <div class="card-button">
+                                            <?php if (isset($_SESSION['user_id'])): ?>
+                                                <button class="btn-orange btnAddToCart"
+                                                    data-id="<?= htmlspecialchars($accessory['ID_PRODUCTO_PK']) ?>"
+                                                    <?= ($accessory['PRODUCTO_STOCK'] <= 0 ? 'disabled' : '') ?>>
+                                                    <?= ($accessory['PRODUCTO_STOCK'] <= 0 ? 'Sin stock' : 'Añadir al Carrito') ?>
+                                                </button>
+                                            <?php else: ?>
+                                                <a class="btn-orange btnLogin" href="#">Añadir al Carrito</a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p>No hay Accesorios disponibles</p>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
+
+                    <hr />
+
+                <?php endif; ?>
+
+
+                <?php if (!empty($medications) && count($medications) > 3): ?>
+                    <div class="index-tittles">
+                        <h1><strong>Medicamentos 💊</strong></h1>
+                        <div class="btns-arrows">
+                            <a id="medication-left"><i class="bi bi-arrow-left-circle"></i></a>
+                            <a id="medication-right"><i class="bi bi-arrow-right-circle"></i></a>
                         </div>
                     </div>
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
+
+                    <div class="cards-carousel-wrapper">
+                        <div class="cards-list-main" id="medication-carousel">
+                            <?php if (!empty($medications)): ?>
+                                <?php foreach ($medications as $medication): ?>
+                                    <div class="cards product-item">
+                                        <a
+                                            href="<?= BASE_URL ?>/index.php?controller=product&action=productsDetails&id=<?= $medication['ID_PRODUCTO_PK'] ?>">
+                                            <div>
+                                                <div class="card-img">
+                                                    <img src="<?= htmlspecialchars($medication['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"
+                                                        alt="<?= htmlspecialchars($medication['NOMBRE_PRODUCTO'] ?? '') ?>"
+                                                        style="width:100%; height:100%; object-fit:cover;">
+                                                </div>
+                                                <div class="card-name">
+                                                    <?= htmlspecialchars($medication['PRODUCTO_NOMBRE'] ?? 'Sin nombre') ?>
+                                                </div>
+                                                <div class="card-description product-description">
+                                                    <?= htmlspecialchars($medication['PRODUCTO_DESCRIPCION'] ?? '') ?>
+                                                </div>
+                                            </div>
+                                            <div class="card-price">
+                                                ₡<?= number_format($medication['PRODUCTO_PRECIO_UNITARIO'], 2, ',', '.' ?? 'Sin precio') ?>
+                                            </div>
+                                        </a>
+                                        <div class="card-button">
+                                            <?php if (isset($_SESSION['user_id'])): ?>
+                                                <button class="btn-orange btnAddToCart"
+                                                    data-id="<?= htmlspecialchars($medication['ID_PRODUCTO_PK']) ?>"
+                                                    <?= ($medication['PRODUCTO_STOCK'] <= 0 ? 'disabled' : '') ?>>
+                                                    <?= ($medication['PRODUCTO_STOCK'] <= 0 ? 'Sin stock' : 'Añadir al Carrito') ?>
+                                                </button>
+                                            <?php else: ?>
+                                                <a class="btn-orange btnLogin" href="#">Añadir al Carrito</a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p>No hay medicamentos disponibles.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <div class="cards">
-                        <div class="card-img">img</div>
-                        <div class="card-name">Nombre:</div>
-                        <div class="card-description">Lorem ipsum dolor sit amet vitae, fringilla iaculis ante.
-                            Fusce a
-                            euismod
-                            est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.</div>
-                        <div class="card-price">$1.100</div>
-                        <div class="card-button">
-                            <a class="btn-orange" href="pages/cart.php">Añadir al Carrito</a>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </section>
         <section class="testimonios">

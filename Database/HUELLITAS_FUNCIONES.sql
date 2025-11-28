@@ -12,6 +12,7 @@ use HUELLITASDIGITAL;
 -- NOMBRE: HUELLITAS_GENERAR_SALT_FN
 -- DESCRIPCIÓN: Función para generar un salt único para encriptación
 -- ==========================================
+DROP FUNCTION IF EXISTS HUELLITAS_GENERAR_SALT_FN;
 DELIMITER //
 CREATE FUNCTION HUELLITAS_GENERAR_SALT_FN()
 RETURNS VARCHAR(100)
@@ -22,12 +23,13 @@ BEGIN
     RETURN salt_generado;
 END//
 DELIMITER ;
-/
+
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_ENCRIPTAR_CONTRASENNA_FN
 -- DESCRIPCIÓN: Función para encriptar contraseñas con salt usando AES
 -- ==========================================
+DROP FUNCTION IF EXISTS HUELLITAS_ENCRIPTAR_CONTRASENNA_FN;
 DELIMITER //
 CREATE FUNCTION HUELLITAS_ENCRIPTAR_CONTRASENNA_FN(
     P_CONTRASENNA_PLANA VARCHAR(255),
@@ -59,11 +61,12 @@ BEGIN
     RETURN V_CONTRASENNA_ENCRIPTADA;
 END//
 DELIMITER ;
-/
+
 -- ==========================================
 -- NOMBRE: HUELLITAS_VERIFICAR_CONTRASENNA_FN
 -- DESCRIPCIÓN: Función para verificar si una contraseña coincide con la almacenada
 -- ==========================================
+DROP FUNCTION IF EXISTS HUELLITAS_VERIFICAR_CONTRASENNA_FN;
 DELIMITER //
 CREATE FUNCTION HUELLITAS_VERIFICAR_CONTRASENNA_FN(
     P_USUARIO_ID INT,
@@ -110,11 +113,12 @@ BEGIN
     END IF;
 END//
 DELIMITER ;
-/
+
 -- ==========================================
 -- NOMBRE: HUELLITAS_GENERAR_CLAVE_AES_FN
 -- DESCRIPCIÓN: Función para generar claves AES de 64 caracteres
 -- ==========================================
+DROP FUNCTION IF EXISTS HUELLITAS_GENERAR_CLAVE_AES_FN;
 DELIMITER //
 CREATE FUNCTION HUELLITAS_GENERAR_CLAVE_AES_FN()
 RETURNS VARCHAR(64)
@@ -123,12 +127,13 @@ BEGIN
     RETURN UPPER(SUBSTRING(SHA2(RAND(), 256), 1, 64));
 END//
 DELIMITER ;
-/
+
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_ENCRIPTAR_DATO_FN
 -- DESCRIPCIÓN: Función para encriptar datos usando AES con clave específica
 -- ==========================================
+DROP FUNCTION IF EXISTS HUELLITAS_ENCRIPTAR_DATO_FN;
 DELIMITER //
 CREATE FUNCTION HUELLITAS_ENCRIPTAR_DATO_FN(
     P_TEXTO_PLANO TEXT,
@@ -156,12 +161,13 @@ BEGIN
     RETURN V_TEXTO_ENCRIPTADO;
 END//
 DELIMITER ;
-/
+
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_DESENCRIPTAR_DATO_FN
 -- DESCRIPCIÓN: Función para desencriptar datos usando AES con clave específica
 -- ==========================================
+DROP FUNCTION IF EXISTS HUELLITAS_DESENCRIPTAR_DATO_FN;
 DELIMITER //
 CREATE FUNCTION HUELLITAS_DESENCRIPTAR_DATO_FN(
     P_TEXTO_ENCRIPTADO TEXT,
@@ -189,11 +195,12 @@ BEGIN
     RETURN V_TEXTO_DESENCRIPTADO;
 END//
 DELIMITER ;
-/
+
 -- ==========================================
 -- NOMBRE: HUELLITAS_CALCULAR_PRECIO_CON_DESCUENTO_FN
 -- DESCRIPCIÓN: Función para calcular el precio final de un producto aplicando descuentos activos
 -- ==========================================
+DROP FUNCTION IF EXISTS HUELLITAS_CALCULAR_PRECIO_CON_DESCUENTO_FN;
 DELIMITER //
 CREATE FUNCTION HUELLITAS_CALCULAR_PRECIO_CON_DESCUENTO_FN(
     P_ID_PRODUCTO_FK INT,
@@ -225,5 +232,77 @@ BEGIN
     RETURN V_PRECIO_FINAL;
 END//
 DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: FN_GENERAR_CODIGO_GLOBAL_HUELLITAS
+-- DESCRIPCIÓN: Función que genera un código único global combinando fecha + secuencia incremental
+-- ==========================================
+DROP FUNCTION IF EXISTS GENERAR_CODIGO_GLOBAL_HUELLITAS_FN;
+DELIMITER //
+CREATE FUNCTION GENERAR_CODIGO_GLOBAL_HUELLITAS_FN()
+RETURNS VARCHAR(30)
+DETERMINISTIC
+BEGIN
+    DECLARE v_codigo VARCHAR(30);
+    DECLARE v_id INT;
+
+    -- Insertar un nuevo registro en la tabla maestra
+    INSERT INTO HUELLITAS_CODIGOS_GENERALES_TB (CODIGO_UNICO)
+    VALUES ('TEMP');
+
+    SET v_id = LAST_INSERT_ID();
+
+    -- Generar código basado en fecha y ID incremental
+    SET v_codigo = CONCAT(
+        DATE_FORMAT(NOW(), '%Y%m%d'),
+        LPAD(v_id, 4, '0')
+    );
+
+    -- Actualizar el valor real del código en la tabla maestra
+    UPDATE HUELLITAS_CODIGOS_GENERALES_TB
+    SET CODIGO_UNICO = v_codigo
+    WHERE ID_CODIGO_PK = v_id;
+
+    RETURN v_codigo;
+END //
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: FN_GENERAR_CODIGO_GLOBAL_HUELLITAS
+-- DESCRIPCIÓN: Función exclusivamente para generar códigos de mascotas
+-- ==========================================
+DROP FUNCTION IF EXISTS GENERAR_CODIGO_MASCOTA_FN;
+DELIMITER //
+CREATE FUNCTION GENERAR_CODIGO_MASCOTA_FN()
+RETURNS VARCHAR(30)
+DETERMINISTIC
+BEGIN
+    DECLARE v_codigo VARCHAR(30);
+    DECLARE v_id INT;
+
+    -- Crear un registro temporal para obtener el consecutivo único
+    INSERT INTO HUELLITAS_CODIGOS_MASCOTA_TB (CODIGO_UNICO)
+    VALUES ('TEMP');
+
+    SET v_id = LAST_INSERT_ID();
+
+    -- Generar código: MASC + fecha + consecutivo de 4 dígitos
+    SET v_codigo = CONCAT(
+        'PET-',
+        DATE_FORMAT(NOW(), '%Y%m%d'),
+        '-',
+        LPAD(v_id, 4, '0')
+    );
+
+    -- Actualizar código definitivo
+    UPDATE HUELLITAS_CODIGOS_MASCOTA_TB
+    SET CODIGO_UNICO = v_codigo
+    WHERE ID_CODIGO_PK = v_id;
+
+    RETURN v_codigo;
+END //
+DELIMITER ;
+
+
 
 

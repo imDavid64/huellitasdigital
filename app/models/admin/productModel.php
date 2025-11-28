@@ -218,19 +218,12 @@ class ProductModel extends BaseModel
 
     public function countProducts($query)
     {
-        $stmt = $this->conn->prepare("
-        SELECT COUNT(*) AS total 
-        FROM HUELLITAS_PRODUCTOS_TB p
-        INNER JOIN HUELLITAS_PRODUCTOS_CATEGORIA_TB c ON p.ID_CATEGORIA_FK = c.ID_CATEGORIA_PK
-        INNER JOIN HUELLITAS_PROVEEDORES_TB pr ON p.ID_PROVEEDOR_FK = pr.ID_PROVEEDOR_PK
-        WHERE 
-            p.PRODUCTO_NOMBRE LIKE CONCAT('%', ?, '%')
-            OR c.DESCRIPCION_CATEGORIA LIKE CONCAT('%', ?, '%')
-            OR pr.PROVEEDOR_NOMBRE LIKE CONCAT('%', ?, '%')
-    ");
-        $stmt->bind_param("sss", $query, $query, $query);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_CONTAR_PRODUCTOS_SP(?)");
+        $stmt->bind_param("s", $query);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
         return $result['total'] ?? 0;
     }
 
@@ -248,17 +241,13 @@ class ProductModel extends BaseModel
 
     public function countCategories($query)
     {
-        $stmt = $this->conn->prepare("
-            SELECT COUNT(*) AS total
-            FROM HUELLITAS_PRODUCTOS_CATEGORIA_TB c
-            INNER JOIN HUELLITAS_ESTADO_TB e ON c.ID_ESTADO_FK = e.ID_ESTADO_PK
-            WHERE c.DESCRIPCION_CATEGORIA LIKE CONCAT('%', ?, '%')
-               OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', ?, '%')
-        ");
-        $stmt->bind_param("ss", $query, $query);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_CONTAR_CATEGORIAS_SP(?)");
+        $stmt->bind_param("s", $query);
         $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        return $row['total'] ?? 0;
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        return $result['total'] ?? 0;
     }
 
     // =======================
@@ -275,19 +264,14 @@ class ProductModel extends BaseModel
 
     public function countBrands($query)
     {
-        $stmt = $this->conn->prepare("
-            SELECT COUNT(*) AS total
-            FROM HUELLITAS_MARCAS_TB m
-            INNER JOIN HUELLITAS_ESTADO_TB e ON m.ID_ESTADO_FK = e.ID_ESTADO_PK
-            WHERE m.NOMBRE_MARCA LIKE CONCAT('%', ?, '%')
-               OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', ?, '%')
-        ");
-        $stmt->bind_param("ss", $query, $query);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_CONTAR_MARCAS_SP(?)");
+        $stmt->bind_param("s", $query);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
         return $row['total'] ?? 0;
     }
-
 
 }
 ?>

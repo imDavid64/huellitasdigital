@@ -35,6 +35,33 @@ class ProductModel extends BaseModel
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+    public function getAllFoodProducts()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_PRODUCTOS_ALIMENTOS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getAllMedicationsProducts()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_PRODUCTOS_MEDICAMENTOS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getAllAccessoriesProducts()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_PRODUCTOS_ACCESORIOS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
     public function getAllActiveCategories()
     {
         $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP()");
@@ -47,7 +74,18 @@ class ProductModel extends BaseModel
     //Metodo o Función para el filtrado de productos
     public function getFilteredProducts($categories = [], $brands = [])
     {
-        $sql = "SELECT * FROM HUELLITAS_PRODUCTOS_TB WHERE ID_ESTADO_FK = 1";
+        $sql = "SELECT 
+                ID_PRODUCTO_PK,
+                PRODUCTO_NOMBRE,
+                PRODUCTO_DESCRIPCION,
+                PRODUCTO_PRECIO_UNITARIO,
+                PRODUCTO_STOCK,
+                IMAGEN_URL,
+                ID_CATEGORIA_FK,
+                ID_MARCA_FK
+            FROM huellitas_productos_tb 
+            WHERE ID_ESTADO_FK = 1";
+
         $types = "";
         $params = [];
 
@@ -55,7 +93,7 @@ class ProductModel extends BaseModel
         if (!empty($categories)) {
             $placeholders = implode(',', array_fill(0, count($categories), '?'));
             $sql .= " AND ID_CATEGORIA_FK IN ($placeholders)";
-            $types .= str_repeat('i', count($categories)); // tipos integer
+            $types .= str_repeat('i', count($categories));
             $params = array_merge($params, $categories);
         }
 
@@ -76,8 +114,10 @@ class ProductModel extends BaseModel
         $stmt->execute();
         $result = $stmt->get_result();
         $stmt->close();
-        return $result->fetch_all(MYSQLI_ASSOC);
+
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
+
 
     //Metodo o Función para las busquedas de productos
     public function searchActiveProducts($search)
@@ -145,9 +185,5 @@ class ProductModel extends BaseModel
         $result = $stmt->get_result();
         return $result->fetch_assoc();
     }
-
-
-
-
 }
 ?>

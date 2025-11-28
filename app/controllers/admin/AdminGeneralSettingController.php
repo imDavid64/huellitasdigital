@@ -15,10 +15,9 @@ class AdminGeneralSettingController
     {
         // ✅ Solo administradores
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'ADMINISTRADOR') {
-            header("Location: " . BASE_URL . "/index.php?controller=home&action=index");
+            header("Location: " . BASE_URL . "/index.php?controller=home&action=error403");
             exit;
         }
-
         $this->geSettingModel = new GeSettingModel();
         $this->catalogModel = new CatalogModel();
         $this->firebase = new FirebaseConfig();

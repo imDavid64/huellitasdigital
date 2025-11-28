@@ -22,111 +22,22 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
 </head>
 
 <body>
-    <header class="main-header">
-        <nav class="header-container">
-            <div class="header-container-left">
-                <!--Boton del logo-->
-                <div>
-                    <a href="../index.html" class="header-logo">
-                        <img src="../assets/images/Logo-AzulOscuro.png" alt="Logo Veterinaria Dra.Huellitas">
-                        <span>Huellitas<br><strong>Digital</strong></span>
-                    </a>
-                </div>
-                <!--Boton de nuestra Ubicación-->
-                <div>
-                    <a href="#" class="header-vet-location">
-                        <i class="bi bi-geo-alt"></i>
-                    </a>
-                </div>
-                <!--Barra de busqueda-->
-                <div class="header-search">
-                    <input type="text" id="header-search" placeholder="Buscar">
-                    <i class="bi bi-search"></i>
-                </div>
-                <!--Boton de carrito-->
-                <div class="header-cart">
-                    <div>
-                        <a class="btn-orange" href="cart.html">Carrito <i class="bi bi-cart"></i></a>
-                    </div>
-                </div>
-            </div>
-
-            <!--Botones de Login, registro e info del usuario-->
-            <div class="header-container-right">
-                <div class="header-myPets">
-                    <div>
-                        <a class="btn-green" href="myPets/home.html">Mis Mascotas <i
-                                class="bi bi-clipboard-heart"></i></a>
-                    </div>
-                </div>
-                <div class="header-user">
-                    <span>Bienvenido!</span>
-                    <h4> <span>User_Name</span></h4>
-                </div>
-                <div>
-                    <button class="header-user-img" id="header-user-img">
-                        <i class="bi bi-person-fill"></i>
-                    </button>
-                    <!---->
-                    <div class="header-user-menu" id="header-user-menu">
-                        <ul>
-                            <li><a href="profile.html"><i class="bi bi-person-fill"></i> Mi Pefil</a></li>
-                            <li><a href="myOrders.html"><i class="bi bi-bag-check-fill"></i> Mis Pedidos</a></li>
-                            <li><a href="myAppointment"><i class="bi bi-calendar-event-fill"></i> Mis Citas</a></li>
-                            <li><a href="../index_unlogin.html"><i class="bi bi-door-open-fill"></i> Cerrar Sesión</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <!--Barra de navegación-->
-        <nav class="navbar-container">
-            <ul>
-                <li><a href="../index.html">Inicio</a></li>
-                <li>
-                    <a href="products.html">Productos <i class="bi bi-caret-down-fill"></i></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="Products/alimentos.html">Alimentos</a></li>
-                        <li><a href="Products/accesorios.html">Accesorios</a></li>
-                        <li><a href="Products/medicamentos.html">Medicamentos</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="services.html">Servicios <i class="bi bi-caret-down-fill"></i></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="services/consultas.html">Consultas</a></li>
-                        <li><a href="services/vacunas.html">Vacunas</a></li>
-                        <li><a href="services/desparacitacion.html">Desparacitación</a></li>
-                        <li><a href="services/examLab.html">Examenes de Laboratorio</a></li>
-                        <li><a href="services/ultrasonido.html">Ultrasonido</a></li>
-                        <li><a href="services/cirugiasMenores.html">Cirugias Menores</a></li>
-                        <li><a href="services/limpiezasDentales.html">Limpiezas Dentales</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="aboutUs.html">Sobre Nosotros</a>
-                </li>
-                <li><a href="index_unlogin.html">Cerrar Sesion</a></li>
-            </ul>
-        </nav>
-    </header>
     <!--HEADER-->
-
-
+    <?php require_once __DIR__ . "/../partials/header.php"; ?>
+    <!--HEADER-->
 
     <!--CONTENIDO CENTRAL-->
     <main>
         <section class="static-banner">
-            <img src="../assets/images/static-banners/img-banner-services-4.png" alt="Banner">
+            <img src="<?= BASE_URL ?>/public/assets/images/static-banners/img-banner-services-4.png" alt="Banner">
             <span class="tittle-static-banner">Sobre Nosotros</span>
         </section>
 
         <!--Breadcrumb-->
-        <nav class="breadcrumbs-container">
+        <nav class="breadcrumbs-container-client">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="../index.html">Inicio</a>
+                    <a href="<?= BASE_URL ?>/index.php?controller=home&action=index">Inicio</a>
                 </li>
                 <li class="breadcrumb-item current-page">Sobre Nosotros</li>
             </ol>
@@ -138,7 +49,7 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                 </div>
                 <div class="aboutUs-container">
                     <div class="whoWeAre-container-left">
-                        <img src="../assets/images/aboutUs/Dra.Huellitas-Emoji-shadow.png">
+                        <img src="<?= BASE_URL ?>/public/assets/images/aboutUs/Dra.Huellitas-Emoji-shadow.png">
                         <span><strong>Dra. Yorsy Isabel Orozco Samudio</strong></span>
                         <span>Lda. Medicina y cirugía Veterinaria</span>
                     </div>
@@ -166,10 +77,10 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                                 promover la salud y bienestar animal.
                             </P>
                         </div>
-                        <img src="../assets/images/aboutUs/img-cat-aboutUs.png">
+                        <img src="<?= BASE_URL ?>/public/assets/images/aboutUs/img-cat-aboutUs.png">
                     </div>
                     <div class="misionVision-container-right">
-                        <img src="../assets/images/aboutUs/img-dog-aboutUs.png">
+                        <img src="<?= BASE_URL ?>/public/assets/images/aboutUs/img-dog-aboutUs.png">
                         <div>
                             <h4><strong>Visión</strong></h4>
                             <P>
@@ -222,54 +133,8 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
     <!--CONTENIDO CENTRAL-->
 </body>
 
-<!--FOOTER-->
-<footer>
-    <div class="pre-footer">
-        <div>
-            <span><strong>Contáctenos:</strong></span>
-        </div>
-        <div class="footer-contact">
-            <div><i class="bi bi-whatsapp"></i>+506 7210 9730</div>
-            <div><i class="bi bi-telephone"></i>+506 2102 8142</div>
-            <div><i class="bi bi-envelope"></i>drahuellitas@gmail.com</div>
-        </div>
-    </div>
-    <div class="footer-content">
-        <div class="r">
-            <div>
-                <a href="../index.html" class="footer-logo">
-                    <img src="../assets/images/logo.png" alt="Logo Veterinaria Dra.Huellitas">
-                    <span>Veterinaria<br><strong>Dra.Huellitas</strong></span>
-                </a>
-            </div>
-        </div>
-        <div>
-            <div class="footer-interest-links">
-                <span><strong>Links de Interés</strong></span>
-                <a href="/pages/advices/#">Sobre Nosotros</a>
-                <a href="/pages/advices/#">Preguntas Frecuentes</a>
-                <a href="/pages/advices/#">Nuestra Misión y Visión</a>
-            </div>
-            <div class="social-media">
-                <span><strong>Nuestras Redes Sociales</strong></span>
-                <div>
-                    <a href="https://www.instagram.com/drahuellitascr"><i class="bi bi-instagram"></i></a>
-                    <a href="https://www.facebook.com/drahuellitas"><i class="bi bi-facebook"></i></a>
-                    <a href="https://wa.me/50672109730"><i class="bi bi-whatsapp"></i></a>
-                </div>
-            </div>
-        </div>
-        <div>
-            <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1168.1526247390802!2d-84.13922709798275!3d10.0018685338411!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8fa0fb25f08bfa0f%3A0xde176276b76b0b2b!2sVeterinaria%20Dra%20Huellitas!5e0!3m2!1ses!2scr!4v1754965379769!5m2!1ses!2scr"
-                width="500" height="400" style="border-radius:10px;" allowfullscreen="" loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"></iframe>
-        </div>
-    </div>
-    <div class="post-footer">
-        <span>&copy; 2025 - Dra Huellitas</span>
-    </div>
-</footer>
-<!--FOOTER-->
+<!--FOODER-->
+<?php require_once __DIR__ . "/../partials/fooder.php"; ?>
+<!--FOODER-->
 
 </html>

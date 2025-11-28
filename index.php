@@ -14,6 +14,7 @@ $folders = [
     '',         // raíz: app/controllers/
     'client',   // app/controllers/client/
     'admin',    // app/controllers/admin/
+    'employee', // app/controllers/employee/
 ];
 
 $controllerFile = null;
@@ -22,14 +23,14 @@ $controllerClass = null;
 // === Búsqueda dinámica ===
 foreach ($folders as $folder) {
     $path = $folder ? "/app/controllers/{$folder}/{$controllerName}.php"
-                    : "/app/controllers/{$controllerName}.php";
+        : "/app/controllers/{$controllerName}.php";
 
     $fullPath = __DIR__ . $path;
 
     if (file_exists($fullPath)) {
         $controllerFile = $fullPath;
         $namespace = $folder ? "App\\Controllers\\" . ucfirst($folder)
-                             : "App\\Controllers";
+            : "App\\Controllers";
         $controllerClass = "{$namespace}\\{$controllerName}";
         break;
     }

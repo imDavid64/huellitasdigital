@@ -15,7 +15,6 @@ class ProductController
         $brandModel = new BrandModel();
         $serviceModel = new ServiceModel();
 
-        // <-- NUEVO
         $selectedCategory = isset($_GET['idCategoria']) ? (int) $_GET['idCategoria'] : null;
 
         $brands = $brandModel->getAllActiveBrands();
@@ -36,39 +35,16 @@ class ProductController
     public function filterProducts()
     {
         $productModel = new ProductModel();
+
         $categories = $_POST['categories'] ?? [];
         $brands = $_POST['brands'] ?? [];
 
-        $filteredProducts = $productModel->getFilteredProducts($categories, $brands);
-
-        // Asegurar que BASE_URL esté disponible
+        $products = $productModel->getFilteredProducts($categories, $brands);
         $base_url = defined('BASE_URL') ? BASE_URL : '';
 
-        // Renderizar solo el bloque HTML de los productos filtrados
-        if (empty($filteredProducts)) {
-            echo '<p class="text-center mt-4">No se encontraron productos con los filtros seleccionados.</p>';
-            return;
-        }
-
-        foreach ($filteredProducts as $product) {
-            echo '
-        <div class="cards product-item">
-            <a href="' . $base_url . '/index.php?controller=product&action=productsDetails&id=' . htmlspecialchars($product['ID_PRODUCTO_PK']) . '">
-                <div>
-                    <div class="card-img">
-                        <img src="' . htmlspecialchars($product['IMAGEN_URL']) . '" alt="' . htmlspecialchars($product['PRODUCTO_NOMBRE']) . '" style="width:100%; height:100%; object-fit:cover;">
-                    </div>
-                    <div class="card-name">' . htmlspecialchars($product['PRODUCTO_NOMBRE']) . '</div>
-                    <div class="card-description product-description">' . htmlspecialchars($product['PRODUCTO_DESCRIPCION']) . '</div>
-                </div>
-            </a>
-            <div class="card-price">₡' . number_format((float) $product['PRODUCTO_PRECIO_UNITARIO'], 2, ',', '.') . '</div>
-            <div class="card-button">
-                <a class="btn-orange" href="#">Añadir al Carrito</a>
-            </div>
-        </div>';
-        }
+        require __DIR__ . '/../../views/client/products/partials/product-list.php';
     }
+
 
     public function searchProducts()
     {

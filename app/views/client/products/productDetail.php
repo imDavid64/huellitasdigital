@@ -17,6 +17,9 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+    <!-- SweetAlert2 local -->
+    <script src="<?= BASE_URL ?>/public/js/libs/sweetalert2.all.min.js"></script>
+    <!-- JQuery y script.js -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="<?= BASE_URL ?>/public/js/script.js"></script>
 </head>
@@ -71,25 +74,19 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                         </div>
                         <div class="product-detail-price">
                             <span><strong>Precio:
-                                </strong>₡<?= htmlspecialchars($product['PRODUCTO_PRECIO_UNITARIO'] ?? 'Sin precio') ?></span>
+                                </strong>₡<?= number_format($product['PRODUCTO_PRECIO_UNITARIO'], 2, ',', '.' ?? 'Sin precio') ?></span>
                         </div>
                         <div class="product-detail-addCart">
                             <div class="product-detail-card-button">
-                                <?php if (isset($_SESSION['user_name'])): ?>
-                                    <a class="btn-orange"
-                                        href="<?= BASE_URL ?>/index.php?controller=service&action=addToCart&id=<?= htmlspecialchars($product['ID_PRODUCTO'] ?? 0) ?>">Añadir
-                                        al Carrito</a>
+                                <?php if (isset($_SESSION['user_id'])): ?>
+                                    <button class="btn-orange btnAddToCart"
+                                        data-id="<?= htmlspecialchars($product['ID_PRODUCTO_PK']) ?>"
+                                        <?= ($product['PRODUCTO_STOCK'] <= 0 ? 'disabled' : '') ?>>
+                                        <?= ($product['PRODUCTO_STOCK'] <= 0 ? 'Sin stock' : 'Añadir al Carrito') ?>
+                                    </button>
                                 <?php else: ?>
                                     <a class="btn-orange btnLogin" href="#">Añadir al Carrito</a>
                                 <?php endif; ?>
-
-                            </div>
-                            <div class="cart-sum-item">
-                                <button
-                                    onclick="this.parentNode.querySelector('input[type=number]').stepDown()">-</button>
-                                <input min="1" name="quantity" value="1" type="number">
-                                <button
-                                    onclick="this.parentNode.querySelector('input[type=number]').stepUp()">+</button>
                             </div>
                         </div>
                     </div>
@@ -97,7 +94,6 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                 <hr>
                 <div class="product-comments-container">
                     <h2>Comentarios</h2>
-
                     <?php if (!empty($comments)): ?>
                         <?php foreach ($comments as $comment): ?>
                             <div id="comment-<?= $comment['ID_COMENTARIO_PK'] ?>" class="comment-card">

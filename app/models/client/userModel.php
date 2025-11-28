@@ -237,8 +237,6 @@ class UserModel extends BaseModel
         return $ok;
     }
 
-
-
     // ==================================================
     // IDENTIFICACION EXISTE
     // ==================================================
@@ -294,4 +292,87 @@ class UserModel extends BaseModel
         }
     }
 
+
+    // ==================================================
+    // VINCULAR CLIENTE EXISTENTE POR CORREO
+    // ==================================================
+    public function vincularClienteExistente($correo, $usuarioId)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL HUELLITAS_VINCULAR_CLIENTE_USUARIO_SP(?, ?)");
+            $stmt->bind_param("si", $correo, $usuarioId);
+            $stmt->execute();
+            $stmt->close();
+
+            while ($this->conn->more_results() && $this->conn->next_result()) {
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            error_log("Error en vincularClienteExistente: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // ==================================================
+    // VERIFICAR SI EXISTE CLIENTE VETERINARIO POR CORREO
+    // ==================================================
+    public function clienteVeterinarioExiste($correo)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL HUELLITAS_CLIENTE_EXISTE_SP(?)");
+            $stmt->bind_param("s", $correo);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $existe = $result && $result->num_rows > 0;
+
+            // Liberar recursos
+            $result->free();
+            $stmt->close();
+
+            // Limpiar múltiples resultados (evita 'Commands out of sync')
+            while ($this->conn->more_results() && $this->conn->next_result()) {
+            }
+
+            return $existe;
+        } catch (\Throwable $e) {
+            error_log("Error en clienteVeterinarioExiste: " . $e->getMessage());
+            return false;
+        }
+    }
+
+
+    // ==================================================
+    // VINCULAR CLIENTE POR CÓDIGO
+    // ==================================================
+    public function vincularClientePorCodigo($codigoUsuario)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL HUELLITAS_VINCULAR_CLIENTE_USUARIO_SP(?)");
+            $stmt->bind_param("s", $codigoUsuario);
+            $stmt->execute();
+
+            // Consumir todos los SELECTs del SP
+            do {
+                if ($res = $stmt->get_result()) {
+                    $resultado = $res->fetch_assoc();
+                    $res->free();
+                }
+            } while ($stmt->more_results() && $stmt->next_result());
+
+            $stmt->close();
+
+            // Si el SP devolvió EXITO = 1 → OK
+            if (!empty($resultado['EXITO']) && $resultado['EXITO'] == 1) {
+                return true;
+            }
+
+            return false;
+
+        } catch (\Throwable $e) {
+            error_log("Error en vincularClientePorCodigo: " . $e->getMessage());
+            return false;
+        }
+    }
 }

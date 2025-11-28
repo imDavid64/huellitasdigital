@@ -19,7 +19,25 @@ class AuthController
 
     public function login()
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+
+        // Verificar método POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
+                return;
+            }
+            header('Location: ' . BASE_URL . '/index.php?controller=auth&action=loginForm');
+            exit;
+        }
+
+        // Validar CSRF token
+        if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => 'CSRF inválido.']);
+                return;
+            }
+            $_SESSION['error'] = 'Petición no válida.';
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=loginForm');
             exit;
         }
@@ -29,7 +47,12 @@ class AuthController
 
         //Validación básica
         if (empty($email) || empty($password)) {
-            $_SESSION['error'] = '❌ Todos los campos son obligatorios.';
+            $msg = 'Todos los campos son obligatorios.';
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => $msg]);
+                return;
+            }
+            $_SESSION['error'] = $msg;
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=loginForm');
             exit;
         }
@@ -40,22 +63,46 @@ class AuthController
         if ($row && $row['LOGIN_EXITOSO']) {
             $userData = $this->userModel->getUsuarioById($row['ID_USUARIO']);
 
-            //Variables de sesión
+            // Variables de sesión
             $_SESSION['user_id'] = $userData['ID_USUARIO_PK'];
+            $_SESSION['user_code'] = $userData['CODIGO_USUARIO'];
             $_SESSION['user_name'] = $userData['USUARIO_NOMBRE'];
             $_SESSION['user_first_name'] = explode(' ', $userData['USUARIO_NOMBRE'])[0];
             $_SESSION['user_role'] = $userData['ROL'];
 
-            //Mensaje de bienvenida (opcional, mediante flash)
-            $_SESSION['success'] = '✅ Bienvenido ' . htmlspecialchars($userData['USUARIO_NOMBRE']);
+            $msg = '✅ Bienvenido ' . htmlspecialchars($userData['USUARIO_NOMBRE']);
 
-            //Redirección según el rol
+            // 🔹 Respuesta AJAX
+            if ($isAjax) {
+                // Definir la URL según el rol
+                switch ($_SESSION['user_role']) {
+                    case 'ADMINISTRADOR':
+                        $redirect = BASE_URL . '/index.php?controller=admin&action=index';
+                        break;
+                    case 'EMPLEADO':
+                        $redirect = BASE_URL . '/index.php?controller=employee&action=index';
+                        break;
+                    default:
+                        $redirect = BASE_URL . '/index.php?controller=home&action=index';
+                        break;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => $msg,
+                    'redirect' => $redirect
+                ]);
+                return;
+            }
+
+            // 🔹 Flujo tradicional
+            $_SESSION['success'] = $msg;
             switch ($_SESSION['user_role']) {
                 case 'ADMINISTRADOR':
                     header('Location: ' . BASE_URL . '/index.php?controller=admin&action=index');
                     break;
                 case 'EMPLEADO':
-                    header('Location: ' . BASE_URL . '/index.php?controller=empleado&action=index');
+                    header('Location: ' . BASE_URL . '/index.php?controller=employee&action=index');
                     break;
                 default:
                     header('Location: ' . BASE_URL . '/index.php?controller=home&action=index');
@@ -64,75 +111,140 @@ class AuthController
             exit;
         } else {
             $mensaje = $row['MENSAJE'] ?? 'Credenciales incorrectas.';
-            $_SESSION['error'] = '❌ ' . htmlspecialchars($mensaje);
+            $msg = htmlspecialchars($mensaje);
+
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => $msg]);
+                return;
+            }
+
+            $_SESSION['error'] = $msg;
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=loginForm');
             exit;
         }
     }
 
+
     public function register()
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
+                return;
+            }
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=registerForm');
             exit;
         }
 
-        $nombre = trim($_POST['register-user-name']);
-        $email = trim($_POST['register-user-email']);
-        $identificacion = (int) trim($_POST['register-user-identification']);
-        $password = trim($_POST['register-user-password']);
+        // Validar CSRF token
+        if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => 'CSRF inválido.']);
+                return;
+            }
+            $_SESSION['error'] = 'Petición no válida.';
+            header('Location: ' . BASE_URL . '/index.php?controller=auth&action=registerForm');
+            exit;
+        }
 
+        $nombre = trim($_POST['register-user-name'] ?? '');
+        $email = trim($_POST['register-user-email'] ?? '');
+        $identificacion = (int) trim($_POST['register-user-identification'] ?? '');
+        $password = trim($_POST['register-user-password'] ?? '');
+
+        // 🔸 Validación de campos vacíos
         if (empty($nombre) || empty($email) || empty($identificacion) || empty($password)) {
-            $_SESSION['error'] = '❌ Todos los campos son obligatorios.';
+            $msg = 'Todos los campos son obligatorios.';
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => $msg]);
+                return;
+            }
+            $_SESSION['error'] = $msg;
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=registerForm');
             exit;
         }
 
+        // 🔸 Validar correo duplicado
         if ($this->userModel->emailExiste($email)) {
-            $_SESSION['error'] = '❌ Este correo ya está registrado.';
+            $msg = 'Este correo ya está registrado.';
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => $msg]);
+                return;
+            }
+            $_SESSION['error'] = $msg;
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=registerForm');
             exit;
         }
+
+        // 🔸 Validar identificación duplicada
         if ($this->userModel->identificacionExiste($identificacion)) {
-            $_SESSION['error'] = '❌ Esta identificación ya está registrada.';
+            $msg = 'Esta identificación ya está registrada.';
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => $msg]);
+                return;
+            }
+            $_SESSION['error'] = $msg;
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=registerForm');
             exit;
         }
 
-        // Iniciar transacción
+        // 🔸 Iniciar transacción
         $this->userModel->beginTx();
-
         $newId = $this->userModel->registrarUsuario($nombre, $email, $identificacion, $password);
         if (!$newId) {
             $this->userModel->rollback();
+            $msg = 'Error al registrar el usuario.';
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => $msg]);
+                return;
+            }
+            $_SESSION['error'] = $msg;
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=registerForm');
             exit;
         }
 
-        // Crear token de verificación (1 día = 1440 min)
+        // 🔸 Crear token
         $token = $this->userModel->crearToken($newId, 'VERIFICACION', 1440, $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
-
         if (!$token) {
             $this->userModel->rollback();
-            $_SESSION['error'] = '⚠️ No se pudo generar el token de verificación.';
+            $msg = 'No se pudo generar el token de verificación.';
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => $msg]);
+                return;
+            }
+            $_SESSION['error'] = $msg;
             header('Location: ' . BASE_URL . '/index.php?controller=auth&action=registerForm');
             exit;
         }
 
-        // Enviar correo
+        // 🔸 Enviar correo
         $enviado = EmailHelper::enviarCorreoVerificacion($email, $nombre, $token);
 
         if ($enviado) {
             $this->userModel->commit();
-            $_SESSION['success'] = '✅ Registro exitoso. Verifique su correo electrónico para activar su cuenta.';
+            $msg = 'Registro exitoso. Verifique su correo electrónico para activar su cuenta.';
+            if ($isAjax) {
+                echo json_encode(['success' => true, 'message' => $msg]);
+                return;
+            }
+            $_SESSION['success'] = $msg;
+            header('Location: ' . BASE_URL . '/index.php?controller=auth&action=loginForm');
+            exit;
         } else {
             $this->userModel->rollback();
-            $_SESSION['error'] = '⚠️ No se pudo enviar el correo de verificación. Intente nuevamente.';
+            $msg = 'No se pudo enviar el correo de verificación. Intente nuevamente.';
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => $msg]);
+                return;
+            }
+            $_SESSION['error'] = $msg;
+            header('Location: ' . BASE_URL . '/index.php?controller=auth&action=registerForm');
+            exit;
         }
-
-        header('Location: ' . BASE_URL . '/index.php?controller=auth&action=loginForm');
-        exit;
     }
+
 
 
     public function verificarCuenta()
@@ -170,6 +282,14 @@ class AuthController
             exit;
         }
 
+        // Validar CSRF token
+        if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+            $_SESSION['error'] = '❌ Petición inválida.';
+            header('Location: ' . BASE_URL . '/index.php?controller=auth&action=loginForm');
+            exit;
+        }
+
+        // Validar email
         $email = trim($_POST['resetPass-user-email'] ?? '');
         if (empty($email)) {
             $_SESSION['error'] = '❌ Debe ingresar su correo.';
@@ -225,6 +345,13 @@ class AuthController
     // ==========================================
     public function resetPassword()
     {
+        //validar CSRF token
+        if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+            $_SESSION['error'] = 'CSRF inválido.';
+            header("Location: " . BASE_URL . "/index.php?controller=auth&action=resetForm&token=" . urlencode($_POST['token']));
+            exit;
+        }
+
         $token = $_POST['token'] ?? '';
         $password = trim($_POST['new-password'] ?? '');
 
@@ -242,6 +369,43 @@ class AuthController
 
         header('Location: ' . BASE_URL . '/index.php?controller=auth&action=loginForm');
         exit;
+    }
+
+    public function vincularCliente()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido.']);
+            return;
+        }
+
+        // Recibir el código de usuario desde AJAX
+        $codigoUsuario = trim($_POST['codigoUsuario'] ?? '');
+
+        if (empty($codigoUsuario)) {
+            echo json_encode(['success' => false, 'message' => 'Código de usuario inválido.']);
+            return;
+        }
+
+        // Iniciar transacción
+        $this->userModel->beginTx();
+
+        // Llamar al SP mediante el nuevo método
+        if ($this->userModel->vincularClientePorCodigo($codigoUsuario)) {
+
+            $this->userModel->commit();
+            echo json_encode([
+                'success' => true,
+                'message' => 'Vinculación completada correctamente.'
+            ]);
+
+        } else {
+
+            $this->userModel->rollback();
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al vincular los datos.'
+            ]);
+        }
     }
 
 

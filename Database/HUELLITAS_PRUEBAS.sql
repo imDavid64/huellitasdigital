@@ -13,7 +13,19 @@ use HUELLITASDIGITAL;
 INSERT INTO HUELLITAS_ESTADO_TB (ESTADO_DESCRIPCION) VALUES 
 ('ACTIVO'),
 ('INACTIVO'),
-('PENDIENTE');
+('PENDIENTE'),
+('EN PREPARACIÓN'),
+('COMPLETADO'),
+('CANCELADO'),
+('ENVIADO'),
+('ENTREGADO'),
+('LEÍDA'),
+('EN REVISIÓN'),
+('PENDIENTE DE PAGO'),
+('PAGADO'),
+('RECHAZADO'),
+('APROBADO'),
+('REEMBOLSADO');
 
 INSERT INTO HUELLITAS_NUEVO_TB (NUEVO_DESCRIPCION) VALUES 
 ('ES NUEVO'),
@@ -88,8 +100,7 @@ CALL HUELLITAS_AGREGAR_PRODUCTO_SP(1, 1, 1, 10, 1, 'Himalaya Digyton Gotas', 'Di
 INSERT INTO HUELLITAS_ROL_USUARIO_TB (ID_ESTADO_FK, DESCRIPCION_ROL_USUARIO) VALUES 
 (1, 'CLIENTE'),
 (1, 'ADMINISTRADOR'),
-(1, 'EMPLEADO'),
-(1, 'VETERINARIO');
+(1, 'EMPLEADO');
 
 INSERT INTO HUELLITAS_DIRECCION_PROVINCIA_TB (ID_ESTADO_FK, NOMBRE_PROVINCIA) VALUES 
 (1, 'San José'),
@@ -735,6 +746,27 @@ INSERT INTO HUELLITAS_USUARIOS_TB (
     987654321
 );
 
+-- Usuario Empleado
+INSERT INTO HUELLITAS_USUARIOS_TB (
+    ID_ESTADO_FK, 
+    ID_ROL_USUARIO_FK, 
+    ID_DIRECCION_FK, 
+    ID_TELEFONO_CONTACTO_FK,
+    USUARIO_NOMBRE, 
+    USUARIO_CORREO, 
+    USUARIO_CONTRASENNA,
+    USUARIO_IDENTIFICACION
+) VALUES (
+    1,  -- ACTIVO
+    3,  -- EMPLEADO
+    1,  -- DIRECCIÓN
+    1,  -- TELÉFONO
+    'Carlos Empleado Morales',
+    'carlos.morales@email.com',
+    'ClaveSegura2024!',
+    132435465
+);
+
 INSERT INTO HUELLITAS_TARJETAS_TB (
     ID_USUARIO_FK,
     TIPO_TARJETA,
@@ -759,19 +791,40 @@ INSERT INTO HUELLITAS_TARJETAS_TB (
     '192.168.1.100'
 );
 
+INSERT INTO HUELLITAS_CLIENTES_TB (
+    ID_ESTADO_FK,
+    ID_DIRECCION_FK,
+    ID_TELEFONO_CONTACTO_FK,
+    CLIENTE_NOMBRE,
+    CLIENTE_CORREO,
+    CLIENTE_IDENTIFICACION,
+    CLIENTE_OBSERVACIONES,
+    ID_USUARIO_VINCULADO_FK
+)
+VALUES (
+    1,
+    1,
+    1,
+    'Carlos Rodríguez Mora', 
+    'carlos.rodriguez@gmail.com',
+    '115690789',
+    'Cliente frecuente, solicita recordatorio de citas cada mes.',
+    NULL 
+);
+
 INSERT INTO HUELLITAS_SERVICIOS_TB (
     ID_ESTADO_FK,
     NOMBRE_SERVICIO,
     DESCRIPCION_SERVICIO,
     IMAGEN_URL
 ) VALUES
-(1, 'Consultas', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91d5b0709e_img-consulta.png?alt=media&token=c8144374-aa6d-4b50-baba-89f10652b479"),
+(1, 'Consulta', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91d5b0709e_img-consulta.png?alt=media&token=c8144374-aa6d-4b50-baba-89f10652b479"),
 (1, 'Vacunas', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91dfd692a7_img-vacuna.png?alt=media&token=8d8fe76f-5dfc-4926-bfeb-02a1cd02c0c2"),
 (1, 'Desparacitación', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91e07eb087_img-desparacitacion.png?alt=media&token=43fa0b6c-421c-4106-9365-fbb30fcad268"),
 (1, 'Exámenes de Laboratorio', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91e161cf91_img-exam-lab.png?alt=media&token=299df542-f700-49cc-a43d-c0aaf41bae18"),
 (1, 'Ultrasonido', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91e30230ce_img-ultrasonido.png?alt=media&token=fea30436-5cb2-4045-9f9d-c6742e304a74"),
-(1, 'Cirugías Menores', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91e237aeff_img-cirugia-menor.png?alt=media&token=d659e534-f24e-4f01-bcca-af050b846be0"),
-(1, 'Limpiezas Dentales', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91e3bc8851_img-limpieza-dental.png?alt=media&token=e1c70054-f63d-4ff2-b2e4-d26ab63260f8"),
+(1, 'Cirugía Menor', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91e237aeff_img-cirugia-menor.png?alt=media&token=d659e534-f24e-4f01-bcca-af050b846be0"),
+(1, 'Limpieza Dental', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f91e3bc8851_img-limpieza-dental.png?alt=media&token=e1c70054-f63d-4ff2-b2e4-d26ab63260f8"),
 (1, 'Tramite de Explotación', 'Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at. Lorem ipsum dolor sit amet vitae, fringilla iaculis ante. Fusce a euismod est. Morbi accumsan imperdiet tortor, vitae faucibus sem molestie at.', "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/servicios%2F68f935519594a_img-exportacion.png?alt=media&token=bb150eac-b3ce-40ad-82e1-bf47f02361a0");
 
 
@@ -798,6 +851,150 @@ VALUES
 (8, 2, 2, 'El producto venía incompleto.', '1'),
 (10, 1, 1, 'Muy buen servicio al cliente, resolvieron mis dudas.', '4'),
 (12, 2, 1, 'Producto fresco y en excelente estado.', '5');
+
+INSERT INTO HUELLITAS_MASCOTA_ESPECIE_TB (ID_ESTADO_FK, NOMBRE_ESPECIE) VALUES
+(1, 'Perro'), (1, 'Gato'), (1, 'Conejo'), (1, 'Ave'), (1, 'Reptil');
+
+-- RAZAS DE PERROS
+INSERT INTO HUELLITAS_MASCOTA_RAZA_TB (ID_ESTADO_FK, ID_MASCOTA_ESPECIE_FK, NOMBRE_RAZA)
+VALUES
+(1, 1, 'SRD'),
+(1, 1, 'Labrador Retriever'),
+(1, 1, 'Golden Retriever'),
+(1, 1, 'Bulldog Francés'),
+(1, 1, 'Beagle'),
+(1, 1, 'Pastor Alemán'),
+(1, 1, 'Poodle'),
+(1, 1, 'Rottweiler'),
+(1, 1, 'Boxer'),
+(1, 1, 'Chihuahua'),
+(1, 1, 'Doberman'),
+(1, 1, 'Husky Siberiano'),
+(1, 1, 'Pug'),
+(1, 1, 'Cocker Spaniel'),
+(1, 1, 'Dálmata'),
+(1, 1, 'Border Collie'),
+(1, 1, 'Shih Tzu'),
+(1, 1, 'Maltés'),
+(1, 1, 'Jack Russell Terrier'),
+(1, 1, 'San Bernardo'),
+(1, 1, 'Akita Inu'),
+(1, 1, 'Shar Pei'),
+(1, 1, 'Bull Terrier'),
+(1, 1, 'Schnauzer'),
+(1, 1, 'Gran Danés'),
+(1, 1, 'Pastor Belga Malinois'),
+(1, 1, 'Bichón Frisé'),
+(1, 1, 'Pitbull Terrier'),
+(1, 1, 'Weimaraner'),
+(1, 1, 'Galgo Italiano'),
+(1, 1, 'Boston Terrier'),
+(1, 1, 'Basenji'),
+(1, 1, 'Alaskan Malamute'),
+(1, 1, 'Cavalier King Charles Spaniel'),
+(1, 1, 'Galgo Español'),
+(1, 1, 'Yorkshire Terrier'),
+(1, 1, 'Fox Terrier'),
+(1, 1, 'Whippet'),
+(1, 1, 'Setter Irlandés'),
+(1, 1, 'Airedale Terrier'),
+(1, 1, 'Samoyedo');
+
+
+-- RAZAS DE GATOS
+INSERT INTO HUELLITAS_MASCOTA_RAZA_TB (ID_ESTADO_FK, ID_MASCOTA_ESPECIE_FK, NOMBRE_RAZA) VALUES
+(1, 2, 'SRD'), -- Sin Raza Definida
+(1, 2, 'Siamés'),
+(1, 2, 'Persa'),
+(1, 2, 'Bengalí'),
+(1, 2, 'Maine Coon'),
+(1, 2, 'British Shorthair'),
+(1, 2, 'Sphynx'),
+(1, 2, 'Ragdoll'),
+(1, 2, 'Angora Turco'),
+(1, 2, 'Bombay'),
+(1, 2, 'Himalayo'),
+(1, 2, 'Devon Rex'),
+(1, 2, 'Manx'),
+(1, 2, 'Scottish Fold'),
+(1, 2, 'Noruego del Bosque'),
+(1, 2, 'Abisinio'),
+(1, 2, 'Azul Ruso'),
+(1, 2, 'Ocicat'),
+(1, 2, 'Burmés'),
+(1, 2, 'Cornish Rex'),
+(1, 2, 'Savannah');
+
+-- RAZAS DE CONEJOS
+INSERT INTO HUELLITAS_MASCOTA_RAZA_TB (ID_ESTADO_FK, ID_MASCOTA_ESPECIE_FK, NOMBRE_RAZA) VALUES
+(1, 3, 'SRD'), -- Sin Raza Definida
+(1, 3, 'Mini Lop'),
+(1, 3, 'Holland Lop'),
+(1, 3, 'Rex'),
+(1, 3, 'Lionhead'),
+(1, 3, 'Angora'),
+(1, 3, 'Californiano'),
+(1, 3, 'Flemish Giant'),
+(1, 3, 'Dutch'),
+(1, 3, 'Mini Rex'),
+(1, 3, 'Polish'),
+(1, 3, 'American Sable'),
+(1, 3, 'English Spot');
+
+-- RAZAS DE AVES
+INSERT INTO HUELLITAS_MASCOTA_RAZA_TB (ID_ESTADO_FK, ID_MASCOTA_ESPECIE_FK, NOMBRE_RAZA) VALUES
+(1, 4, 'SRD'), -- Sin Raza Definida
+(1, 4, 'Perico Australiano'),
+(1, 4, 'Canario'),
+(1, 4, 'Cacatúa Ninfa'),
+(1, 4, 'Agapornis'),
+(1, 4, 'Guacamaya'),
+(1, 4, 'Cacatúa Alba'),
+(1, 4, 'Loro Amazónico'),
+(1, 4, 'Diamante Mandarín'),
+(1, 4, 'Periquito Moteado'),
+(1, 4, 'Tórtola Diamante'),
+(1, 4, 'Jilguero'),
+(1, 4, 'Loro del Senegal');
+
+-- RAZAS DE REPTILES
+INSERT INTO HUELLITAS_MASCOTA_RAZA_TB (ID_ESTADO_FK, ID_MASCOTA_ESPECIE_FK, NOMBRE_RAZA) VALUES
+(1, 5, 'SRD'), -- Sin Raza Definida
+(1, 5, 'Iguana Verde'),
+(1, 5, 'Dragón Barbudo'),
+(1, 5, 'Gecko Leopardo'),
+(1, 5, 'Serpiente del Maíz'),
+(1, 5, 'Pitón Real'),
+(1, 5, 'Tortuga de Orejas Rojas'),
+(1, 5, 'Tortuga Rusa'),
+(1, 5, 'Camaleón Yemení'),
+(1, 5, 'Camaleón Pantera'),
+(1, 5, 'Boa Arcoíris'),
+(1, 5, 'Salamandra Tigre'),
+(1, 5, 'Anolis Verde');
+
+
+
+-- ==========================================
+-- MASCOTAS ASOCIADAS A USUARIOS REGISTRADOS
+-- ==========================================
+INSERT INTO HUELLITAS_MASCOTA_TB (
+    ID_ESTADO_FK, ID_MASCOTA_ESPECIE_FK, ID_MASCOTA_RAZA_FK, 
+    ID_USUARIO_FK, NOMBRE_MASCOTA, FECHA_NACIMIENTO, GENERO, MASCOTA_IMAGEN_URL
+) VALUES
+(1, 1, 1, 1, 'Luna',    '2020-03-15', 'HEMBRA', 'https://i.imgur.com/x8C3HnV.jpg'),
+(1, 1, 2, 2, 'Rocky',   '2019-07-10', 'MACHO',  'https://i.imgur.com/lKf6rVG.jpg'),
+(1, 2, 5, 3, 'Mishu',   '2021-01-20', 'HEMBRA', 'https://i.imgur.com/7UpUk0X.jpg');
+
+-- ==========================================
+-- MASCOTAS REGISTRADAS POR EMPLEADOS (CLIENTES)
+-- ==========================================
+INSERT INTO HUELLITAS_MASCOTA_TB (
+    ID_ESTADO_FK, ID_MASCOTA_ESPECIE_FK, ID_MASCOTA_RAZA_FK, 
+    ID_CLIENTE_FK, NOMBRE_MASCOTA, FECHA_NACIMIENTO, GENERO, MASCOTA_IMAGEN_URL
+) VALUES
+(1, 1, 1, 1, 'Max',       '2018-06-12', 'MACHO',  'https://i.imgur.com/Ma4ZCEV.jpg'),
+(1, 1, 1, 1, 'Canela',    '2020-09-23', 'HEMBRA', 'https://i.imgur.com/g2h8Svh.jpg');
 
 
 

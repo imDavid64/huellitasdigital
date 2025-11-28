@@ -107,10 +107,61 @@ class FirebaseConfig
             rawurlencode($firebasePath) . "?alt=media";
     }
 
+    public function uploadPaymentReceipt($localFilePath, $fileName)
+    {
+        $bucket = $this->storage->getBucket();
+        $firebasePath = 'comprobantes/' . $fileName;
+
+        // Subir archivo
+        $bucket->upload(
+            fopen($localFilePath, 'r'),
+            ['name' => $firebasePath]
+        );
+
+        // Devolver URL pública
+        return "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/" .
+            rawurlencode($firebasePath) . "?alt=media";
+    }
+
     public function uploadUserImage($localFilePath, $fileName)
     {
         $bucket = $this->storage->getBucket();
         $firebasePath = 'fotosPerfil/' . $fileName;
+
+        // Subir archivo
+        $bucket->upload(
+            fopen($localFilePath, 'r'),
+            ['name' => $firebasePath]
+        );
+
+        // Devolver URL pública
+        return "https://firebasestorage.googleapis.com/v0/b/huellitasdigital-443e0.firebasestorage.app/o/" .
+            rawurlencode($firebasePath) . "?alt=media";
+    }
+
+    public function uploadInvoicePdf($localFilePath, $userId, $orderCode)
+    {
+        $bucket = $this->storage->getBucket();
+
+        // Carpeta organizada por usuario y código de pedido
+        $firebasePath = "facturas/usuario_{$userId}/factura_{$orderCode}.pdf";
+
+        // Subir el archivo al bucket
+        $bucket->upload(
+            fopen($localFilePath, 'r'),
+            ['name' => $firebasePath]
+        );
+
+        // URL pública o autenticada según tus reglas
+        return "https://firebasestorage.googleapis.com/v0/b/" .
+            $_ENV['FIREBASE_BUCKET'] .
+            "/o/" . rawurlencode($firebasePath) . "?alt=media";
+    }
+
+    public function uploadPetImage($localFilePath, $fileName)
+    {
+        $bucket = $this->storage->getBucket();
+        $firebasePath = 'mascotas/' . $fileName;
 
         // Subir archivo
         $bucket->upload(
@@ -165,7 +216,7 @@ class FirebaseConfig
             error_log("✅ deleteImage: Archivo eliminado correctamente -> $path");
             return true;
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log("❌ deleteImage: Error eliminando archivo -> " . $e->getMessage());
             return false;
         }

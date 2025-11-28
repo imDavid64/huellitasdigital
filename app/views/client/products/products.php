@@ -17,6 +17,9 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+    <!-- SweetAlert2 local -->
+    <script src="<?= BASE_URL ?>/public/js/libs/sweetalert2.all.min.js"></script>
+    <!-- JQuery y script.js -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="<?= BASE_URL ?>/public/js/script.js"></script>
 </head>
@@ -104,7 +107,8 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                         <?php if (!empty($products)): ?>
                             <?php foreach ($products as $product): ?>
                                 <div class="cards product-item">
-                                    <a href="<?= BASE_URL ?>/index.php?controller=product&action=productsDetails&id=<?= $product['ID_PRODUCTO_PK'] ?>">
+                                    <a
+                                        href="<?= BASE_URL ?>/index.php?controller=product&action=productsDetails&id=<?= $product['ID_PRODUCTO_PK'] ?>">
                                         <div>
                                             <div class="card-img">
                                                 <img src="<?= htmlspecialchars($product['IMAGEN_URL'] ?? 'assets/images/no-img.png') ?>"
@@ -119,25 +123,27 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                                             </div>
                                         </div>
                                         <div class="card-price">
-                                            ₡<?= htmlspecialchars($product['PRODUCTO_PRECIO_UNITARIO'] ?? '$0') ?>
+                                            ₡<?= number_format($product['PRODUCTO_PRECIO_UNITARIO'], 2, ',', '.' ?? 'Sin precio') ?>
                                         </div>
                                     </a>
                                     <div class="card-button">
-                                        <?php if (isset($_SESSION['user_name'])): ?>
-                                            <a class="btn-orange"
-                                                href="<?= BASE_URL ?>/app/controllers/client/productController.php?action=addToCart&id=<?= htmlspecialchars($product['ID_PRODUCTO'] ?? 0) ?>">Añadir
-                                                al Carrito</a>
+                                        <?php if (isset($_SESSION['user_id'])): ?>
+                                            <button class="btn-orange btnAddToCart"
+                                                data-id="<?= htmlspecialchars($product['ID_PRODUCTO_PK']) ?>"
+                                                <?= ($product['PRODUCTO_STOCK'] <= 0 ? 'disabled' : '') ?>>
+                                                <?= ($product['PRODUCTO_STOCK'] <= 0 ? 'Sin stock' : 'Añadir al Carrito') ?>
+                                            </button>
                                         <?php else: ?>
                                             <a class="btn-orange btnLogin" href="#">Añadir al Carrito</a>
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p>No hay productos disponibles.</p>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p>No hay productos disponibles.</p>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
         </section>
     </main>
     <!--CONTENIDO CENTRAL-->

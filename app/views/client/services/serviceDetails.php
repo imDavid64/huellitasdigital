@@ -56,7 +56,7 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                             <img src="<?= htmlspecialchars($serviceSelected['IMAGEN_URL']) ?>">
                         </div>
                         <div>
-                            <span><strong>Descripción</strong></span>
+                            <h4><strong>Descripción</strong></h4>
                             <div class="service-detail-description-text">
                                 <p><?= htmlspecialchars($serviceSelected['DESCRIPCION_SERVICIO'] ?? 'Sin descripción') ?>
                                 </p>
@@ -102,10 +102,9 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
         </section>
     </main>
     <!--CONTENIDO CENTRAL-->
+    <!--FOODER-->
+    <?php require_once __DIR__ . "/../partials/fooder.php"; ?>
+    <!--FOODER-->
 </body>
-
-<!--FOODER-->
-<?php require_once __DIR__ . "/../partials/fooder.php"; ?>
-<!--FOODER-->
 
 </html>

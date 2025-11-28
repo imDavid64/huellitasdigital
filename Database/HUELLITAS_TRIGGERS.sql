@@ -273,3 +273,158 @@ END//
 DELIMITER ;
 
 */
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_PEDIDOS_CANCELACION_TRG
+-- DESCRIPCIÓN: Trigger para cancelar el estado del pedido a cancelado
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_PEDIDOS_CANCELACION_TRG;
+DELIMITER $$
+CREATE TRIGGER HUELLITAS_PEDIDOS_CANCELACION_TRG
+AFTER UPDATE ON HUELLITAS_PEDIDOS_TB
+FOR EACH ROW
+BEGIN
+    DECLARE v_estado_cancelado INT;
+    DECLARE v_cliente_id INT;
+
+    -- Buscar ID del estado CANCELADO
+    SELECT ID_ESTADO_PK INTO v_estado_cancelado
+    FROM HUELLITAS_ESTADO_TB
+    WHERE ESTADO_DESCRIPCION = 'CANCELADO'
+    LIMIT 1;
+
+    -- Solo ejecutar si el cambio es hacia CANCELADO y no viene del SP
+    IF NEW.ID_ESTADO_FK = v_estado_cancelado
+       AND OLD.ID_ESTADO_FK <> v_estado_cancelado
+       AND (@TRIGGER_ORIGIN IS NULL OR @TRIGGER_ORIGIN != 'CANCEL_SP') THEN
+
+        SET @TRIGGER_ORIGIN = 'TRIGGER';
+
+        -- Llamar al SP pasando el usuario real del pedido
+        CALL HUELLITAS_CANCELAR_PEDIDO_SP(NEW.ID_PEDIDO_PK, NEW.ID_USUARIO_FK);
+
+        SET @TRIGGER_ORIGIN = NULL;
+    END IF;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CLIENTE_GENERAR_CODIGO_GLOBAL_TRG
+-- DESCRIPCIÓN: Trigger para asignar automáticamente un código global único al registrar un cliente
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_CLIENTE_GENERAR_CODIGO_GLOBAL_TRG;
+DELIMITER //
+CREATE TRIGGER HUELLITAS_CLIENTE_GENERAR_CODIGO_GLOBAL_TRG
+BEFORE INSERT ON HUELLITAS_CLIENTES_TB
+FOR EACH ROW
+BEGIN
+    IF NEW.CODIGO_CLIENTE IS NULL OR NEW.CODIGO_CLIENTE = '' THEN
+        SET NEW.CODIGO_CLIENTE = GENERAR_CODIGO_GLOBAL_HUELLITAS_FN();
+    END IF;
+END //
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_USUARIO_GENERAR_CODIGO_GLOBAL_TRG
+-- DESCRIPCIÓN: Trigger para asignar automáticamente un código global único al registrar un usuario
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_USUARIO_GENERAR_CODIGO_GLOBAL_TRG;
+DELIMITER //
+CREATE TRIGGER HUELLITAS_USUARIO_GENERAR_CODIGO_GLOBAL_TRG
+BEFORE INSERT ON HUELLITAS_USUARIOS_TB
+FOR EACH ROW
+BEGIN
+    IF NEW.CODIGO_USUARIO IS NULL OR NEW.CODIGO_USUARIO = '' THEN
+        SET NEW.CODIGO_USUARIO = GENERAR_CODIGO_GLOBAL_HUELLITAS_FN();
+    END IF;
+END //
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_MASCOTA_GENERAR_CODIGO_GLOBAL_TRG
+-- DESCRIPCIÓN: Trigger para asignar automáticamente un código global único al registrar un mascota
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_MASCOTA_GENERAR_CODIGO_TRG;
+DELIMITER //
+CREATE TRIGGER HUELLITAS_MASCOTA_GENERAR_CODIGO_TRG
+BEFORE INSERT ON HUELLITAS_MASCOTA_TB
+FOR EACH ROW
+BEGIN
+    IF NEW.CODIGO_MASCOTA IS NULL OR NEW.CODIGO_MASCOTA = '' THEN
+        SET NEW.CODIGO_MASCOTA = GENERAR_CODIGO_MASCOTA_FN();
+    END IF;
+END //
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_MASCOTA_VALIDATE_OWNER_INSERT_TRG
+-- DESCRIPCIÓN: Trigger validar el propietario de la mascota antes de un insert
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_MASCOTA_VALIDATE_OWNER_INSERT_TRG;
+DELIMITER //
+CREATE TRIGGER HUELLITAS_MASCOTA_VALIDATE_OWNER_INSERT_TRG
+BEFORE INSERT ON HUELLITAS_MASCOTA_TB
+FOR EACH ROW
+BEGIN
+    IF (NEW.ID_USUARIO_FK IS NULL AND NEW.ID_CLIENTE_FK IS NULL) OR
+       (NEW.ID_USUARIO_FK IS NOT NULL AND NEW.ID_CLIENTE_FK IS NOT NULL) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Debe especificar SOLO cliente o SOLO usuario como dueño de la mascota.';
+    END IF;
+END //
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_MASCOTA_VALIDATE_OWNER_UPDATE_TRG
+-- DESCRIPCIÓN: Trigger validar el propietario de la mascota antes de un update
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_MASCOTA_VALIDATE_OWNER_UPDATE_TRG;
+DELIMITER //
+CREATE TRIGGER HUELLITAS_MASCOTA_VALIDATE_OWNER_UPDATE_TRG
+BEFORE UPDATE ON HUELLITAS_MASCOTA_TB
+FOR EACH ROW
+BEGIN
+    IF (NEW.ID_USUARIO_FK IS NULL AND NEW.ID_CLIENTE_FK IS NULL) OR
+       (NEW.ID_USUARIO_FK IS NOT NULL AND NEW.ID_CLIENTE_FK IS NOT NULL) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Debe especificar SOLO cliente o SOLO usuario como dueño de la mascota.';
+    END IF;
+END //
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_COMPROBANTE_RECHAZADO_MAX_INTENTOS_TRG
+-- DESCRIPCIÓN: Trigger validar el propietario de la mascota antes de un update
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_COMPROBANTE_RECHAZADO_MAX_INTENTOS_TRG;
+DELIMITER $$
+CREATE TRIGGER HUELLITAS_COMPROBANTE_RECHAZADO_MAX_INTENTOS_TRG
+AFTER UPDATE ON HUELLITAS_COMPROBANTES_PAGO_TB
+FOR EACH ROW
+BEGIN
+    DECLARE v_intentos INT DEFAULT 0;
+    
+    -- Solo actuar si el comprobante fue RECHAZADO en esta actualización
+    IF NEW.ESTADO_VERIFICACION = 'RECHAZADO' THEN
+    
+        -- Obtener intentos actuales de ese comprobante
+        SET v_intentos = NEW.INTENTOS;
+
+        -- Si alcanzó el límite (3 intentos)
+        IF v_intentos >= 3 THEN
+        
+            -- Cambiar estado del pedido a CANCELADO
+            UPDATE HUELLITAS_PEDIDOS_TB
+            SET ID_ESTADO_FK = 6 
+            WHERE ID_PEDIDO_PK = NEW.ID_PEDIDO_FK;
+
+        END IF;
+    END IF;
+
+END$$
+DELIMITER ;
+
+
+
+

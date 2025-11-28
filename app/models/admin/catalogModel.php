@@ -18,6 +18,58 @@ class CatalogModel extends BaseModel
         return $roles;
     }
 
+    public function getAllOrderStates()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_ESTADOS_PEDIDO_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $estados = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $estados;
+    }
+
+    public function getAllPaymentStates()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_ESTADOS_PAGO_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $estados = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $estados;
+    }
+
+    public function getAllPaymentProofStates()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_ESTADOS_COMPROBANTE_PAGO_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $estados = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $estados;
+    }
+
+    public function getAllStates()
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_ESTADOS_SP()");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $estados = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->free_result();
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+        return $estados;
+    }
+
     public function getActiveInactiveStates()
     {
         $stmt = $this->conn->prepare("CALL HUELLITAS_LISTAR_ESTADO_ACTIVO_INACTIVO_SP()");

@@ -42,9 +42,36 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                 <div class="tittles">
                     <h1><strong>Agendar Cita</strong></h1>
                 </div>
-                <div>
-                    hola
+                <div class="contact-info-container mt-4 p-4 border rounded shadow-sm bg-light">
+
+                    <h3 class="mb-3"><strong>Información para agendar tu cita</strong></h3>
+
+                    <p class="mb-2 fs-5">
+                        <i class="bi bi-envelope-fill"></i>
+                        <strong>Correo:</strong>
+                        <a href="mailto:drahuellitas@gmail.com">drahuellitas@gmail.com</a>
+                    </p>
+
+                    <p class="mb-2 fs-5">
+                        <i class="bi bi-telephone-fill"></i>
+                        <strong>Teléfono fijo:</strong>
+                        <a href="tel:+50621028142">+506 2102 8142</a>
+                    </p>
+
+                    <p class="mb-2 fs-5">
+                        <i class="bi bi-phone-fill"></i>
+                        <strong>WhatsApp:</strong>
+                        <a href="https://wa.me/50672109730" target="_blank">+506 7210 9730</a>
+                    </p>
+
+                    <hr>
+
+                    <p class="text-muted fs-5">
+                        Puedes agendar tu cita por cualquiera de estos medios.
+                        Con gusto te atenderemos.
+                    </p>
                 </div>
+
             </div>
         </section>
     </main>

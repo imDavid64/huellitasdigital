@@ -10,13 +10,14 @@ class CatalogController
     public function __construct()
     {
         header('Content-Type: application/json; charset=utf-8');
-        $this->catalogModel = new CatalogModel();
 
-        // Seguridad básica: Solo Admin o Empleado puede usarlo
-        if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['ADMINISTRADOR', 'EMPLEADO'])) {
-            echo json_encode(['error' => 'Acceso no autorizado']);
+        // ✅ Solo administradores
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'ADMINISTRADOR') {
+            header("Location: " . BASE_URL . "/index.php?controller=home&action=error403");
             exit;
         }
+
+        $this->catalogModel = new CatalogModel();
     }
 
     // ✅ AJAX: Obtener Cantones por Provincia

@@ -99,26 +99,9 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                                         ?>
                                     </span>
                                 </div>
-                                <hr>
-                                <div>
-                                    <div class="btnEditUser">
-                                        <div>
-                                            <h2>Metodos de Pago</h2>
-                                        </div>
-                                        <div>
-                                            <a class="btn-blue"
-                                                href="<?= BASE_URL ?>/index.php?controller=paymentMethod&action=add&id=<?= $usuario['ID_USUARIO_PK'] ?>">
-                                                Agregar Metodo de Pago</a>
-                                        </div>
-                                    </div>
-                                    <div class="methodPay-item">
-                                        <span>No disponible</span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     <?php endif; ?>
-
                 </div>
             </div>
         </section>

@@ -13,17 +13,24 @@ class HomeController
     public function index()
     {
         $productModel = new ProductModel();
-        $brandModel   = new BrandModel();
+        $brandModel = new BrandModel();
         $serviceModel = new ServiceModel();
         $sliderModel = new SliderBannerModel();
 
-        $products = $productModel->getAllNewActiveProducts();
+        $food = $productModel->getAllFoodProducts();
+        $medications = $productModel->getAllMedicationsProducts();
+        $accessories = $productModel->getAllAccessoriesProducts();
         $newproducts = $productModel->getAllNewActiveProducts();
         $categories = $productModel->getAllActiveCategories();
-        $brands   = $brandModel->getAllActiveBrands();
+        $brands = $brandModel->getAllActiveBrands();
         $services = $serviceModel->getAllActiveServices();
         $banners = $sliderModel->getAllActiveSliderBanner();
 
         require VIEW_PATH . '/home.php';
+    }
+
+    public function error403()
+    {
+        require VIEW_PATH . '/error403.php';
     }
 }

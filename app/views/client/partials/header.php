@@ -6,7 +6,8 @@ if (!defined('BASE_URL')) {
 
 ?>
 <script>
-    const BASE_URL = "<?= BASE_URL ?>";
+  const BASE_URL = "<?= BASE_URL ?>";
+  const USER_LOGGED_IN = <?= isset($_SESSION['user_id']) ? 'true' : 'false' ?>;
 </script>
 <!--NO QUITAR-->
 
@@ -35,6 +36,7 @@ if (!defined('BASE_URL')) {
     <div class="input-login">
       <form id="loginForm" action="<?= BASE_URL ?>/index.php?controller=auth&action=login" method="POST"
         onsubmit="return validateForm('loginForm')">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
         <div>
           <label for="login-user-email">Correo Electrónico</label>
           <span class="error-text" id="error-login-user-email">Ingrese un correo válido</span>
@@ -66,35 +68,34 @@ if (!defined('BASE_URL')) {
       <i id="btnCloseXRegister" class="bi bi-x"></i>
     </div>
     <div class="input-register">
-      <form id="registerForm" action="<?= BASE_URL ?>/index.php?controller=auth&action=register" method="POST"
-        onsubmit="return validateForm('registerForm')">
+      <form id="registerForm" method="POST">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
         <div>
           <label for="register-user-name">Nombre Completo</label>
-          <span class="error-text" id="error-register-user-name">Ingrese su nombre completo</span>
-          <input type="text" id="register-user-name" name="register-user-name" required onblur="validateNotEmpty(this)">
+          <input type="text" id="register-user-name" name="register-user-name" required>
         </div>
+
         <div>
           <label for="register-user-email">Correo Electrónico</label>
-          <span class="error-text" id="error-register-user-email">Ingrese un correo válido</span>
-          <input type="email" id="register-user-email" name="register-user-email" placeholder="ejemplo@gmail.com"
-            required onblur="validateEmail(this)">
+          <input type="email" id="register-user-email" name="register-user-email" required>
         </div>
+
         <div>
           <label for="register-user-identification">Identificación</label>
-          <span class="error-text" id="error-register-user-identification">Ingrese su identificación</span>
-          <input type="text" id="register-user-identification" name="register-user-identification" inputmode="numeric"
-            pattern="\d{9}" maxlength="9" required onblur="validateNotEmpty(this)" placeholder="Ej: 123456789" />
+          <input type="text" id="register-user-identification" maxlength="9" minlength="9"
+            name="register-user-identification" required>
         </div>
+
         <div>
           <label for="register-user-password">Contraseña</label>
-          <span class="error-text" id="error-register-user-password">Ingrese su contraseña</span>
-          <input type="password" id="register-user-password" name="register-user-password" placeholder="contraseña"
-            required onblur="validateNotEmpty(this)">
+          <input type="password" id="register-user-password" name="register-user-password" required>
         </div>
+
         <div class="btns-register">
           <button type="submit" class="btn-blue" id="btnStartRegister">Registrarse</button>
         </div>
       </form>
+
     </div>
   </div>
 </section>
@@ -109,6 +110,7 @@ if (!defined('BASE_URL')) {
     <div class="input-resetPass">
       <form id="resetPassForm" action="<?= BASE_URL ?>/index.php?controller=auth&action=recovery" method="POST"
         onsubmit="return validateForm('resetPassForm')">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
         <div>
           <label for="resetPass-user-email">Correo Electrónico</label>
           <span class="error-text" id="error-resetPass-user-email">Ingrese un correo válido</span>
@@ -222,7 +224,7 @@ if ($message === "pass_changed") {
       </div>
       <!--Boton de nuestra Ubicación-->
       <div>
-        <a href="pages/location.php" class="header-vet-location">
+        <a href="#vet-location" class="header-vet-location">
           <i class="bi bi-geo-alt"></i>
         </a>
       </div>
@@ -234,7 +236,8 @@ if ($message === "pass_changed") {
       <!--Boton de carrito-->
       <div class="header-cart">
         <div>
-          <a class="btn-orange" href="pages/cart.php">Carrito <i class="bi bi-cart"></i></a>
+          <a class="btn-orange" href="<?= BASE_URL ?>/index.php?controller=cart&action=index">Carrito <i
+              class="bi bi-cart"></i></a>
         </div>
       </div>
     </div>
@@ -245,7 +248,8 @@ if ($message === "pass_changed") {
         <!-- Si hay sesión, mostrar bienvenida y menú -->
         <div class="header-myPets">
           <div>
-            <a class="btn-green" href="pages/myPets/home.php">Mis Mascotas <i class="bi bi-clipboard-heart"></i></a>
+            <a class="btn-green" href="<?= BASE_URL ?>/index.php?controller=pets&action=index">Mis Mascotas <i
+                class="bi bi-clipboard-heart"></i></a>
           </div>
         </div>
         <div class="header-user">
@@ -258,14 +262,19 @@ if ($message === "pass_changed") {
           </button>
           <div class="header-user-menu" id="header-user-menu">
             <ul>
-
               <?php if ($_SESSION['user_role'] === 'ADMINISTRADOR'): ?>
                 <li><a href="<?= BASE_URL ?>/index.php?controller=admin&index">
                     <i class="bi bi-gear-fill"></i> Modo Administrador</a></li>
+                <li><a href="<?= BASE_URL ?>/index.php?controller=employee&index">
+                    <i class="bi bi-person-vcard-fill"></i> Modo Empleado</a></li>
+              <?php endif; ?>
+              <?php if ($_SESSION['user_role'] === 'EMPLEADO'): ?>
+                <li><a href="<?= BASE_URL ?>/index.php?controller=employee&index">
+                    <i class="bi bi-person-vcard-fill"></i> Modo Empleado</a></li>
               <?php endif; ?>
               <li><a href="<?= BASE_URL ?>/index.php?controller=user&action=index">
                   <i class="bi bi-person-fill"></i> Mi Perfil</a></li>
-              <li><a href="pages/myOrders.php">
+              <li><a href="<?= BASE_URL ?>/index.php?controller=orders&action=list">
                   <i class="bi bi-bag-check-fill"></i> Mis Pedidos</a></li>
               <li><a href="pages/myAppointment.php">
                   <i class="bi bi-calendar-event-fill"></i> Mis Citas</a></li>
@@ -302,7 +311,8 @@ if ($message === "pass_changed") {
           <?php if (!empty($categories)): ?>
             <?php foreach ($categories as $category): ?>
               <li>
-                <a href="<?= BASE_URL ?>/index.php?controller=product&action=index&idCategoria=<?= $category['ID_CATEGORIA_PK'] ?>">
+                <a
+                  href="<?= BASE_URL ?>/index.php?controller=product&action=index&idCategoria=<?= $category['ID_CATEGORIA_PK'] ?>">
                   <?= htmlspecialchars($category['DESCRIPCION_CATEGORIA']) ?>
                 </a>
               </li>
@@ -331,7 +341,7 @@ if ($message === "pass_changed") {
         </ul>
       </li>
       <li>
-        <a href="pages/aboutUs.php">Sobre Nosotros</a>
+        <a href="<?= BASE_URL ?>/index.php?controller=aboutUs&action=index">Sobre Nosotros</a>
       </li>
     </ul>
   </nav>

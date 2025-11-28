@@ -27,6 +27,15 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
             <section class="admin-main-content">
                 <div>
+                    <!--Breadcrumb-->
+                    <nav class="breadcrumbs-container">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="<?= BASE_URL ?>/index.php?controller=admin&action=index">Inicio</a>
+                            </li>
+                            <li class="breadcrumb-item current-page">Gestión de Pedidos</li>
+                        </ol>
+                    </nav>
                     <div class="tittles">
                         <h2><i class="bi bi-cart-fill"></i><strong> Gestión de Pedidos</strong></h2>
                     </div>
@@ -34,7 +43,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                 <section class="admin-main-content-mgmt">
                     <div>
                         <div class="search">
-                            <input type="text" id="header-search" placeholder="Buscar pedido...">
+                            <input type="text" class="admin-search-input" data-target="order"
+                                placeholder="Buscar pedido...">
                             <i class="bi bi-search"></i>
                         </div>
                     </div>
@@ -42,77 +52,94 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th scope="col">ID Pedido</th>
-                                    <th scope="col">Fecha</th>
+                                    <th scope="col">Código Pedido</th>
                                     <th scope="col">Cliente</th>
-                                    <th scope="col">Total</th>
-                                    <th scope="col">Método Pago</th>
-                                    <th scope="col">Estado</th>
-                                    <th class="text-center" scope="col">Acciones</th>
+                                    <th scope="col">Correo</th>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col">Estado Pago</th>
+                                    <th scope="col">Estado Pedido</th>
+                                    <th class="text-center" scope="col" style="width: 150px;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>5001</td>
-                                    <td>2025-08-12</td>
-                                    <td>Juan Pérez</td>
-                                    <td>₡50,000</td>
-                                    <td>Tarjeta de Crédito</td>
-                                    <td>Pendiente</td>
-                                    <td class="text-center">
-                                        <div class="btn-group" role="group">
-                                            <a href="view-order.html" class="btn btn-dark-blue btn-sm">
-                                                Detalles <i class="bi bi-eye"></i>
+                                <?php foreach ($orders as $order): ?>
+                                    <tr>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= $order['CODIGO_PEDIDO'] ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($order['CLIENTE']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($order['CORREO']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?= htmlspecialchars($order['FECHA_PEDIDO']) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?php
+                                                $estado = strtoupper($order['ESTADO_PAGO']);
+                                                $badgeClass = match ($estado) {
+                                                    'EN REVISIÓN' => 'bg-warning text-dark',
+                                                    'PENDIENTE DE PAGO' => 'bg-warning text-dark',
+                                                    'PAGADO' => 'bg-success text-dark',
+                                                    'RECHAZADO' => 'bg-danger text-light',
+                                                    'REEMBOLSADO' => 'bg-secondary',
+                                                    default => 'bg-secondary'
+                                                };
+                                                ?>
+                                                <span
+                                                    class="badge <?= $badgeClass ?>"><?= htmlspecialchars($estado) ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="admin-table-text-limit">
+                                                <?php
+                                                $estado = strtoupper($order['ESTADO_PEDIDO']);
+                                                $badgeClass = match ($estado) {
+                                                    'PENDIENTE' => 'bg-warning text-dark',
+                                                    'EN PREPARACIÓN' => 'bg-info text-dark',
+                                                    'ENVIADO' => 'bg-primary',
+                                                    'ENTREGADO' => 'bg-success',
+                                                    'CANCELADO' => 'bg-danger',
+                                                    default => 'bg-secondary'
+                                                };
+                                                ?>
+                                                <span
+                                                    class="badge <?= $badgeClass ?>"><?= htmlspecialchars($estado) ?></span>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="<?= BASE_URL ?>/index.php?controller=adminOrder&action=details&codigo=<?= $order['CODIGO_PEDIDO'] ?>"
+                                                class="btn-dark-blue"> Ver Detalles
                                             </a>
-                                            <a href="edit-order-state.html" class="btn btn-orange btn-sm">
-                                                Cambiar Estado <i class="bi bi-arrow-repeat"></i>
-                                            </a>
-                                            <button class="btn btn-black btn-sm">
-                                                Anular <i class="bi bi-x-square"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>5002</td>
-                                    <td>2025-08-14</td>
-                                    <td>María González</td>
-                                    <td>₡7,500</td>
-                                    <td>Efectivo</td>
-                                    <td>Procesando</td>
-                                    <td class="text-center">
-                                        <div class="btn-group" role="group">
-                                            <a href="view-order.html" class="btn btn-dark-blue btn-sm">
-                                                Detalles <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="edit-order-state.html" class="btn btn-orange btn-sm">
-                                                Cambiar Estado <i class="bi bi-arrow-repeat"></i>
-                                            </a>
-                                            <button class="btn btn-black btn-sm">
-                                                Anular <i class="bi bi-x-square"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Paginación -->
                     <div>
-                        <nav aria-label="Page navigation example">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
-                                </li>
-                                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Siguiente</a>
-                                </li>
-                            </ul>
-                        </nav>
+                        <?php if ($totalPages > 1): ?>
+                            <div class="pagination-container text-center mt-3">
+                                <ul class="pagination justify-content-center">
+                                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                        <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                            <a class="page-link pagination-link" href="#" data-page="<?= $i ?>"><?= $i ?></a>
+                                        </li>
+                                    <?php endfor; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </section>
             </section>

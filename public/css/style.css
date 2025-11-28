@@ -265,6 +265,7 @@ header {
 
 .btn-purple:hover {
     background-color: #670470;
+    color: white;
 }
 
 .btn-purple i {
@@ -774,6 +775,20 @@ header {
 
 /*PANTALLA DE REGISTRO*/
 
+.input-resetPass input {
+    font-family: 'Poppins', sans-serif;
+    width: 15rem;
+    font-size: 16px;
+    border-style: none;
+    border-radius: 10px;
+    padding: 10px;
+    opacity: 80%;
+    padding-left: 20px;
+    width: 100%;
+    height: 40px;
+    margin-bottom: 2rem;
+}
+
 /*PANTALLA DE RECUPERACIÓN DE CONTRASEÑA*/
 .display-resetPass {
     display: none;
@@ -1220,6 +1235,13 @@ header {
 .subtittles {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    margin: 0px;
+}
+
+.subtittles h3 {
+    margin: 0px;
 }
 
 .index-tittles {
@@ -1425,6 +1447,8 @@ header {
 }
 
 .card-button {
+    display: flex;
+    justify-content: center;
     margin-left: 12%;
     margin-right: 12%;
     padding-bottom: 1rem;
@@ -1761,8 +1785,6 @@ header {
 }
 
 .admin-main-content-mgmt {
-    padding-left: 2rem;
-    padding-top: 2rem;
     padding-bottom: 2rem;
     display: flex;
     flex-direction: column;
@@ -2058,7 +2080,6 @@ header {
 
 .vet-main-content {
     padding-bottom: 2rem;
-    padding-top: 1rem;
     padding-right: 2rem;
     padding-left: 1rem;
     width: 1290px;
@@ -2067,6 +2088,7 @@ header {
 
 .vet-content-home {
     display: flex;
+    gap: 2rem;
     flex-direction: column;
     justify-content: center;
     width: 1290px;
@@ -2077,6 +2099,36 @@ header {
     border-radius: 10px;
     box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
     width: 1290px;
+    min-height: 620px;
+    max-height: 620px;
+}
+
+.dashboard-kpis {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    width: 1290px;
+}
+
+.dashboard-kpis-list {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem;
+}
+
+
+.vet-home-citas-list {
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+    max-height: 500px;
+    overflow-y: auto;
+    scrollbar-color: #002557 #00265700;
+    scrollbar-width: thin;
+    border-radius: 10px;
+    padding: 2rem;
 }
 
 .vet-mgmt-table {
@@ -2115,6 +2167,11 @@ header {
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
+}
+
+.vet-client-info-container {
+    max-width: 550px;
+    min-width: 550px;
 }
 
 .vet-pet-list-table {
@@ -2203,6 +2260,18 @@ header {
 
 .pet-info {
     max-width: 177px;
+    min-width: 177px;
+}
+
+.pet-info h3 {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+.pet-info span {
+    display: flex;
+    flex-direction: column;
 }
 
 .pet-img img {
@@ -2394,6 +2463,7 @@ header {
     max-width: 550px;
     min-height: 300px;
     max-height: 300px;
+    font-size: 20px;
     margin-bottom: 1rem;
     overflow-y: auto;
     scrollbar-color: #002557 #00265700;
@@ -2541,6 +2611,28 @@ header {
     margin-bottom: 2rem;
 }
 
+.checkout-container {
+    width: 100%;
+    padding: 2rem;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
+    border-radius: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+}
+
+.orders_list-container {
+    width: 100%;
+    padding: 2rem;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
+    border-radius: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+}
+
 .cart-header {
     display: flex;
     justify-content: space-between;
@@ -2558,7 +2650,7 @@ header {
     justify-content: space-between;
     font-size: 25px;
     font-weight: bold;
-    margin-right: 9rem;
+    margin-right: 7rem;
     width: 300px;
 }
 
@@ -2597,7 +2689,7 @@ header {
 .cart-item-details {
     display: flex;
     justify-content: space-between;
-    width: 450px;
+    width: 420px;
     padding-right: 1rem;
 }
 
@@ -2617,10 +2709,7 @@ header {
     width: 60px;
     height: 42px;
     outline: none;
-    background-color: #0000002f;
     color: #002557;
-    margin-left: 1rem;
-    margin-right: 1rem;
 }
 
 .btn-cart-remove {
@@ -2828,6 +2917,257 @@ input[type=number]::-webkit-outer-spin-button {
     font-weight: bold;
     display: none;
 }
+
+.disabled-link {
+    opacity: 0.6;
+}
+
+.modal[aria-hidden="true"] {
+    pointer-events: none !important;
+}
+
+/*EMPLEADO*/
+.employee-form-container {
+    display: flex;
+    justify-content: center;
+    padding-left: 1rem;
+}
+
+/* ===============================
+   ESTILO FULLCALENDAR - HUELLITAS DIGITAL
+   =============================== */
+
+/* Fondo general */
+.fc {
+    font-family: 'Poppins', sans-serif !important;
+    color: #002557;
+}
+
+/* Encabezado (mes, botones) */
+.fc-toolbar-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #003780;
+}
+
+.fc-button {
+    background-color: #003f92 !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 500;
+    border-radius: 10px !important;
+    padding: 6px 14px !important;
+    transition: 0.2s ease;
+}
+
+.fc-button:hover {
+    background-color: #003780 !important;
+}
+
+.fc-button:disabled {
+    background-color: #89a7c0 !important;
+}
+
+/* Barra superior */
+.fc-header-toolbar {
+    margin-bottom: 20px !important;
+}
+
+.fc-button-group {
+    gap: 10px;
+}
+
+/* Día activo */
+.fc-daygrid-day.fc-day-today {
+    background-color: #8fceff70 !important;
+    border: 1px solid #0091ff !important;
+}
+
+/* Hover en día */
+.fc-daygrid-day:hover {
+    background-color: #ebf5ff !important;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.fc-view-harness {
+    border-radius: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Cuadro de cada fecha */
+.fc-daygrid-day-number {
+    font-size: 20px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #003780 !important;
+}
+
+.fc-scrollgrid {
+    border-radius: 10px !important;
+}
+
+.fc-col-header {
+    border-radius: 10px 10px 0px 0px !important;
+    /* Top-left, top-right, bottom-right, bottom-left */
+}
+
+.fc-scrollgrid-section-body>td {
+    border-radius: 0px 0px 10px 10px !important;
+    /* Bottom-left and bottom-right corners */
+}
+
+/* Eventos */
+.fc-event {
+    background-color: #1972B8 !important;
+    border: none !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: white !important;
+    transition: 0.2s ease;
+}
+
+.fc-event:hover {
+    background-color: #004AAD !important;
+}
+
+/* Vista semanal/día */
+.fc-timegrid-slot {
+    height: 40px !important;
+}
+
+.fc-col-header-cell-cushion {
+    font-size: 23px;
+    text-decoration: none;
+    color: #003780;
+}
+
+.fc-timegrid-axis {
+    color: #002557;
+    font-weight: 500;
+}
+
+/* Scroll en vista timeGrid */
+.fc-scroller {
+    overflow-y: auto !important;
+}
+
+/* Estilo para "no event" */
+.fc-daygrid-day-events {
+    margin-top: 3px !important;
+}
+
+/* Evento seleccionado */
+.fc-event.fc-event-selected {
+    box-shadow: 0 0 10px #1972B8;
+}
+
+/* Botón Today */
+.fc-today-button {
+    background-color: #91CD00 !important;
+    color: #ffffff !important;
+}
+
+.cita-card {
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.cita-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cita-header {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cita-body p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.cita-fechas {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 6px;
+    text-align: right;
+}
+
+.vet-badge {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #fff;
+}
+
+.kpi-card {
+    background: white;
+    min-width: 190px;
+    max-width: 190px;
+    padding: 1rem;
+    border-radius: 14px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    color: #002557;
+    border-left: 6px solid rgba(0, 0, 0, 0.15);
+    transition: 0.25s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.kpi-card i {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+/* Colores por categoría */
+.kpi-blue {
+    border-left-color: #004AAD;
+}
+
+.kpi-yellow {
+    border-left-color: #FFD600;
+}
+
+.kpi-green {
+    border-left-color: #91CD00;
+}
+
+.kpi-purple {
+    border-left-color: #7E0689;
+}
+
+.kpi-cyan {
+    border-left-color: #8FCEFF;
+}
+
+.kpi-orange {
+    border-left-color: #FF9100;
+}
+
+.kpi-red {
+    border-left-color: #D10000;
+}
+
+.kpi-dark {
+    border-left-color: #002557;
+}
+
 
 
 /*MAIN CONTENT/

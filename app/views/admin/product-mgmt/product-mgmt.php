@@ -58,9 +58,11 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=brandMgmt"
                                 class="btn-dark-blue"><strong>Gestionar Marcas</strong>
                                 <i class="bi bi-sticky-fill"></i></a>
-                            <a href="<?= BASE_URL ?>/index.php?controller=adminProduct&action=addDiscount"
+                            <!--
+                            <a href="<//?= BASE_URL ?>/index.php?controller=adminProduct&action=addDiscount"
                                 class="btn-dark-blue"><strong>Agregar Descuento</strong>
                                 <i class="bi bi-tag-fill">+</i></a>
+                                -->
                         </div>
                     </div>
                     <div class="admin-mgmt-table">

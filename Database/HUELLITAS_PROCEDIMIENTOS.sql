@@ -26,6 +26,96 @@ END$$
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_ESTADOS_SP
+-- DESCRIPCIÓN: Procedimiento obtener todos los estados
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_ESTADOS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_ESTADOS_SP()
+BEGIN
+    SELECT 
+        ID_ESTADO_PK,
+        ESTADO_DESCRIPCION
+    FROM huellitas_estado_tb
+    ORDER BY ESTADO_DESCRIPCION ASC;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_ESTADOS_PEDIDO_SP
+-- DESCRIPCIÓN: Obtiene únicamente los estados válidos para los pedidos
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_ESTADOS_PEDIDO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_ESTADOS_PEDIDO_SP()
+BEGIN
+    SELECT 
+        ID_ESTADO_PK,
+        ESTADO_DESCRIPCION
+    FROM 
+        HUELLITAS_ESTADO_TB
+    WHERE 
+        ESTADO_DESCRIPCION IN ('PENDIENTE', 'EN PREPARACIÓN', 'ENVIADO', 'ENTREGADO', 'CANCELADO')
+    ORDER BY 
+        FIELD(ESTADO_DESCRIPCION, 'PENDIENTE', 'EN PREPARACIÓN', 'ENVIADO', 'ENTREGADO', 'CANCELADO');
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_ESTADOS_COMPROBANTE_PAGO_SP
+-- DESCRIPCIÓN: Obtiene únicamente los estados válidos para los estados del comprobante de pago
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_ESTADOS_COMPROBANTE_PAGO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_ESTADOS_COMPROBANTE_PAGO_SP()
+BEGIN
+    SELECT 
+        ID_ESTADO_PK,
+        ESTADO_DESCRIPCION
+    FROM 
+        HUELLITAS_ESTADO_TB
+    WHERE 
+        ESTADO_DESCRIPCION IN ('APROBADO', 'RECHAZADO')
+    ORDER BY 
+        FIELD(ESTADO_DESCRIPCION, 'APROBADO', 'RECHAZADO');
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_ESTADOS_PAGO_SP
+-- DESCRIPCIÓN: Obtiene únicamente los estados válidos para los pagos
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_ESTADOS_PAGO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_ESTADOS_PAGO_SP()
+BEGIN
+    SELECT 
+        ID_ESTADO_PK,
+        ESTADO_DESCRIPCION
+    FROM 
+        HUELLITAS_ESTADO_TB
+    WHERE 
+        ESTADO_DESCRIPCION IN (
+			'EN REVISIÓN',
+            'PENDIENTE DE PAGO',
+            'PAGADO',
+            'RECHAZADO',
+            'REEMBOLSADO'
+        )
+    ORDER BY 
+        FIELD(
+            ESTADO_DESCRIPCION,
+            'EN REVISIÓN',
+            'PENDIENTE DE PAGO',
+            'PAGADO',
+            'RECHAZADO',
+            'REEMBOLSADO'
+        );
+END$$
+DELIMITER ;
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_LISTAR_NUEVO_SP
 -- DESCRIPCIÓN: Procedimiento para listar los estado de un producto
 -- ==========================================
@@ -713,6 +803,42 @@ END//
 DELIMITER ;
 
 -- ==========================================
+-- PROCEDIMIENTO: HUELLITAS_CONTAR_PROVEEDORES_SP
+-- DESCRIPCIÓN: Contar todos proveedores existentes
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_PROVEEDORES_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_PROVEEDORES_SP(
+    IN p_query VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS TOTAL
+    FROM 
+        huellitas_proveedores_tb AS p
+        INNER JOIN huellitas_estado_tb AS e 
+            ON p.id_estado_fk = e.id_estado_pk
+        LEFT JOIN huellitas_direccion_tb AS d 
+            ON p.id_direccion_fk = d.id_direccion_pk
+        LEFT JOIN huellitas_direccion_provincia_tb AS prov 
+            ON d.id_direccion_provincia_fk = prov.id_direccion_provincia_pk
+        LEFT JOIN huellitas_direccion_canton_tb AS cant 
+            ON d.id_direccion_canton_fk = cant.id_direccion_canton_pk
+        LEFT JOIN huellitas_direccion_distrito_tb AS dist 
+            ON d.id_direccion_distrito_fk = dist.id_direccion_distrito_pk
+    WHERE 
+        p.proveedor_nombre LIKE CONCAT('%', p_query, '%')
+        OR p.proveedor_correo LIKE CONCAT('%', p_query, '%')
+        OR p.nombre_representante LIKE CONCAT('%', p_query, '%')
+        OR p.proveedor_descripcion_productos LIKE CONCAT('%', p_query, '%')
+        OR e.estado_descripcion LIKE CONCAT('%', p_query, '%')
+        OR prov.nombre_provincia LIKE CONCAT('%', p_query, '%')
+        OR cant.nombre_canton LIKE CONCAT('%', p_query, '%')
+        OR dist.nombre_distrito LIKE CONCAT('%', p_query, '%');
+END$$
+DELIMITER ;
+
+-- ==========================================
 -- PROCEDIMIENTO: HUELLITAS_LISTAR_PROVEEDORES_ACTIVOS_SP
 -- DESCRIPCIÓN: Obtiene todos los proveedores con estado ACTIVO
 -- ==========================================
@@ -779,10 +905,16 @@ CREATE PROCEDURE HUELLITAS_OBTENER_USUARIO_POR_ID_SP(IN P_ID_USUARIO INT)
 BEGIN
     SELECT 
         U.ID_USUARIO_PK,
+        U.CODIGO_USUARIO,
         U.USUARIO_NOMBRE,
         U.USUARIO_CORREO,
         U.USUARIO_IMAGEN_URL,
         U.USUARIO_IDENTIFICACION,
+
+        -- CAMPOS QUE FALTABAN (OBLIGATORIOS)
+        U.ID_ESTADO_FK,
+        U.ID_CLIENTE_VINCULADO_FK,
+
         R.DESCRIPCION_ROL_USUARIO AS ROL,
         T.TELEFONO_CONTACTO,
         D.DIRECCION_SENNAS,
@@ -1083,11 +1215,7 @@ END //
 DELIMITER ;
 
 -- ==========================================
--- NOMBRE: HHUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP
--- DESCRIPCIÓN: Procedimiento para listar todas las categorías activas de productos
--- ==========================================
--- ==========================================
--- PROCEDIMIENTO: HUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP
+-- NOMBRE: HUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP
 -- DESCRIPCIÓN: Obtiene todas las categorías activas
 -- ==========================================
 DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_CATEGORIAS_ACTIVAS_SP;
@@ -1133,6 +1261,29 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+-- ==========================================
+-- PROCEDIMIENTO: HUELLITAS_CONTAR_CATEGORIAS_SP
+-- DESCRIPCIÓN: Contar las categorias existentes
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_CATEGORIAS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_CATEGORIAS_SP(
+    IN p_query VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS total
+    FROM 
+        huellitas_productos_categoria_tb AS c
+        INNER JOIN huellitas_estado_tb AS e 
+            ON c.ID_ESTADO_FK = e.ID_ESTADO_PK
+    WHERE 
+        c.DESCRIPCION_CATEGORIA LIKE CONCAT('%', p_query, '%')
+        OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', p_query, '%');
+END$$
+DELIMITER ;
+
 
 -- ==========================================
 -- PROCEDIMIENTO: HUELLITAS_OBTENER_CATEGORIA_POR_ID_SP
@@ -1227,6 +1378,28 @@ END //
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_CONTAR_MARCAS_SP
+-- DESCRIPCIÓN: Procedimiento para contar todas las marcas existentes
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_MARCAS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_MARCAS_SP(
+    IN p_query VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS total
+    FROM 
+        huellitas_marcas_tb AS m
+        INNER JOIN huellitas_estado_tb AS e 
+            ON m.ID_ESTADO_FK = e.ID_ESTADO_PK
+    WHERE 
+        m.NOMBRE_MARCA LIKE CONCAT('%', p_query, '%')
+        OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', p_query, '%');
+END$$
+DELIMITER ;
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_LISTAR_MARCAS_ACTIVAS_SP
 -- DESCRIPCIÓN: Procedimiento para listar solo las marcas activas
 -- ==========================================
@@ -1286,6 +1459,31 @@ END//
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_CONTAR_PRODUCTOS_SP
+-- DESCRIPCIÓN: Procedimiento para contar todos los productos existentes
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_PRODUCTOS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_PRODUCTOS_SP(
+    IN p_query VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS total
+    FROM 
+        huellitas_productos_tb AS p
+        INNER JOIN huellitas_productos_categoria_tb AS c 
+            ON p.ID_CATEGORIA_FK = c.ID_CATEGORIA_PK
+        INNER JOIN huellitas_proveedores_tb AS pr 
+            ON p.ID_PROVEEDOR_FK = pr.ID_PROVEEDOR_PK
+    WHERE 
+        p.PRODUCTO_NOMBRE LIKE CONCAT('%', p_query, '%')
+        OR c.DESCRIPCION_CATEGORIA LIKE CONCAT('%', p_query, '%')
+        OR pr.PROVEEDOR_NOMBRE LIKE CONCAT('%', p_query, '%');
+END$$
+DELIMITER ;
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_LISTAR_PRODUCTOS_ACTIVOS_NUEVOS_SP
 -- DESCRIPCIÓN: Procedimiento para listar productos activos y nuevos
 -- ==========================================
@@ -1325,6 +1523,136 @@ BEGIN
     ORDER BY P.FECHA_CREACION DESC;
 END//
 DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PRODUCTOS_ALIMENTOS_SP
+-- DESCRIPCIÓN: Procedimiento para listar solo los alimentos.
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_PRODUCTOS_ALIMENTOS_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_PRODUCTOS_ALIMENTOS_SP()
+BEGIN
+    SELECT
+        P.ID_PRODUCTO_PK,
+        P.PRODUCTO_NOMBRE,
+        P.PRODUCTO_DESCRIPCION,
+        P.PRODUCTO_PRECIO_UNITARIO,
+        P.PRODUCTO_STOCK,
+        P.IMAGEN_URL,
+        P.FECHA_CREACION,
+
+        -- RELACIONES
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        PR.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        C.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        M.NOMBRE_MARCA AS MARCA,
+        N.NUEVO_DESCRIPCION AS CONDICION
+    FROM 
+        huellitas_productos_tb AS P
+        INNER JOIN huellitas_estado_tb AS E 
+            ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN huellitas_proveedores_tb AS PR 
+            ON P.ID_PROVEEDOR_FK = PR.ID_PROVEEDOR_PK
+        INNER JOIN huellitas_productos_categoria_tb AS C 
+            ON P.ID_CATEGORIA_FK = C.ID_CATEGORIA_PK
+        INNER JOIN huellitas_marcas_tb AS M 
+            ON P.ID_MARCA_FK = M.ID_MARCA_PK
+        INNER JOIN huellitas_nuevo_tb AS N 
+            ON P.ID_NUEVO_FK = N.ID_NUEVO_PK
+    WHERE 
+        P.ID_ESTADO_FK = 1
+        AND C.DESCRIPCION_CATEGORIA = 'Alimentos'
+    ORDER BY 
+        P.FECHA_CREACION DESC;
+END//
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PRODUCTOS_MEDICAMENTOS_SP
+-- DESCRIPCIÓN: Procedimiento para listar solo los medicamentos.
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_PRODUCTOS_MEDICAMENTOS_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_PRODUCTOS_MEDICAMENTOS_SP()
+BEGIN
+    SELECT
+        P.ID_PRODUCTO_PK,
+        P.PRODUCTO_NOMBRE,
+        P.PRODUCTO_DESCRIPCION,
+        P.PRODUCTO_PRECIO_UNITARIO,
+        P.PRODUCTO_STOCK,
+        P.IMAGEN_URL,
+        P.FECHA_CREACION,
+
+        -- RELACIONES
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        PR.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        C.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        M.NOMBRE_MARCA AS MARCA,
+        N.NUEVO_DESCRIPCION AS CONDICION
+    FROM 
+        huellitas_productos_tb AS P
+        INNER JOIN huellitas_estado_tb AS E 
+            ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN huellitas_proveedores_tb AS PR 
+            ON P.ID_PROVEEDOR_FK = PR.ID_PROVEEDOR_PK
+        INNER JOIN huellitas_productos_categoria_tb AS C 
+            ON P.ID_CATEGORIA_FK = C.ID_CATEGORIA_PK
+        INNER JOIN huellitas_marcas_tb AS M 
+            ON P.ID_MARCA_FK = M.ID_MARCA_PK
+        INNER JOIN huellitas_nuevo_tb AS N 
+            ON P.ID_NUEVO_FK = N.ID_NUEVO_PK
+    WHERE 
+        P.ID_ESTADO_FK = 1
+        AND C.DESCRIPCION_CATEGORIA = 'Medicamentos'
+    ORDER BY 
+        P.FECHA_CREACION DESC;
+END//
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PRODUCTOS_ACCESORIOS_SP
+-- DESCRIPCIÓN: Procedimiento para listar solo los accesorios.
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_PRODUCTOS_ACCESORIOS_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_LISTAR_PRODUCTOS_ACCESORIOS_SP()
+BEGIN
+    SELECT
+        P.ID_PRODUCTO_PK,
+        P.PRODUCTO_NOMBRE,
+        P.PRODUCTO_DESCRIPCION,
+        P.PRODUCTO_PRECIO_UNITARIO,
+        P.PRODUCTO_STOCK,
+        P.IMAGEN_URL,
+        P.FECHA_CREACION,
+
+        -- RELACIONES
+        E.ESTADO_DESCRIPCION AS ESTADO,
+        PR.PROVEEDOR_NOMBRE AS PROVEEDOR,
+        C.DESCRIPCION_CATEGORIA AS CATEGORIA,
+        M.NOMBRE_MARCA AS MARCA,
+        N.NUEVO_DESCRIPCION AS CONDICION
+    FROM 
+        huellitas_productos_tb AS P
+        INNER JOIN huellitas_estado_tb AS E 
+            ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN huellitas_proveedores_tb AS PR 
+            ON P.ID_PROVEEDOR_FK = PR.ID_PROVEEDOR_PK
+        INNER JOIN huellitas_productos_categoria_tb AS C 
+            ON P.ID_CATEGORIA_FK = C.ID_CATEGORIA_PK
+        INNER JOIN huellitas_marcas_tb AS M 
+            ON P.ID_MARCA_FK = M.ID_MARCA_PK
+        INNER JOIN huellitas_nuevo_tb AS N 
+            ON P.ID_NUEVO_FK = N.ID_NUEVO_PK
+    WHERE 
+        P.ID_ESTADO_FK = 1
+        AND C.DESCRIPCION_CATEGORIA = 'Accesorios'
+    ORDER BY 
+        P.FECHA_CREACION DESC;
+END//
+DELIMITER ;
+
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_OBTENER_PRODUCTO_ACTIVO_POR_ID_SP
@@ -1638,6 +1966,7 @@ BEGIN
 END //
 DELIMITER ;
 
+
 -- ==========================================
 -- NOMBRE: HUELLITAS_LISTAR_COMENTARIOS_ACTIVOS_POR_PRODUCTO_SP
 -- DESCRIPCIÓN: Procedimiento para listar los comentarios de un producto en especifico.
@@ -1720,10 +2049,6 @@ BEGIN
     WHERE ID_COMENTARIO_PK = p_id_comentario AND ID_USUARIO_FK = p_id_usuario;
 END$$
 DELIMITER ;
-
-
-
-
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_AGREGAR_TARJETA_SP
@@ -2224,6 +2549,44 @@ END$$
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_CONTAR_USUARIOS_SP
+-- DESCRIPCIÓN: Contar todos los usuario existentes
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_USUARIOS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_USUARIOS_SP(
+    IN p_query VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS TOTAL
+    FROM 
+        huellitas_usuarios_tb AS u
+        INNER JOIN huellitas_rol_usuario_tb AS r 
+            ON u.id_rol_usuario_fk = r.id_rol_usuario_pk
+        INNER JOIN huellitas_estado_tb AS e 
+            ON u.id_estado_fk = e.id_estado_pk
+        LEFT JOIN huellitas_direccion_tb AS d 
+            ON u.id_direccion_fk = d.id_direccion_pk
+        LEFT JOIN huellitas_direccion_provincia_tb AS prov 
+            ON d.id_direccion_provincia_fk = prov.id_direccion_provincia_pk
+        LEFT JOIN huellitas_direccion_canton_tb AS cant 
+            ON d.id_direccion_canton_fk = cant.id_direccion_canton_pk
+        LEFT JOIN huellitas_direccion_distrito_tb AS dist 
+            ON d.id_direccion_distrito_fk = dist.id_direccion_distrito_pk
+    WHERE 
+        u.usuario_nombre LIKE CONCAT('%', p_query, '%')
+        OR u.usuario_correo LIKE CONCAT('%', p_query, '%')
+        OR r.descripcion_rol_usuario LIKE CONCAT('%', p_query, '%')
+        OR e.estado_descripcion LIKE CONCAT('%', p_query, '%')
+        OR prov.nombre_provincia LIKE CONCAT('%', p_query, '%')
+        OR cant.nombre_canton LIKE CONCAT('%', p_query, '%')
+        OR dist.nombre_distrito LIKE CONCAT('%', p_query, '%');
+END$$
+DELIMITER ;
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_ADMIN_ACTUALIZAR_USUARIO_SP
 -- DESCRIPCIÓN: Procedimiento para actualizar usuarios por parte del admin
 -- ==========================================
@@ -2397,6 +2760,29 @@ END $$
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_CONTAR_ROLES_SP
+-- DESCRIPCIÓN: Contar los roles existentes
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_ROLES_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_ROLES_SP(
+    IN p_query VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS total
+    FROM 
+        huellitas_rol_usuario_tb AS r
+        INNER JOIN huellitas_estado_tb AS e 
+            ON r.ID_ESTADO_FK = e.ID_ESTADO_PK
+    WHERE 
+        r.DESCRIPCION_ROL_USUARIO LIKE CONCAT('%', p_query, '%')
+        OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', p_query, '%');
+END$$
+DELIMITER ;
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_LISTAR_ROLES_ACTIVOS_SP
 -- DESCRIPCIÓN: Lista únicamente los roles con estado activo
 -- ==========================================
@@ -2504,7 +2890,7 @@ BEGIN
         P.ID_NUEVO_FK,
         N.NUEVO_DESCRIPCION AS NUEVO
 
-    FROM HUELLITAS_PRODUCTOS_TB P
+    FROM huellitas_productos_tb P
     INNER JOIN huellitas_estado_tb E 
         ON P.ID_ESTADO_FK = E.ID_ESTADO_PK
     INNER JOIN huellitas_proveedores_tb PROV
@@ -2604,7 +2990,2750 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_AL_CARRITO_SP
+-- DESCRIPCIÓN: Agrega o actualiza un producto en el carrito
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_AGREGAR_AL_CARRITO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_AGREGAR_AL_CARRITO_SP(
+    IN p_usuario_id INT,
+    IN p_producto_id INT,
+    IN p_cantidad INT
+)
+BEGIN
+    DECLARE v_stock_actual INT DEFAULT 0;
+    DECLARE v_cantidad_actual INT DEFAULT 0;
+    DECLARE v_total_deseado INT DEFAULT 0;
+    DECLARE v_mensaje VARCHAR(255);
 
+    -- Obtener stock del producto
+    SELECT PRODUCTO_STOCK INTO v_stock_actual
+    FROM huellitas_productos_tb
+    WHERE ID_PRODUCTO_PK = p_producto_id;
+
+    -- Si no existe el producto
+    IF v_stock_actual IS NULL THEN
+        SET v_mensaje = 'El producto no existe.';
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = v_mensaje;
+    END IF;
+
+    -- Obtener cantidad actual en el carrito (si existe)
+    SELECT CANTIDAD INTO v_cantidad_actual
+    FROM huellitas_carrito_tb
+    WHERE ID_USUARIO_FK = p_usuario_id
+      AND ID_PRODUCTO_FK = p_producto_id;
+
+    SET v_total_deseado = IFNULL(v_cantidad_actual, 0) + p_cantidad;
+
+    -- Validar stock disponible
+    IF v_total_deseado > v_stock_actual THEN
+        SET v_mensaje = CONCAT('Stock insuficiente. Solo hay ', v_stock_actual, ' unidades disponibles.');
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = v_mensaje;
+    END IF;
+
+    -- Insertar o actualizar según corresponda
+    IF EXISTS (
+        SELECT 1
+        FROM huellitas_carrito_tb
+        WHERE ID_USUARIO_FK = p_usuario_id
+          AND ID_PRODUCTO_FK = p_producto_id
+    ) THEN
+        UPDATE huellitas_carrito_tb
+        SET CANTIDAD = v_total_deseado
+        WHERE ID_USUARIO_FK = p_usuario_id
+          AND ID_PRODUCTO_FK = p_producto_id;
+    ELSE
+        INSERT INTO huellitas_carrito_tb (ID_USUARIO_FK, ID_PRODUCTO_FK, CANTIDAD)
+        VALUES (p_usuario_id, p_producto_id, p_cantidad);
+    END IF;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_CARRITO_USUARIO_SP
+-- DESCRIPCIÓN: Obtiene el carrito completo del usuario
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_CARRITO_USUARIO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_CARRITO_USUARIO_SP(IN p_usuario_id INT)
+BEGIN
+    SELECT 
+        c.ID_CARRITO_PK,
+        p.ID_PRODUCTO_PK,
+        p.PRODUCTO_NOMBRE,
+        p.PRODUCTO_PRECIO_UNITARIO AS PRECIO_UNITARIO,
+        p.IMAGEN_URL,
+        c.CANTIDAD,
+        (p.PRODUCTO_PRECIO_UNITARIO * c.CANTIDAD) AS SUBTOTAL
+    FROM huellitas_carrito_tb c
+    INNER JOIN huellitas_productos_tb p ON c.ID_PRODUCTO_FK = p.ID_PRODUCTO_PK
+    WHERE c.ID_USUARIO_FK = p_usuario_id;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ELIMINAR_ITEM_CARRITO_SP
+-- DESCRIPCIÓN: Eliminar producto del carrito
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_ELIMINAR_ITEM_CARRITO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_ELIMINAR_ITEM_CARRITO_SP(IN p_id_carrito INT)
+BEGIN
+    DELETE FROM huellitas_carrito_tb WHERE ID_CARRITO_PK = p_id_carrito;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_VACIAR_CARRITO_SP
+-- DESCRIPCIÓN: Vaciar todos el carrito
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_VACIAR_CARRITO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_VACIAR_CARRITO_SP(IN p_usuario_id INT)
+BEGIN
+    DELETE FROM huellitas_carrito_tb WHERE ID_USUARIO_FK = p_usuario_id;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_CANTIDAD_CARRITO_SP
+-- DESCRIPCIÓN: Actualizar la cantidad de un producto en el carrito
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_ACTUALIZAR_CANTIDAD_CARRITO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_CANTIDAD_CARRITO_SP(
+    IN p_usuario_id INT,
+    IN p_producto_id INT,
+    IN p_nueva_cantidad INT
+)
+BEGIN
+    DECLARE v_stock_actual INT DEFAULT 0;
+    DECLARE v_mensaje VARCHAR(255);
+
+    -- Verificar existencia y stock
+    SELECT PRODUCTO_STOCK INTO v_stock_actual
+    FROM huellitas_productos_tb
+    WHERE ID_PRODUCTO_PK = p_producto_id;
+
+    IF v_stock_actual IS NULL THEN
+        SET v_mensaje = 'El producto no existe.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_mensaje;
+    END IF;
+
+    IF p_nueva_cantidad > v_stock_actual THEN
+        SET v_mensaje = CONCAT('Stock insuficiente. Solo hay ', v_stock_actual, ' unidades disponibles.');
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_mensaje;
+    END IF;
+
+    -- Actualizar cantidad directamente
+    UPDATE huellitas_carrito_tb
+    SET CANTIDAD = p_nueva_cantidad
+    WHERE ID_USUARIO_FK = p_usuario_id AND ID_PRODUCTO_FK = p_producto_id;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CALCULAR_TOTAL_CARRITO_SP
+-- DESCRIPCIÓN: Calcula subtotal, IVA y total del carrito de un usuario
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CALCULAR_TOTAL_CARRITO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CALCULAR_TOTAL_CARRITO_SP(
+    IN p_usuario_id INT,
+    IN p_costo_envio DECIMAL(10,2)
+)
+BEGIN
+    DECLARE v_subtotal DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_iva DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_total DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_iva_porcentaje DECIMAL(5,2) DEFAULT 0.13;
+
+    -- Calcular subtotal
+    SELECT 
+        IFNULL(SUM(p.PRODUCTO_PRECIO_UNITARIO * c.CANTIDAD), 0)
+    INTO v_subtotal
+    FROM huellitas_carrito_tb c
+    INNER JOIN huellitas_productos_tb p 
+        ON c.ID_PRODUCTO_FK = p.ID_PRODUCTO_PK
+    WHERE c.ID_USUARIO_FK = p_usuario_id;
+
+    -- Calcular IVA
+    SET v_iva = v_subtotal * v_iva_porcentaje;
+
+    -- Calcular total final
+    SET v_total = v_subtotal + v_iva + p_costo_envio;
+
+    -- Retornar resultados
+    SELECT 
+        v_subtotal AS SUBTOTAL,
+        v_iva AS IVA,
+        p_costo_envio AS ENVIO,
+        v_total AS TOTAL_FINAL;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_PROCESAR_CHECKOUT_SP
+-- DESCRIPCIÓN: Procesa el checkout completo (pedido, detalle, pago, stock, notificación)
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_PROCESAR_CHECKOUT_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_PROCESAR_CHECKOUT_SP(
+    IN p_usuario_id INT,
+    IN p_envio_provincia VARCHAR(100),
+    IN p_envio_canton VARCHAR(100),
+    IN p_envio_distrito VARCHAR(100),
+    IN p_envio_sennas VARCHAR(255),
+    IN p_metodo_pago VARCHAR(20),
+    IN p_tarjeta_id INT,
+    IN p_costo_envio DECIMAL(10,2),
+    OUT p_pedido_id INT,
+    OUT p_codigo_pedido VARCHAR(30)
+)
+BEGIN
+    DECLARE v_total DECIMAL(10,2);
+    DECLARE v_subtotal DECIMAL(10,2);
+    DECLARE v_iva DECIMAL(10,2);
+    DECLARE v_estado_pago VARCHAR(30);
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    -- Calcular totales
+    SELECT 
+        IFNULL(SUM(p.PRODUCTO_PRECIO_UNITARIO * c.CANTIDAD), 0),
+        IFNULL(SUM(p.PRODUCTO_PRECIO_UNITARIO * c.CANTIDAD) * 0.13, 0),
+        IFNULL(SUM(p.PRODUCTO_PRECIO_UNITARIO * c.CANTIDAD) * 1.13 + p_costo_envio, p_costo_envio)
+    INTO v_subtotal, v_iva, v_total
+    FROM HUELLITAS_CARRITO_TB c
+    INNER JOIN HUELLITAS_PRODUCTOS_TB p 
+        ON c.ID_PRODUCTO_FK = p.ID_PRODUCTO_PK
+    WHERE c.ID_USUARIO_FK = p_usuario_id;
+
+    IF v_subtotal = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El carrito está vacío.';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM HUELLITAS_CARRITO_TB c
+        JOIN HUELLITAS_PRODUCTOS_TB p ON p.ID_PRODUCTO_PK = c.ID_PRODUCTO_FK
+        WHERE c.ID_USUARIO_FK = p_usuario_id
+        AND p.PRODUCTO_STOCK < c.CANTIDAD
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock insuficiente para uno o más productos.';
+    END IF;
+
+    -- Crear pedido
+    INSERT INTO HUELLITAS_PEDIDOS_TB (
+        ID_USUARIO_FK, ID_ESTADO_FK, TOTAL,
+        ENVIO_PROVINCIA, ENVIO_CANTON, ENVIO_DISTRITO, ENVIO_SENNAS
+    ) VALUES (
+        p_usuario_id, 3, v_total,
+        p_envio_provincia, p_envio_canton, p_envio_distrito, p_envio_sennas
+    );
+
+    SET p_pedido_id = LAST_INSERT_ID();
+
+    -- Generar código legible
+    SET p_codigo_pedido = CONCAT(
+        'HD-', DATE_FORMAT(NOW(), '%Y%m%d'), '-', p_pedido_id
+    );
+
+    UPDATE HUELLITAS_PEDIDOS_TB
+    SET CODIGO_PEDIDO = p_codigo_pedido
+    WHERE ID_PEDIDO_PK = p_pedido_id;
+
+    -- Insertar detalle
+    INSERT INTO HUELLITAS_PEDIDOS_DETALLE_TB (ID_PEDIDO_FK, ID_PRODUCTO_FK, CANTIDAD, PRECIO_UNITARIO)
+    SELECT p_pedido_id, c.ID_PRODUCTO_FK, c.CANTIDAD, p.PRODUCTO_PRECIO_UNITARIO
+    FROM HUELLITAS_CARRITO_TB c
+    INNER JOIN HUELLITAS_PRODUCTOS_TB p ON p.ID_PRODUCTO_PK = c.ID_PRODUCTO_FK
+    WHERE c.ID_USUARIO_FK = p_usuario_id;
+
+	IF p_metodo_pago = 'TARJETA' THEN
+		SET v_estado_pago = 'EN REVISIÓN';
+	ELSEIF p_metodo_pago = 'PAYPAL' THEN
+		SET v_estado_pago = 'PAGADO';
+	ELSEIF p_metodo_pago = 'TRANSFERENCIA' THEN
+		SET v_estado_pago = 'EN REVISIÓN';
+	ELSEIF p_metodo_pago = 'EFECTIVO' THEN
+		SET v_estado_pago = 'PENDIENTE DE PAGO';
+	ELSE
+		SET v_estado_pago = 'EN REVISIÓN';
+	END IF;
+
+    -- Insertar pago
+    INSERT INTO HUELLITAS_PAGOS_TB (ID_PEDIDO_FK, ID_TARJETA_FK, METODO_PAGO, MONTO, ESTADO_PAGO)
+    VALUES (
+		p_pedido_id,
+		NULLIF(p_tarjeta_id, 0),
+		p_metodo_pago,
+		v_total,
+		v_estado_pago
+    );
+
+    -- Actualizar stock
+    UPDATE HUELLITAS_PRODUCTOS_TB p
+    JOIN HUELLITAS_CARRITO_TB c ON p.ID_PRODUCTO_PK = c.ID_PRODUCTO_FK
+    SET p.PRODUCTO_STOCK = p.PRODUCTO_STOCK - c.CANTIDAD
+    WHERE c.ID_USUARIO_FK = p_usuario_id;
+
+    -- Vaciar carrito
+    DELETE FROM HUELLITAS_CARRITO_TB WHERE ID_USUARIO_FK = p_usuario_id;
+
+    -- Notificación
+    INSERT INTO HUELLITAS_NOTIFICACIONES_TB (
+        ID_USUARIO_FK, ID_ESTADO_FK, TITULO_NOTIFICACION, MENSAJE_NOTIFICACION, TIPO_NOTIFICACION
+    ) VALUES (
+        p_usuario_id, 1, 'Compra confirmada',
+        CONCAT('Tu pedido ', p_codigo_pedido, ' se registró correctamente.'),
+        'PEDIDO'
+    );
+
+    COMMIT;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_SUBIR_COMPROBANTE_PAGO_SP
+-- DESCRIPCIÓN: Procedimiento para almacenar comprobantes de pago
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_SUBIR_COMPROBANTE_PAGO_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_SUBIR_COMPROBANTE_PAGO_SP(
+    IN P_ID_PEDIDO INT,
+    IN P_ID_USUARIO INT,
+    IN P_URL_COMPROBANTE VARCHAR(1000)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '❌ Error inesperado al registrar comprobante' AS MENSAJE;
+    END;
+
+    START TRANSACTION;
+
+    -- Insertar el comprobante
+    INSERT INTO HUELLITAS_COMPROBANTES_PAGO_TB (
+        ID_PEDIDO_FK,
+        ID_USUARIO_FK,
+        URL_COMPROBANTE,
+        ESTADO_VERIFICACION,
+        FECHA_SUBIDA
+    )
+    VALUES (
+        P_ID_PEDIDO,
+        P_ID_USUARIO,
+        P_URL_COMPROBANTE,
+        'EN REVISIÓN',
+        NOW()
+    );
+
+    -- Cambiar estado del pago a "EN REVISIÓN"
+    UPDATE HUELLITAS_PAGOS_TB
+    SET ESTADO_PAGO = 'EN REVISIÓN'
+    WHERE ID_PEDIDO_FK = P_ID_PEDIDO;
+
+    COMMIT;
+
+    SELECT 1 AS EXITO,
+           '📄 Comprobante registrado correctamente. El pago está en revisión.' AS MENSAJE;
+END //
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_SUBIR_NUEVO_COMPROBANTE_SP
+-- DESCRIPCIÓN: Procedimiento subir un nuevo comprobante de pago en caso de que el pago sea rechazado
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_SUBIR_NUEVO_COMPROBANTE_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_SUBIR_NUEVO_COMPROBANTE_SP(
+    IN p_codigo_pedido VARCHAR(30),
+    IN p_usuario_id INT,
+    IN p_url_comprobante VARCHAR(1000)
+)
+BEGIN
+    DECLARE v_pedido_id INT DEFAULT NULL;
+    DECLARE v_metodo_pago VARCHAR(30) DEFAULT NULL;
+    DECLARE v_ultimo_estado VARCHAR(30) DEFAULT NULL;
+    DECLARE v_intentos INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '❌ Error inesperado al subir el comprobante.' AS MENSAJE;
+    END;
+
+    START TRANSACTION;
+
+    -- ============================================
+    -- 1. VALIDAR QUE EL PEDIDO EXISTE Y ES DEL USUARIO
+    -- ============================================
+    SELECT ID_PEDIDO_PK
+    INTO v_pedido_id
+    FROM HUELLITAS_PEDIDOS_TB
+    WHERE CODIGO_PEDIDO = p_codigo_pedido
+      AND ID_USUARIO_FK = p_usuario_id
+    LIMIT 1;
+
+    IF v_pedido_id IS NULL THEN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '❌ El pedido no existe o no pertenece al usuario.' AS MENSAJE;
+        COMMIT;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'END';
+    END IF;
+
+    -- ============================================
+    -- 2. VALIDAR QUE EL MÉTODO DE PAGO SEA TRANSFERENCIA
+    -- ============================================
+    SELECT METODO_PAGO
+    INTO v_metodo_pago
+    FROM HUELLITAS_PAGOS_TB
+    WHERE ID_PEDIDO_FK = v_pedido_id
+    LIMIT 1;
+
+    IF v_metodo_pago <> 'TRANSFERENCIA' THEN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '❌ Este pedido no utiliza pago por transferencia.' AS MENSAJE;
+        COMMIT;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'END';
+    END IF;
+
+    -- ============================================
+    -- 3. OBTENER EL ÚLTIMO COMPROBANTE SUBIDO
+    -- ============================================
+    SELECT ESTADO_VERIFICACION, INTENTOS
+    INTO v_ultimo_estado, v_intentos
+    FROM HUELLITAS_COMPROBANTES_PAGO_TB
+    WHERE ID_PEDIDO_FK = v_pedido_id
+    ORDER BY ID_COMPROBANTE_PK DESC
+    LIMIT 1;
+
+    -- Si no hay comprobante (caso raro)
+    IF v_ultimo_estado IS NULL THEN
+        SET v_ultimo_estado = 'RECHAZADO';
+        SET v_intentos = 0;
+    END IF;
+
+    -- ============================================
+    -- 4. VALIDAR QUE ÚLTIMO ESTADO = RECHAZADO
+    -- ============================================
+    IF v_ultimo_estado <> 'RECHAZADO' THEN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '❌ No puedes subir un nuevo comprobante hasta que el anterior sea rechazado.' AS MENSAJE;
+        COMMIT;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'END';
+    END IF;
+
+    -- ============================================
+    -- 5. VALIDAR LÍMITE DE INTENTOS
+    -- ============================================
+    IF v_intentos >= 3 THEN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '❌ Límite máximo de intentos alcanzado (3). Contacte soporte.' AS MENSAJE;
+        COMMIT;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'END';
+    END IF;
+
+    -- ============================================
+    -- 6. INSERTAR NUEVO COMPROBANTE
+    -- ============================================
+    INSERT INTO HUELLITAS_COMPROBANTES_PAGO_TB (
+        ID_PEDIDO_FK,
+        ID_USUARIO_FK,
+        URL_COMPROBANTE,
+        ESTADO_VERIFICACION,
+        INTENTOS
+    )
+    VALUES (
+        v_pedido_id,
+        p_usuario_id,
+        p_url_comprobante,
+        'EN REVISIÓN',
+        v_intentos + 1
+    );
+
+    -- ============================================
+    -- 7. CAMBIAR ESTADO DE PAGO A "EN REVISIÓN"
+    -- ============================================
+    UPDATE HUELLITAS_PAGOS_TB
+    SET ESTADO_PAGO = 'EN REVISIÓN'
+    WHERE ID_PEDIDO_FK = v_pedido_id;
+
+    COMMIT;
+
+    SELECT 1 AS EXITO,
+           '✅ Comprobante enviado correctamente. Será revisado por un administrador.' AS MENSAJE;
+
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_ULTIMO_COMPROBANTE_SP
+-- DESCRIPCIÓN: Procedimiento obtener el ultmo comprobante de pago subido por el cliente
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_ULTIMO_COMPROBANTE_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_ULTIMO_COMPROBANTE_SP(
+    IN p_codigo_pedido VARCHAR(30)
+)
+BEGIN
+    SELECT 
+        cp.ID_COMPROBANTE_PK,
+        cp.ID_PEDIDO_FK,
+        cp.ID_USUARIO_FK,
+        cp.URL_COMPROBANTE,
+        cp.FECHA_SUBIDA,
+        cp.ESTADO_VERIFICACION,
+        cp.OBSERVACIONES_ADMIN,
+        cp.INTENTOS
+    FROM HUELLITAS_COMPROBANTES_PAGO_TB cp
+    INNER JOIN HUELLITAS_PEDIDOS_TB p 
+        ON p.ID_PEDIDO_PK = cp.ID_PEDIDO_FK
+    WHERE p.CODIGO_PEDIDO = p_codigo_pedido
+    ORDER BY cp.ID_COMPROBANTE_PK DESC
+    LIMIT 1;
+END$$
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_COMPROBANTE_PAGO_SP
+-- DESCRIPCIÓN: Procedimiento obtener el comprobante de pago de un pedido
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_COMPROBANTE_PAGO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_COMPROBANTE_PAGO_SP(
+    IN p_codigo_pedido VARCHAR(30)
+)
+BEGIN
+    DECLARE v_id_pedido INT DEFAULT 0;
+
+    -- 1️⃣ Obtener ID del pedido
+    SELECT ID_PEDIDO_PK
+    INTO v_id_pedido
+    FROM HUELLITAS_PEDIDOS_TB
+    WHERE CODIGO_PEDIDO = p_codigo_pedido;
+
+    -- Si no existe el pedido
+    IF v_id_pedido IS NULL OR v_id_pedido = 0 THEN
+        SELECT 
+            0 AS EXITO,
+            '❌ El código de pedido no existe.' AS MENSAJE,
+            NULL AS ID_COMPROBANTE_PK,
+            NULL AS URL_COMPROBANTE,
+            NULL AS ESTADO_VERIFICACION,
+            NULL AS FECHA_SUBIDA,
+            NULL AS OBSERVACIONES_ADMIN,
+            NULL AS METODO_PAGO,
+            NULL AS MONTO,
+            NULL AS ESTADO_PAGO,
+            NULL AS USUARIO_NOMBRE,
+            NULL AS USUARIO_CORREO;
+    ELSE
+        -- 2️⃣ Mostrar datos del comprobante y del pago
+        SELECT 
+            1 AS EXITO,
+            '✔ Datos del comprobante encontrados.' AS MENSAJE,
+
+            c.ID_COMPROBANTE_PK,
+            c.URL_COMPROBANTE,
+            c.ESTADO_VERIFICACION,
+            c.FECHA_SUBIDA,
+            c.OBSERVACIONES_ADMIN,
+
+            p.METODO_PAGO,
+            p.MONTO,
+            p.ESTADO_PAGO,
+
+            u.USUARIO_NOMBRE,
+            u.USUARIO_CORREO
+
+        FROM HUELLITAS_PEDIDOS_TB pd
+        LEFT JOIN HUELLITAS_PAGOS_TB p 
+            ON p.ID_PEDIDO_FK = pd.ID_PEDIDO_PK
+        LEFT JOIN HUELLITAS_COMPROBANTES_PAGO_TB c 
+            ON c.ID_PEDIDO_FK = pd.ID_PEDIDO_PK
+        LEFT JOIN HUELLITAS_USUARIOS_TB u 
+            ON u.ID_USUARIO_PK = pd.ID_USUARIO_FK
+        WHERE pd.ID_PEDIDO_PK = v_id_pedido
+        ORDER BY c.ID_COMPROBANTE_PK DESC
+        LIMIT 1;
+    END IF;
+
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_COMPROBANTE_PAGO_SP
+-- DESCRIPCIÓN: Procedimiento verificar el comprobante de pago.
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_ACTUALIZAR_COMPROBANTE_PAGO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_COMPROBANTE_PAGO_SP(
+    IN p_codigo_pedido    VARCHAR(30),
+    IN p_estado_id        INT,           -- ID_ESTADO_PK (ej: Aprobado / Rechazado / En revisión)
+    IN p_observaciones    VARCHAR(500),
+    OUT p_exito           INT,
+    OUT p_mensaje         VARCHAR(255)
+)
+BEGIN
+    DECLARE v_pedido_id          INT DEFAULT NULL;
+    DECLARE v_comprobante_id     INT DEFAULT NULL;
+    DECLARE v_estado_texto       VARCHAR(100) DEFAULT NULL;
+    DECLARE v_nuevo_estado_pago  VARCHAR(20) DEFAULT NULL;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+        SET p_exito   = 0;
+        SET p_mensaje = '❌ Error inesperado al actualizar el comprobante.';
+    END;
+
+    START TRANSACTION;
+
+    -- 1. Obtener ID del pedido
+    SELECT ID_PEDIDO_PK
+    INTO v_pedido_id
+    FROM HUELLITAS_PEDIDOS_TB
+    WHERE CODIGO_PEDIDO = p_codigo_pedido
+    LIMIT 1;
+
+    IF v_pedido_id IS NULL THEN
+        ROLLBACK;
+        SET p_exito   = 0;
+        SET p_mensaje = '❌ Pedido no encontrado para el código indicado.';
+    ELSE
+
+        -- 2. Obtener el último comprobante de ese pedido
+        SELECT ID_COMPROBANTE_PK
+        INTO v_comprobante_id
+        FROM HUELLITAS_COMPROBANTES_PAGO_TB
+        WHERE ID_PEDIDO_FK = v_pedido_id
+        ORDER BY ID_COMPROBANTE_PK DESC
+        LIMIT 1;
+
+        IF v_comprobante_id IS NULL THEN
+            ROLLBACK;
+            SET p_exito   = 0;
+            SET p_mensaje = '❌ No existe comprobante para este pedido.';
+        ELSE
+
+            -- 3. Traducir ID_ESTADO_PK → texto (EN REVISIÓN / APROBADO / RECHAZADO)
+            SELECT UPPER(ESTADO_DESCRIPCION)
+            INTO v_estado_texto
+            FROM HUELLITAS_ESTADO_TB
+            WHERE ID_ESTADO_PK = p_estado_id
+            LIMIT 1;
+
+            IF v_estado_texto IS NULL THEN
+                ROLLBACK;
+                SET p_exito   = 0;
+                SET p_mensaje = '❌ Estado de comprobante inválido.';
+            ELSE
+                -- 4. Actualizar comprobante
+                UPDATE HUELLITAS_COMPROBANTES_PAGO_TB
+                SET ESTADO_VERIFICACION = v_estado_texto,
+                    OBSERVACIONES_ADMIN = p_observaciones
+                WHERE ID_COMPROBANTE_PK = v_comprobante_id;
+
+                -- 5. Ajustar estado de pago según el comprobante
+                IF v_estado_texto = 'APROBADO' THEN
+                    SET v_nuevo_estado_pago = 'PAGADO';
+                ELSEIF v_estado_texto = 'RECHAZADO' THEN
+                    SET v_nuevo_estado_pago = 'RECHAZADO';
+                ELSE
+                    SET v_nuevo_estado_pago = 'EN REVISIÓN';
+                END IF;
+
+                UPDATE HUELLITAS_PAGOS_TB
+                SET ESTADO_PAGO = v_nuevo_estado_pago
+                WHERE ID_PEDIDO_FK = v_pedido_id;
+
+                COMMIT;
+                SET p_exito   = 1;
+                SET p_mensaje = '✅ Comprobante actualizado correctamente.';
+            END IF;
+        END IF;
+    END IF;
+END $$
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_PEDIDOS_USUARIO_PAG_SP
+-- DESCRIPCIÓN: Obtiene pedidos de un usuario con paginación, incluyendo estado de pago
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_PEDIDOS_USUARIO_PAG_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_PEDIDOS_USUARIO_PAG_SP(
+    IN p_usuario_id INT,
+    IN p_limit INT,
+    IN p_offset INT
+)
+BEGIN
+    SELECT 
+        p.ID_PEDIDO_PK,
+        p.CODIGO_PEDIDO,
+        p.TOTAL,
+        p.FECHA_PEDIDO,
+        est.ESTADO_DESCRIPCION AS ESTADO,
+
+        -- ============================
+        -- ESTADO DE PAGO (último pago)
+        -- ============================
+        (
+            SELECT pg.ESTADO_PAGO
+            FROM HUELLITAS_PAGOS_TB pg
+            WHERE pg.ID_PEDIDO_FK = p.ID_PEDIDO_PK
+            ORDER BY pg.FECHA_PAGO DESC
+            LIMIT 1
+        ) AS ESTADO_PAGO
+
+    FROM HUELLITAS_PEDIDOS_TB p
+    INNER JOIN HUELLITAS_ESTADO_TB est 
+        ON est.ID_ESTADO_PK = p.ID_ESTADO_FK
+    WHERE p.ID_USUARIO_FK = p_usuario_id
+    ORDER BY p.FECHA_PEDIDO DESC
+    LIMIT p_limit OFFSET p_offset;
+END$$
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CONTAR_PEDIDOS_USUARIO_SP
+-- DESCRIPCIÓN: contar total de pedidos por usuario
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_PEDIDOS_USUARIO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_PEDIDOS_USUARIO_SP(IN p_usuario_id INT)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM HUELLITAS_PEDIDOS_TB
+    WHERE ID_USUARIO_FK = p_usuario_id;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_DETALLE_PEDIDO_SP
+-- DESCRIPCIÓN: Obtiene los datos completos de un pedido y sus productos
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_DETALLE_PEDIDO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_DETALLE_PEDIDO_SP(IN p_codigo VARCHAR(50))
+BEGIN
+    -- Información general del pedido
+    SELECT 
+        p.ID_PEDIDO_PK,
+        p.CODIGO_PEDIDO,
+        p.FECHA_PEDIDO,
+        p.TOTAL,
+        p.ENVIO_PROVINCIA,
+        p.ENVIO_CANTON,
+        p.ENVIO_DISTRITO,
+        p.ENVIO_SENNAS,
+        e.ESTADO_DESCRIPCION AS ESTADO_PEDIDO,
+        pg.METODO_PAGO,
+        pg.MONTO AS MONTO_PAGO,
+        pg.ESTADO_PAGO,
+        p.ID_USUARIO_FK,
+        u.USUARIO_NOMBRE,
+        u.USUARIO_CORREO
+    FROM HUELLITAS_PEDIDOS_TB p
+    INNER JOIN HUELLITAS_ESTADO_TB e ON e.ID_ESTADO_PK = p.ID_ESTADO_FK
+    INNER JOIN HUELLITAS_USUARIOS_TB u ON u.ID_USUARIO_PK = p.ID_USUARIO_FK
+    LEFT JOIN HUELLITAS_PAGOS_TB pg ON pg.ID_PEDIDO_FK = p.ID_PEDIDO_PK
+    WHERE p.CODIGO_PEDIDO = p_codigo;
+
+    -- Detalle de productos del pedido
+    SELECT 
+        d.ID_PEDIDO_DETALLE_PK,
+        pr.PRODUCTO_NOMBRE,
+        pr.IMAGEN_URL,
+        d.CANTIDAD,
+        d.PRECIO_UNITARIO,
+        d.SUBTOTAL
+    FROM HUELLITAS_PEDIDOS_DETALLE_TB d
+    INNER JOIN HUELLITAS_PRODUCTOS_TB pr ON pr.ID_PRODUCTO_PK = d.ID_PRODUCTO_FK
+    INNER JOIN HUELLITAS_PEDIDOS_TB p ON p.ID_PEDIDO_PK = d.ID_PEDIDO_FK
+    WHERE p.CODIGO_PEDIDO = p_codigo;
+END$$
+DELIMITER ;
+
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CONTAR_PEDIDOS_SP
+-- DESCRIPCIÓN: Contar todos los pedidos existentes
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_PEDIDOS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_PEDIDOS_SP(IN P_SEARCH_TERM VARCHAR(100))
+BEGIN
+    SELECT COUNT(*) AS TOTAL
+    FROM huellitas_pedidos_tb AS p
+    INNER JOIN huellitas_usuarios_tb AS u 
+        ON p.id_usuario_fk = u.id_usuario_pk
+    INNER JOIN huellitas_estado_tb AS e 
+        ON p.id_estado_fk = e.id_estado_pk
+    LEFT JOIN huellitas_pagos_tb AS pg 
+        ON pg.id_pedido_fk = p.id_pedido_pk
+    WHERE 
+        p.codigo_pedido LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR u.usuario_nombre LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR u.usuario_correo LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR e.estado_descripcion LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR pg.metodo_pago LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR pg.estado_pago LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR p.envio_provincia LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR p.envio_canton LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR p.envio_distrito LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR DATE_FORMAT(p.fecha_pedido, '%Y-%m-%d') LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR CAST(p.total AS CHAR) LIKE CONCAT('%', P_SEARCH_TERM, '%');
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_ORDENES_ADMIN_SP
+-- DESCRIPCIÓN: Procedimiento para buscar ordenes
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_BUSCAR_PEDIDOS_ADMIN_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_BUSCAR_PEDIDOS_ADMIN_SP(
+    IN P_SEARCH_TERM VARCHAR(100),
+    IN P_LIMIT_ROWS INT,
+    IN P_OFFSET_ROWS INT
+)
+BEGIN
+    SELECT 
+		p.ID_PEDIDO_PK,
+        p.codigo_pedido AS CODIGO_PEDIDO,
+        u.usuario_nombre AS CLIENTE,
+        u.usuario_correo AS CORREO,
+        e.estado_descripcion AS ESTADO_PEDIDO,
+        p.fecha_pedido AS FECHA_PEDIDO,
+        p.total AS TOTAL,
+        CONCAT(p.envio_provincia, ', ', p.envio_canton, ', ', p.envio_distrito) AS DIRECCION_ENVIO,
+        pg.metodo_pago AS METODO_PAGO,
+        pg.estado_pago AS ESTADO_PAGO
+    FROM huellitas_pedidos_tb AS p
+    INNER JOIN huellitas_usuarios_tb AS u 
+        ON p.id_usuario_fk = u.id_usuario_pk
+    INNER JOIN huellitas_estado_tb AS e 
+        ON p.id_estado_fk = e.id_estado_pk
+    LEFT JOIN huellitas_pagos_tb AS pg 
+        ON pg.id_pedido_fk = p.id_pedido_pk
+    WHERE 
+        p.codigo_pedido LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR u.usuario_nombre LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR u.usuario_correo LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR e.estado_descripcion LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR pg.metodo_pago LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR pg.estado_pago LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR p.envio_provincia LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR p.envio_canton LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR p.envio_distrito LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR DATE_FORMAT(p.fecha_pedido, '%Y-%m-%d') LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR CAST(p.total AS CHAR) LIKE CONCAT('%', P_SEARCH_TERM, '%')
+    ORDER BY p.fecha_pedido DESC
+    LIMIT P_LIMIT_ROWS OFFSET P_OFFSET_ROWS;
+END$$
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_VER_DETALLE_PEDIDO_SP
+-- DESCRIPCIÓN: Procedimiento para ver todos los detalles del pedido
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_VER_DETALLE_PEDIDO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_VER_DETALLE_PEDIDO_SP(IN P_CODIGO_PEDIDO VARCHAR(30))
+BEGIN
+    -- Datos generales del pedido
+    SELECT
+		p.ID_PEDIDO_PK,
+        p.codigo_pedido AS CODIGO_PEDIDO,
+        u.usuario_nombre AS CLIENTE,
+        u.usuario_correo AS CORREO,
+        e.estado_descripcion AS ESTADO_PEDIDO,
+        p.fecha_pedido AS FECHA_PEDIDO,
+        p.total AS TOTAL,
+        p.envio_provincia, 
+        p.envio_canton, 
+        p.envio_distrito, 
+        p.envio_sennas,
+        pg.metodo_pago, 
+        pg.monto AS MONTO_PAGO,
+        pg.estado_pago AS ESTADO_PAGO,
+        en.numero_seguimiento,
+        en.fecha_envio,
+        en.fecha_entrega_estimada,
+        en.costo_envio
+    FROM huellitas_pedidos_tb AS p
+    INNER JOIN huellitas_usuarios_tb AS u ON p.id_usuario_fk = u.id_usuario_pk
+    INNER JOIN huellitas_estado_tb AS e ON p.id_estado_fk = e.id_estado_pk
+    LEFT JOIN huellitas_pagos_tb AS pg ON pg.id_pedido_fk = p.id_pedido_pk
+    LEFT JOIN huellitas_envios_tb AS en ON en.id_pedido_fk = p.id_pedido_pk
+    WHERE p.codigo_pedido = P_CODIGO_PEDIDO;
+
+    -- Detalle de productos
+    SELECT 
+        d.id_pedido_detalle_pk AS ID_DETALLE,
+        pr.producto_nombre AS PRODUCTO,
+        d.cantidad AS CANTIDAD,
+        d.precio_unitario AS PRECIO_UNITARIO,
+        d.subtotal AS SUBTOTAL
+    FROM huellitas_pedidos_detalle_tb AS d
+    INNER JOIN huellitas_productos_tb AS pr ON d.id_producto_fk = pr.id_producto_pk
+    INNER JOIN huellitas_pedidos_tb AS p ON d.id_pedido_fk = p.id_pedido_pk
+    WHERE p.codigo_pedido = P_CODIGO_PEDIDO;
+END$$
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_ESTADO_PEDIDO_SP
+-- DESCRIPCIÓN: Procedimiento para actualizar el estado del pedido
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_ACTUALIZAR_ESTADO_PEDIDO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_ESTADO_PEDIDO_SP(
+    IN p_codigo_o_id VARCHAR(30),
+    IN p_nuevo_estado_id INT
+)
+BEGIN
+    DECLARE v_pedido_id INT;
+
+    IF p_codigo_o_id REGEXP '^[0-9]+$' THEN
+        SET v_pedido_id = CAST(p_codigo_o_id AS SIGNED);
+    ELSE
+        SELECT ID_PEDIDO_PK INTO v_pedido_id
+        FROM HUELLITAS_PEDIDOS_TB
+        WHERE CODIGO_PEDIDO = p_codigo_o_id
+        LIMIT 1;
+    END IF;
+
+    IF v_pedido_id IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El pedido no existe.';
+    END IF;
+
+    UPDATE HUELLITAS_PEDIDOS_TB
+    SET ID_ESTADO_FK = p_nuevo_estado_id
+    WHERE ID_PEDIDO_PK = v_pedido_id;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_ESTADO_PAGO_SP
+-- DESCRIPCIÓN: Procedimiento para actualizar el estado de pago del pedido
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_ACTUALIZAR_ESTADO_PAGO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_ESTADO_PAGO_SP(
+    IN P_ID_PAGO INT,
+    IN P_NUEVO_ESTADO VARCHAR(50),
+    OUT P_MENSAJE VARCHAR(200),
+    OUT P_ID_PEDIDO INT
+)
+BEGIN
+    DECLARE V_EXISTE_PAGO INT DEFAULT 0;
+    DECLARE V_ID_PEDIDO INT DEFAULT NULL;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SET P_MENSAJE = '❌ Error interno al actualizar el estado del pago.';
+        SET P_ID_PEDIDO = NULL;
+    END;
+
+    START TRANSACTION;
+
+    -- ================================================
+    -- 1) VALIDAR QUE EL PAGO EXISTA
+    -- ================================================
+    SELECT COUNT(*)
+    INTO V_EXISTE_PAGO
+    FROM HUELLITAS_PAGOS_TB
+    WHERE ID_PAGO_PK = P_ID_PAGO;
+
+    IF V_EXISTE_PAGO = 0 THEN
+        ROLLBACK;
+        SET P_MENSAJE = '❌ El pago no existe.';
+        SET P_ID_PEDIDO = NULL;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Fin del procedimiento';
+    END IF;
+
+    -- Obtener ID del pedido
+    SELECT ID_PEDIDO_FK
+    INTO V_ID_PEDIDO
+    FROM HUELLITAS_PAGOS_TB
+    WHERE ID_PAGO_PK = P_ID_PAGO;
+
+    -- ================================================
+    -- 2) ACTUALIZAR ESTADO DEL PAGO
+    -- ================================================
+    UPDATE HUELLITAS_PAGOS_TB
+    SET ESTADO_PAGO = P_NUEVO_ESTADO
+    WHERE ID_PAGO_PK = P_ID_PAGO;
+
+    -- ================================================
+    -- 3) SINCRONIZAR EL ESTADO DEL PEDIDO
+    -- ================================================
+    IF P_NUEVO_ESTADO = 'PAGADO' THEN
+        UPDATE HUELLITAS_PEDIDOS_TB
+        SET ID_ESTADO_FK = (
+            SELECT ID_ESTADO_PK 
+            FROM HUELLITAS_ESTADO_TB 
+            WHERE ESTADO_DESCRIPCION = 'PAGADO' LIMIT 1
+        )
+        WHERE ID_PEDIDO_PK = V_ID_PEDIDO;
+    END IF;
+
+    IF P_NUEVO_ESTADO = 'RECHAZADO' THEN
+        UPDATE HUELLITAS_PEDIDOS_TB
+        SET ID_ESTADO_FK = (
+            SELECT ID_ESTADO_PK 
+            FROM HUELLITAS_ESTADO_TB 
+            WHERE ESTADO_DESCRIPCION = 'CANCELADO' LIMIT 1
+        )
+        WHERE ID_PEDIDO_PK = V_ID_PEDIDO;
+    END IF;
+
+    COMMIT;
+
+    SET P_MENSAJE = '✔ Estado de pago actualizado correctamente.';
+    SET P_ID_PEDIDO = V_ID_PEDIDO;
+
+END$$
+DELIMITER ;
+
+
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CANCELAR_PEDIDO_SP
+-- DESCRIPCIÓN: Procedimiento para cancelar el pedido
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CANCELAR_PEDIDO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CANCELAR_PEDIDO_SP(
+    IN p_pedido_id INT,
+    IN p_usuario_id INT
+)
+BEGIN
+    DECLARE v_estado_actual INT;
+    DECLARE v_estado_cancelado INT;
+    DECLARE v_in_trigger BOOLEAN DEFAULT FALSE;
+
+    -- Detectar si viene del trigger
+    IF @TRIGGER_ORIGIN = 'TRIGGER' THEN
+        SET v_in_trigger = TRUE;
+    END IF;
+
+    -- Marcar origen
+    SET @TRIGGER_ORIGIN = 'CANCEL_SP';
+
+    -- Buscar ID de CANCELADO
+    SELECT ID_ESTADO_PK INTO v_estado_cancelado 
+    FROM HUELLITAS_ESTADO_TB 
+    WHERE ESTADO_DESCRIPCION = 'CANCELADO'
+    LIMIT 1;
+
+    -- Estado actual
+    SELECT ID_ESTADO_FK INTO v_estado_actual
+    FROM HUELLITAS_PEDIDOS_TB
+    WHERE ID_PEDIDO_PK = p_pedido_id;
+
+    -- Validaciones
+    IF v_estado_actual IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El pedido no existe.';
+    END IF;
+
+    IF v_estado_actual NOT IN (
+        SELECT ID_ESTADO_PK FROM HUELLITAS_ESTADO_TB 
+        WHERE ESTADO_DESCRIPCION IN ('PENDIENTE', 'EN PREPARACIÓN', 'CANCELADO')
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El pedido no se puede cancelar en su estado actual.';
+    END IF;
+
+    -- ❗ Solo hacer UPDATE si fue llamado directamente (no desde el trigger)
+    IF v_in_trigger = FALSE THEN
+        UPDATE HUELLITAS_PEDIDOS_TB
+        SET ID_ESTADO_FK = v_estado_cancelado
+        WHERE ID_PEDIDO_PK = p_pedido_id;
+    END IF;
+
+    -- Revertir stock
+    UPDATE HUELLITAS_PRODUCTOS_TB p
+    JOIN HUELLITAS_PEDIDOS_DETALLE_TB d ON d.ID_PRODUCTO_FK = p.ID_PRODUCTO_PK
+    SET p.PRODUCTO_STOCK = p.PRODUCTO_STOCK + d.CANTIDAD
+    WHERE d.ID_PEDIDO_FK = p_pedido_id;
+
+    -- Actualizar pago
+    UPDATE HUELLITAS_PAGOS_TB
+    SET ESTADO_PAGO = 'CANCELADO'
+    WHERE ID_PEDIDO_FK = p_pedido_id;
+
+    -- Insertar notificación
+    INSERT INTO HUELLITAS_NOTIFICACIONES_TB (
+        ID_USUARIO_FK, ID_ESTADO_FK, TITULO_NOTIFICACION, MENSAJE_NOTIFICACION, TIPO_NOTIFICACION
+    )
+    VALUES (
+        p_usuario_id,
+        v_estado_cancelado,
+        'Pedido cancelado',
+        CONCAT('Tu pedido #', p_pedido_id, ' fue cancelado correctamente.'),
+        'PEDIDO'
+    );
+
+    -- Limpiar bandera
+    SET @TRIGGER_ORIGIN = NULL;
+END$$
+DELIMITER ;
+
+-- -----------------------------------Clientes Veterinarios------------------------------------------
+-- ==========================================
+-- NOMBRE: HUELLITAS_VINCULAR_CLIENTE_USUARIO_SP
+-- DESCRIPCIÓN: Procedimiento vincular cliente con usuario
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_VINCULAR_CLIENTE_USUARIO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_VINCULAR_CLIENTE_USUARIO_SP(
+    IN p_codigo_usuario VARCHAR(30)
+)
+main_block: BEGIN
+    DECLARE v_id_usuario INT;
+    DECLARE v_correo VARCHAR(100);
+    DECLARE v_id_cliente INT;
+    DECLARE v_cantidad_mascotas INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '❌ Error al vincular el cliente.' AS MENSAJE;
+    END;
+
+    START TRANSACTION;
+
+    -- Buscar usuario
+    SELECT ID_USUARIO_PK, USUARIO_CORREO
+    INTO v_id_usuario, v_correo
+    FROM HUELLITAS_USUARIOS_TB
+    WHERE CODIGO_USUARIO = p_codigo_usuario;
+
+    IF v_id_usuario IS NULL THEN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '⚠ Usuario no encontrado.' AS MENSAJE;
+        LEAVE main_block;
+    END IF;
+
+    -- Buscar cliente por correo
+    SELECT ID_CLIENTE_PK INTO v_id_cliente
+    FROM HUELLITAS_CLIENTES_TB
+    WHERE CLIENTE_CORREO = v_correo;
+
+    IF v_id_cliente IS NULL THEN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '⚠ No existe cliente con ese correo.' AS MENSAJE;
+        LEAVE main_block;
+    END IF;
+
+    -- Evitar doble vinculación
+    IF (SELECT ID_USUARIO_VINCULADO_FK FROM HUELLITAS_CLIENTES_TB WHERE ID_CLIENTE_PK = v_id_cliente) IS NOT NULL THEN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '⚠ Este cliente ya está vinculado.' AS MENSAJE;
+        LEAVE main_block;
+    END IF;
+
+    -- Vincular cliente ⇄ usuario
+    UPDATE HUELLITAS_CLIENTES_TB
+    SET ID_USUARIO_VINCULADO_FK = v_id_usuario
+    WHERE ID_CLIENTE_PK = v_id_cliente;
+
+    UPDATE HUELLITAS_USUARIOS_TB
+    SET ID_CLIENTE_VINCULADO_FK = v_id_cliente
+    WHERE ID_USUARIO_PK = v_id_usuario;
+
+    -- Migrar mascotas
+    UPDATE HUELLITAS_MASCOTA_TB
+    SET ID_USUARIO_FK = v_id_usuario,
+        ID_CLIENTE_FK = NULL
+    WHERE ID_CLIENTE_FK = v_id_cliente;
+
+    SELECT ROW_COUNT() INTO v_cantidad_mascotas;
+
+    COMMIT;
+
+    SELECT 
+        1 AS EXITO,
+        v_id_usuario AS USUARIO,
+        v_id_cliente AS CLIENTE,
+        v_cantidad_mascotas AS MASCOTAS_MIGRADAS,
+        '✔ Vinculación exitosa.' AS MENSAJE;
+
+END main_block$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_CLIENTE_SP
+-- DESCRIPCIÓN: Procedimiento agregar cliente por parte del empleado
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_AGREGAR_CLIENTE_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_AGREGAR_CLIENTE_SP(
+    IN p_nombre VARCHAR(100),
+    IN p_correo VARCHAR(100),
+    IN p_identificacion VARCHAR(50),
+    IN p_direccion_id INT,
+    IN p_telefono_id INT,
+    IN p_observaciones VARCHAR(500),
+    IN p_estado_id INT,
+    IN p_creado_por VARCHAR(50)
+)
+proc:BEGIN
+
+    DECLARE v_correo_existente INT DEFAULT 0;
+    DECLARE v_identificacion_existente INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS EXITO, '❌ Error al registrar el cliente.' AS MENSAJE;
+    END;
+
+    START TRANSACTION;
+
+    -- ==========================================================
+    -- VALIDACIÓN 1: CORREO YA EXISTE EN CLIENTES O USUARIOS
+    -- ==========================================================
+    SELECT  
+        (SELECT COUNT(*) FROM HUELLITAS_CLIENTES_TB 
+            WHERE CLIENTE_CORREO = p_correo)
+        +
+        (SELECT COUNT(*) FROM HUELLITAS_USUARIOS_TB 
+            WHERE USUARIO_CORREO = p_correo)
+    INTO v_correo_existente;
+
+    IF v_correo_existente > 0 THEN
+        ROLLBACK;
+        SELECT 0 AS EXITO, 'El correo ya está registrado en clientes o usuarios.' AS MENSAJE;
+        LEAVE proc;
+    END IF;
+
+    -- ==========================================================
+    -- VALIDACIÓN 2: IDENTIFICACIÓN DUPLICADA SOLO EN CLIENTES
+    -- ==========================================================
+    IF p_identificacion IS NOT NULL AND p_identificacion != '' THEN
+        
+        SELECT COUNT(*) INTO v_identificacion_existente
+        FROM HUELLITAS_CLIENTES_TB
+        WHERE CLIENTE_IDENTIFICACION = p_identificacion;
+
+        IF v_identificacion_existente > 0 THEN
+            ROLLBACK;
+            SELECT 0 AS EXITO, 'La identificación ya está registrada en otro cliente.' AS MENSAJE;
+            LEAVE proc;
+        END IF;
+
+    END IF;
+
+    -- ==========================================================
+    -- INSERTAR CLIENTE
+    -- ==========================================================
+    INSERT INTO HUELLITAS_CLIENTES_TB (
+        ID_ESTADO_FK,
+        ID_DIRECCION_FK,
+        ID_TELEFONO_CONTACTO_FK,
+        CLIENTE_NOMBRE,
+        CLIENTE_CORREO,
+        CLIENTE_IDENTIFICACION,
+        CLIENTE_OBSERVACIONES,
+        CLIENTE_FECHA_REGISTRO
+    )
+    VALUES (
+        p_estado_id,
+        p_direccion_id,
+        p_telefono_id,
+        p_nombre,
+        p_correo,
+        p_identificacion,
+        p_observaciones,
+        NOW()
+    );
+
+    COMMIT;
+
+    SELECT 
+        LAST_INSERT_ID() AS ID_CLIENTE,
+        1 AS EXITO,
+        CONCAT('Cliente ', p_nombre, ' registrado correctamente por ', p_creado_por) AS MENSAJE;
+
+END proc$$
+DELIMITER ;
+
+
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_CLIENTE_SP
+-- DESCRIPCIÓN: Actualiza un cliente sin permitir modificar el correo
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_ACTUALIZAR_CLIENTE_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_CLIENTE_SP(
+    IN P_CODIGO_CLIENTE VARCHAR(30),
+    IN P_NOMBRE VARCHAR(100),
+    IN P_IDENTIFICACION VARCHAR(50),
+    IN P_ID_DIRECCION_FK INT,
+    IN P_ID_TELEFONO_FK INT,
+    IN P_OBSERVACIONES VARCHAR(500),
+    IN P_ID_ESTADO_FK INT
+)
+proc: BEGIN
+    DECLARE V_ID_CLIENTE INT;
+    DECLARE V_EXISTE_IDENT_CLIENTE INT DEFAULT 0;
+    DECLARE V_EXISTE_IDENT_USUARIO INT DEFAULT 0;
+
+    -- Buscar el ID interno del cliente
+    SELECT ID_CLIENTE_PK INTO V_ID_CLIENTE
+    FROM HUELLITAS_CLIENTES_TB
+    WHERE CODIGO_CLIENTE = P_CODIGO_CLIENTE;
+
+    IF V_ID_CLIENTE IS NULL THEN
+        SELECT 0 AS EXITO, '❌ No se encontró el cliente especificado.' AS MENSAJE;
+        LEAVE proc;
+    END IF;
+
+    -- Validar identificación duplicada en clientes (excepto el actual)
+    IF P_IDENTIFICACION IS NOT NULL AND P_IDENTIFICACION <> '' THEN
+        SELECT COUNT(*) INTO V_EXISTE_IDENT_CLIENTE
+        FROM HUELLITAS_CLIENTES_TB
+        WHERE CLIENTE_IDENTIFICACION = P_IDENTIFICACION
+          AND ID_CLIENTE_PK <> V_ID_CLIENTE;
+
+        SELECT COUNT(*) INTO V_EXISTE_IDENT_USUARIO
+        FROM HUELLITAS_USUARIOS_TB
+        WHERE USUARIO_IDENTIFICACION = P_IDENTIFICACION;
+    END IF;
+
+    IF V_EXISTE_IDENT_CLIENTE > 0 OR V_EXISTE_IDENT_USUARIO > 0 THEN
+        SELECT 0 AS EXITO, '⚠️ La identificación ya está registrada en otro cliente o usuario.' AS MENSAJE;
+        LEAVE proc;
+    END IF;
+
+    -- Actualizar los datos (correo NO se modifica)
+    UPDATE HUELLITAS_CLIENTES_TB
+    SET 
+        CLIENTE_NOMBRE = P_NOMBRE,
+        CLIENTE_IDENTIFICACION = P_IDENTIFICACION,
+        ID_DIRECCION_FK = P_ID_DIRECCION_FK,
+        ID_TELEFONO_CONTACTO_FK = P_ID_TELEFONO_FK,
+        CLIENTE_OBSERVACIONES = P_OBSERVACIONES,
+        ID_ESTADO_FK = P_ID_ESTADO_FK
+    WHERE ID_CLIENTE_PK = V_ID_CLIENTE;
+
+    SELECT 1 AS EXITO, '✅ Cliente actualizado correctamente.' AS MENSAJE;
+END proc $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_CLIENTE_POR_CODIGO_SP
+-- DESCRIPCIÓN: Obtiene la info de un cliente por su código generado
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_CLIENTE_POR_CODIGO_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_OBTENER_CLIENTE_POR_CODIGO_SP(
+    IN P_CODIGO_CLIENTE VARCHAR(30)
+)
+BEGIN
+    DECLARE v_existe INT DEFAULT 0;
+
+    -- 1. Verificar existencia exacta (porque tu función genera códigos sin prefijo)
+    SELECT COUNT(*) INTO v_existe
+    FROM HUELLITAS_CLIENTES_TB 
+    WHERE CODIGO_CLIENTE = P_CODIGO_CLIENTE;
+
+    -- 2. Si no existe, devolvemos solo este SELECT
+    IF v_existe = 0 THEN
+        SELECT 
+            0 AS EXITO,
+            '❌ No se encontró ningún cliente con el código proporcionado.' AS MENSAJE;
+    ELSE
+        -- 3. Si sí existe, devolvemos la data completa
+        SELECT 
+            C.ID_CLIENTE_PK AS ID_CLIENTE,
+            C.CODIGO_CLIENTE AS CODIGO,
+            C.CLIENTE_NOMBRE AS NOMBRE,
+            C.CLIENTE_CORREO AS CORREO,
+            C.CLIENTE_IDENTIFICACION AS IDENTIFICACION,
+            C.CLIENTE_FECHA_REGISTRO AS FECHA_REGISTRO,
+            C.CLIENTE_OBSERVACIONES AS OBSERVACIONES,
+            C.ID_DIRECCION_FK AS ID_DIRECCION,
+            C.ID_TELEFONO_CONTACTO_FK AS ID_TELEFONO,
+            E.ESTADO_DESCRIPCION AS ESTADO,
+            COALESCE(T.TELEFONO_CONTACTO, '') AS TELEFONO,
+            COALESCE(D.DIRECCION_SENNAS, '') AS DIRECCION,
+            COALESCE(PROV.NOMBRE_PROVINCIA, '') AS PROVINCIA,
+            COALESCE(CANT.NOMBRE_CANTON, '') AS CANTON,
+            COALESCE(DIST.NOMBRE_DISTRITO, '') AS DISTRITO,
+            COALESCE(U.USUARIO_NOMBRE, '') AS USUARIO_VINCULADO,
+            'CLIENTE' AS TIPO,
+            1 AS EXITO,
+            '✅ Cliente encontrado correctamente.' AS MENSAJE
+        FROM HUELLITAS_CLIENTES_TB C
+        INNER JOIN HUELLITAS_ESTADO_TB E ON C.ID_ESTADO_FK = E.ID_ESTADO_PK
+        LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB T ON C.ID_TELEFONO_CONTACTO_FK = T.ID_TELEFONO_CONTACTO_PK
+        LEFT JOIN HUELLITAS_DIRECCION_TB D ON C.ID_DIRECCION_FK = D.ID_DIRECCION_PK
+        LEFT JOIN HUELLITAS_DIRECCION_PROVINCIA_TB PROV ON D.ID_DIRECCION_PROVINCIA_FK = PROV.ID_DIRECCION_PROVINCIA_PK
+        LEFT JOIN HUELLITAS_DIRECCION_CANTON_TB CANT ON D.ID_DIRECCION_CANTON_FK = CANT.ID_DIRECCION_CANTON_PK
+        LEFT JOIN HUELLITAS_DIRECCION_DISTRITO_TB DIST ON D.ID_DIRECCION_DISTRITO_FK = DIST.ID_DIRECCION_DISTRITO_PK
+        LEFT JOIN HUELLITAS_USUARIOS_TB U ON C.ID_USUARIO_VINCULADO_FK = U.ID_USUARIO_PK
+        WHERE C.CODIGO_CLIENTE = P_CODIGO_CLIENTE;
+    END IF;
+END //
+DELIMITER ;
+
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CONTAR_CLIENTES_SP
+-- DESCRIPCIÓN: Cuenta el total de clientes registrados
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_TODOS_CLIENTES_USUARIOS_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_CONTAR_TODOS_CLIENTES_USUARIOS_SP(
+    IN P_SEARCH_TERM VARCHAR(100)
+)
+BEGIN
+    DECLARE TOTAL_CLIENTES INT DEFAULT 0;
+    DECLARE TOTAL_USUARIOS INT DEFAULT 0;
+
+    -- CLIENTES ACTIVOS Y NO VINCULADOS
+    SELECT COUNT(DISTINCT C.ID_CLIENTE_PK)
+    INTO TOTAL_CLIENTES
+    FROM HUELLITAS_CLIENTES_TB C
+    LEFT JOIN HUELLITAS_MASCOTA_TB M ON C.ID_CLIENTE_PK = M.ID_CLIENTE_FK
+    WHERE 
+        C.ID_ESTADO_FK = 1
+        AND C.ID_USUARIO_VINCULADO_FK IS NULL
+        AND (
+            C.CLIENTE_NOMBRE LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            OR C.CLIENTE_CORREO LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            OR C.CLIENTE_IDENTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            OR C.CODIGO_CLIENTE LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            OR M.NOMBRE_MASCOTA LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        );
+
+    -- USUARIOS ACTIVOS
+    SELECT COUNT(DISTINCT U.ID_USUARIO_PK)
+    INTO TOTAL_USUARIOS
+    FROM HUELLITAS_USUARIOS_TB U
+    LEFT JOIN HUELLITAS_MASCOTA_TB M ON U.ID_USUARIO_PK = M.ID_USUARIO_FK
+    WHERE 
+        U.ID_ESTADO_FK = 1
+        AND (
+            U.USUARIO_NOMBRE LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            OR U.USUARIO_CORREO LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            OR U.USUARIO_IDENTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            OR U.CODIGO_USUARIO LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            OR M.NOMBRE_MASCOTA LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        );
+
+    SELECT (TOTAL_CLIENTES + TOTAL_USUARIOS) AS TOTAL;
+END //
+DELIMITER ;
+
+
+
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_TODOS_CLIENTES_USUARIOS_SP
+-- DESCRIPCIÓN: Lista y busca clientes veterinarios con paginación y cantidad de mascotas
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_BUSCAR_TODOS_CLIENTES_USUARIOS_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_BUSCAR_TODOS_CLIENTES_USUARIOS_SP(
+    IN P_SEARCH_TERM VARCHAR(100),
+    IN P_LIMIT_ROWS INT,
+    IN P_OFFSET_ROWS INT
+)
+BEGIN
+    (
+        SELECT 
+            C.ID_CLIENTE_PK AS ID,
+            C.CODIGO_CLIENTE AS CODIGO,
+            C.CLIENTE_NOMBRE AS NOMBRE,
+            C.CLIENTE_CORREO AS CORREO,
+            C.CLIENTE_IDENTIFICACION AS IDENTIFICACION,
+            E.ESTADO_DESCRIPCION AS ESTADO,
+            'CLIENTE' AS TIPO,
+            COALESCE(T.TELEFONO_CONTACTO, 'NO REGISTRADO') AS TELEFONO,
+            COALESCE(D.DIRECCION_SENNAS, 'NO REGISTRADA') AS DIRECCION,
+            GROUP_CONCAT(M.NOMBRE_MASCOTA SEPARATOR ', ') AS NOMBRES_MASCOTAS,
+            COUNT(M.ID_MASCOTA_PK) AS TOTAL_MASCOTAS
+        FROM HUELLITAS_CLIENTES_TB C
+        INNER JOIN HUELLITAS_ESTADO_TB E ON C.ID_ESTADO_FK = E.ID_ESTADO_PK
+        LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB T ON C.ID_TELEFONO_CONTACTO_FK = T.ID_TELEFONO_CONTACTO_PK
+        LEFT JOIN HUELLITAS_DIRECCION_TB D ON C.ID_DIRECCION_FK = D.ID_DIRECCION_PK
+        LEFT JOIN HUELLITAS_MASCOTA_TB M ON C.ID_CLIENTE_PK = M.ID_CLIENTE_FK
+        WHERE 
+            C.ID_ESTADO_FK = 1
+            AND C.ID_USUARIO_VINCULADO_FK IS NULL
+            AND (
+                C.CLIENTE_NOMBRE LIKE CONCAT('%', P_SEARCH_TERM, '%')
+                OR C.CLIENTE_CORREO LIKE CONCAT('%', P_SEARCH_TERM, '%')
+                OR C.CLIENTE_IDENTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+                OR C.CODIGO_CLIENTE LIKE CONCAT('%', P_SEARCH_TERM, '%')
+                OR M.NOMBRE_MASCOTA LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            )
+        GROUP BY 
+            C.ID_CLIENTE_PK
+    )
+
+    UNION ALL
+
+    (
+        SELECT 
+            U.ID_USUARIO_PK AS ID,
+            U.CODIGO_USUARIO AS CODIGO,
+            U.USUARIO_NOMBRE AS NOMBRE,
+            U.USUARIO_CORREO AS CORREO,
+            U.USUARIO_IDENTIFICACION AS IDENTIFICACION,
+            E.ESTADO_DESCRIPCION AS ESTADO,
+            'USUARIO' AS TIPO,
+            COALESCE(T.TELEFONO_CONTACTO, 'NO REGISTRADO') AS TELEFONO,
+            COALESCE(D.DIRECCION_SENNAS, 'NO REGISTRADA') AS DIRECCION,
+            GROUP_CONCAT(M.NOMBRE_MASCOTA SEPARATOR ', ') AS NOMBRES_MASCOTAS,
+            COUNT(M.ID_MASCOTA_PK) AS TOTAL_MASCOTAS
+        FROM HUELLITAS_USUARIOS_TB U
+        INNER JOIN HUELLITAS_ESTADO_TB E ON U.ID_ESTADO_FK = E.ID_ESTADO_PK
+        LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB T ON U.ID_TELEFONO_CONTACTO_FK = T.ID_TELEFONO_CONTACTO_PK
+        LEFT JOIN HUELLITAS_DIRECCION_TB D ON U.ID_DIRECCION_FK = D.ID_DIRECCION_PK
+        LEFT JOIN HUELLITAS_MASCOTA_TB M ON U.ID_USUARIO_PK = M.ID_USUARIO_FK
+        WHERE 
+            U.ID_ESTADO_FK = 1
+            AND (
+                U.USUARIO_NOMBRE LIKE CONCAT('%', P_SEARCH_TERM, '%')
+                OR U.USUARIO_CORREO LIKE CONCAT('%', P_SEARCH_TERM, '%')
+                OR U.USUARIO_IDENTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+                OR U.CODIGO_USUARIO LIKE CONCAT('%', P_SEARCH_TERM, '%')
+                OR M.NOMBRE_MASCOTA LIKE CONCAT('%', P_SEARCH_TERM, '%')
+            )
+        GROUP BY 
+            U.ID_USUARIO_PK
+    )
+    ORDER BY NOMBRE ASC
+    LIMIT P_LIMIT_ROWS OFFSET P_OFFSET_ROWS;
+END //
+DELIMITER ;
+
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_DETALLE_CLIENTE_POR_CODIGO_SP
+-- DESCRIPCIÓN: Obtiene los datos del cliente por medio del codigo
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_DETALLE_CLIENTE_POR_CODIGO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_DETALLE_CLIENTE_POR_CODIGO_SP(
+    IN p_codigo VARCHAR(30),
+    IN p_tipo VARCHAR(20)
+)
+BEGIN
+    DECLARE v_tipo_final VARCHAR(20);
+    DECLARE v_id_cliente INT;
+    DECLARE v_id_usuario INT;
+
+    -- =====================================================
+    -- 1. Detectar si el código pertenece a CLIENTE o USUARIO
+    -- =====================================================
+    SELECT ID_CLIENTE_PK, ID_USUARIO_VINCULADO_FK
+    INTO v_id_cliente, v_id_usuario
+    FROM HUELLITAS_CLIENTES_TB
+    WHERE CODIGO_CLIENTE = p_codigo
+    LIMIT 1;
+
+    IF v_id_cliente IS NULL THEN
+        SELECT ID_USUARIO_PK INTO v_id_usuario
+        FROM HUELLITAS_USUARIOS_TB
+        WHERE CODIGO_USUARIO = p_codigo
+        LIMIT 1;
+    END IF;
+
+    IF v_id_usuario IS NOT NULL THEN
+        SET v_tipo_final = 'USUARIO';
+    ELSE
+        SET v_tipo_final = 'CLIENTE';
+    END IF;
+
+    -- =====================================================
+    -- 2. DETALLES DEL CLIENTE
+    -- =====================================================
+    IF v_tipo_final = 'CLIENTE' THEN
+
+        SELECT 
+            C.ID_CLIENTE_PK AS ID,
+            C.CODIGO_CLIENTE AS CODIGO,
+            C.CLIENTE_NOMBRE AS NOMBRE,
+            C.CLIENTE_CORREO AS CORREO,
+            C.CLIENTE_IDENTIFICACION AS IDENTIFICACION,
+            E.ESTADO_DESCRIPCION AS ESTADO,
+            D.DIRECCION_SENNAS AS DIRECCION,
+            PR.NOMBRE_PROVINCIA AS PROVINCIA,
+            CA.NOMBRE_CANTON AS CANTON,
+            DI.NOMBRE_DISTRITO AS DISTRITO,
+            T.TELEFONO_CONTACTO AS TELEFONO,
+            'CLIENTE' AS TIPO
+        FROM HUELLITAS_CLIENTES_TB C
+        INNER JOIN HUELLITAS_ESTADO_TB E ON C.ID_ESTADO_FK = E.ID_ESTADO_PK
+        LEFT JOIN HUELLITAS_DIRECCION_TB D ON C.ID_DIRECCION_FK = D.ID_DIRECCION_PK
+        LEFT JOIN HUELLITAS_DIRECCION_PROVINCIA_TB PR ON D.ID_DIRECCION_PROVINCIA_FK = PR.ID_DIRECCION_PROVINCIA_PK
+        LEFT JOIN HUELLITAS_DIRECCION_CANTON_TB CA ON D.ID_DIRECCION_CANTON_FK = CA.ID_DIRECCION_CANTON_PK
+        LEFT JOIN HUELLITAS_DIRECCION_DISTRITO_TB DI ON D.ID_DIRECCION_DISTRITO_FK = DI.ID_DIRECCION_DISTRITO_PK
+        LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB T ON C.ID_TELEFONO_CONTACTO_FK = T.ID_TELEFONO_CONTACTO_PK
+        WHERE C.CODIGO_CLIENTE = p_codigo;
+
+        -- Mascotas del cliente
+        SELECT 
+            M.ID_MASCOTA_PK,
+            M.CODIGO_MASCOTA,
+            M.NOMBRE_MASCOTA,
+            ES.NOMBRE_ESPECIE AS ESPECIE,
+            R.NOMBRE_RAZA AS RAZA
+        FROM HUELLITAS_MASCOTA_TB M
+        LEFT JOIN HUELLITAS_MASCOTA_ESPECIE_TB ES ON M.ID_MASCOTA_ESPECIE_FK = ES.ID_MASCOTA_ESPECIE_PK
+        LEFT JOIN HUELLITAS_MASCOTA_RAZA_TB R ON M.ID_MASCOTA_RAZA_FK = R.ID_MASCOTA_RAZA_PK
+        WHERE M.ID_CLIENTE_FK = v_id_cliente;
+
+    ELSE
+
+    -- =====================================================
+    -- 3. DETALLES DEL USUARIO
+    -- =====================================================
+
+        SELECT 
+            U.ID_USUARIO_PK AS ID,
+            U.CODIGO_USUARIO AS CODIGO,
+            U.USUARIO_NOMBRE AS NOMBRE,
+            U.USUARIO_CORREO AS CORREO,
+            U.USUARIO_IDENTIFICACION AS IDENTIFICACION,
+            E.ESTADO_DESCRIPCION AS ESTADO,
+            D.DIRECCION_SENNAS AS DIRECCION,
+            PR.NOMBRE_PROVINCIA AS PROVINCIA,
+            CA.NOMBRE_CANTON AS CANTON,
+            DI.NOMBRE_DISTRITO AS DISTRITO,
+            T.TELEFONO_CONTACTO AS TELEFONO,
+            'USUARIO' AS TIPO
+        FROM HUELLITAS_USUARIOS_TB U
+        INNER JOIN HUELLITAS_ESTADO_TB E ON U.ID_ESTADO_FK = E.ID_ESTADO_PK
+        LEFT JOIN HUELLITAS_DIRECCION_TB D ON U.ID_DIRECCION_FK = D.ID_DIRECCION_PK
+        LEFT JOIN HUELLITAS_DIRECCION_PROVINCIA_TB PR ON D.ID_DIRECCION_PROVINCIA_FK = PR.ID_DIRECCION_PROVINCIA_PK
+        LEFT JOIN HUELLITAS_DIRECCION_CANTON_TB CA ON D.ID_DIRECCION_CANTON_FK = CA.ID_DIRECCION_CANTON_PK
+        LEFT JOIN HUELLITAS_DIRECCION_DISTRITO_TB DI ON D.ID_DIRECCION_DISTRITO_FK = DI.ID_DIRECCION_DISTRITO_PK
+        LEFT JOIN HUELLITAS_TELEFONO_CONTACTO_TB T ON U.ID_TELEFONO_CONTACTO_FK = T.ID_TELEFONO_CONTACTO_PK
+        WHERE U.CODIGO_USUARIO = p_codigo;
+
+        -- Mascotas del usuario
+        SELECT 
+            M.ID_MASCOTA_PK,
+            M.CODIGO_MASCOTA,
+            M.NOMBRE_MASCOTA,
+            ES.NOMBRE_ESPECIE AS ESPECIE,
+            R.NOMBRE_RAZA AS RAZA
+        FROM HUELLITAS_MASCOTA_TB M
+        LEFT JOIN HUELLITAS_MASCOTA_ESPECIE_TB ES ON M.ID_MASCOTA_ESPECIE_FK = ES.ID_MASCOTA_ESPECIE_PK
+        LEFT JOIN HUELLITAS_MASCOTA_RAZA_TB R ON M.ID_MASCOTA_RAZA_FK = R.ID_MASCOTA_RAZA_PK
+        WHERE M.ID_USUARIO_FK = v_id_usuario;
+
+    END IF;
+
+END $$
+DELIMITER ;
+
+
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_MASCOTAS_POR_USUARIO_SP
+-- DESCRIPCIÓN: Obtiene la lista de mascotas asociadas a un usuario
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_MASCOTAS_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_OBTENER_MASCOTAS_SP(
+    IN P_CODIGO VARCHAR(30)
+)
+BEGIN
+    DECLARE V_ID_USUARIO INT DEFAULT NULL;
+    DECLARE V_ID_CLIENTE INT DEFAULT NULL;
+
+    -- ======================================================
+    -- 1) Buscar si el código corresponde a un usuario
+    -- ======================================================
+    SELECT ID_USUARIO_PK
+    INTO V_ID_USUARIO
+    FROM HUELLITAS_USUARIOS_TB
+    WHERE CODIGO_USUARIO = P_CODIGO
+    LIMIT 1;
+
+    -- ======================================================
+    -- 2) Buscar si el código corresponde a un cliente
+    -- ======================================================
+    SELECT ID_CLIENTE_PK
+    INTO V_ID_CLIENTE
+    FROM HUELLITAS_CLIENTES_TB
+    WHERE CODIGO_CLIENTE = P_CODIGO
+    LIMIT 1;
+
+    -- ======================================================
+    -- 3) Si NO existe ni usuario ni cliente → Notificar
+    -- ======================================================
+    IF V_ID_USUARIO IS NULL AND V_ID_CLIENTE IS NULL THEN
+        SELECT 
+            'ERROR' AS ESTADO,
+            'No se encontró usuario ni cliente con el código proporcionado.' AS MENSAJE;
+    ELSE
+        
+        -- ======================================================
+        -- 4) Obtener mascotas según lo encontrado
+        -- ======================================================
+        SELECT 
+            M.ID_MASCOTA_PK,
+            M.CODIGO_MASCOTA,
+            M.NOMBRE_MASCOTA,
+            M.FECHA_NACIMIENTO,
+            M.GENERO,
+            M.MASCOTA_IMAGEN_URL,
+            E.NOMBRE_ESPECIE AS ESPECIE,
+            R.NOMBRE_RAZA AS RAZA,
+            ES.ESTADO_DESCRIPCION AS ESTADO,
+            C.CLIENTE_NOMBRE AS CLIENTE_ASOCIADO,
+            C.CODIGO_CLIENTE AS CODIGO_CLIENTE_ASOCIADO
+        FROM HUELLITAS_MASCOTA_TB M
+        INNER JOIN HUELLITAS_MASCOTA_ESPECIE_TB E 
+            ON M.ID_MASCOTA_ESPECIE_FK = E.ID_MASCOTA_ESPECIE_PK
+        LEFT JOIN HUELLITAS_MASCOTA_RAZA_TB R 
+            ON M.ID_MASCOTA_RAZA_FK = R.ID_MASCOTA_RAZA_PK
+        INNER JOIN HUELLITAS_ESTADO_TB ES 
+            ON M.ID_ESTADO_FK = ES.ID_ESTADO_PK
+        LEFT JOIN HUELLITAS_CLIENTES_TB C 
+            ON M.ID_CLIENTE_FK = C.ID_CLIENTE_PK
+        WHERE 
+            (V_ID_USUARIO IS NOT NULL AND M.ID_USUARIO_FK = V_ID_USUARIO)
+            OR
+            (V_ID_CLIENTE IS NOT NULL AND M.ID_CLIENTE_FK = V_ID_CLIENTE)
+        ORDER BY M.NOMBRE_MASCOTA ASC;
+
+    END IF;
+
+END //
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_MASCOTA_SP
+-- DESCRIPCIÓN: Procedimiento almacenado para agregar mascotas
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_AGREGAR_MASCOTA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_AGREGAR_MASCOTA_SP(
+    IN p_id_estado INT,
+    IN p_id_especie INT,
+    IN p_id_raza INT,
+    IN p_codigo_usuario VARCHAR(30),
+    IN p_codigo_cliente VARCHAR(30),
+    IN p_nombre VARCHAR(100),
+    IN p_fecha_nacimiento DATE,
+    IN p_genero VARCHAR(10),
+    IN p_imagen_url VARCHAR(500),
+    IN p_creado_por VARCHAR(50)
+)
+BEGIN
+    DECLARE v_id_usuario INT DEFAULT NULL;
+    DECLARE v_id_cliente INT DEFAULT NULL;
+    DECLARE v_id_mascota INT DEFAULT NULL;
+    DECLARE v_existente INT DEFAULT 0;
+
+    -- =====================================
+    -- OBTENER ID DE USUARIO (SI VIENE)
+    -- =====================================
+    IF p_codigo_usuario IS NOT NULL AND p_codigo_usuario <> '' THEN
+        SELECT ID_USUARIO_PK INTO v_id_usuario
+        FROM HUELLITAS_USUARIOS_TB
+        WHERE CODIGO_USUARIO = p_codigo_usuario
+        LIMIT 1;
+    END IF;
+
+    -- =====================================
+    -- OBTENER ID DE CLIENTE (SI VIENE)
+    -- =====================================
+    IF p_codigo_cliente IS NOT NULL AND p_codigo_cliente <> '' THEN
+        SELECT ID_CLIENTE_PK INTO v_id_cliente
+        FROM HUELLITAS_CLIENTES_TB
+        WHERE CODIGO_CLIENTE = p_codigo_cliente
+        LIMIT 1;
+    END IF;
+
+    -- =====================================
+    -- VALIDAR QUE EXISTE DUEÑO
+    -- =====================================
+    IF v_id_usuario IS NULL AND v_id_cliente IS NULL THEN
+        SELECT 
+            NULL AS ID_MASCOTA,
+            NULL AS CODIGO_MASCOTA,
+            0 AS EXITO,
+            '⚠ Debe indicar un usuario o cliente válido.' AS MENSAJE;
+        -- ❗ AQUI TERMINA LA EJECUCIÓN SIN RETURN / SIN LEAVE
+        SET v_id_mascota = NULL;
+    ELSE
+
+        -- =====================================
+        -- VALIDAR DUPLICADO
+        -- =====================================
+        SELECT COUNT(*) INTO v_existente
+        FROM HUELLITAS_MASCOTA_TB
+        WHERE NOMBRE_MASCOTA = p_nombre
+        AND FECHA_NACIMIENTO = p_fecha_nacimiento
+        AND (
+            (v_id_usuario IS NOT NULL AND ID_USUARIO_FK = v_id_usuario)
+            OR
+            (v_id_cliente IS NOT NULL AND ID_CLIENTE_FK = v_id_cliente)
+        );
+
+        IF v_existente > 0 THEN
+            SELECT 
+                NULL AS ID_MASCOTA,
+                NULL AS CODIGO_MASCOTA,
+                0 AS EXITO,
+                '⚠ Ya existe una mascota con este nombre y fecha.' AS MENSAJE;
+            SET v_id_mascota = NULL;
+        ELSE
+            -- =====================================
+            -- INSERTAR MASCOTA
+            -- (DEJAMOS QUE EL TRIGGER GENERE EL CÓDIGO)
+            -- =====================================
+            INSERT INTO HUELLITAS_MASCOTA_TB (
+                ID_ESTADO_FK,
+                ID_MASCOTA_ESPECIE_FK,
+                ID_MASCOTA_RAZA_FK,
+                ID_USUARIO_FK,
+                ID_CLIENTE_FK,
+                NOMBRE_MASCOTA,
+                FECHA_NACIMIENTO,
+                GENERO,
+                MASCOTA_IMAGEN_URL
+            )
+            VALUES (
+                p_id_estado,
+                p_id_especie,
+                p_id_raza,
+                v_id_usuario,
+                v_id_cliente,
+                p_nombre,
+                p_fecha_nacimiento,
+                p_genero,
+                p_imagen_url
+            );
+
+            SET v_id_mascota = LAST_INSERT_ID();
+
+            SELECT 
+                v_id_mascota AS ID_MASCOTA,
+                (SELECT CODIGO_MASCOTA FROM HUELLITAS_MASCOTA_TB WHERE ID_MASCOTA_PK = v_id_mascota) AS CODIGO_MASCOTA,
+                1 AS EXITO,
+                '🐾 Mascota registrada correctamente.' AS MENSAJE;
+        END IF;
+    END IF;
+
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_EDITAR_MASCOTA_SP
+-- DESCRIPCIÓN: Procedimiento almacenado para editar mascotas
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_EDITAR_MASCOTA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_EDITAR_MASCOTA_SP(
+    IN p_codigo_mascota   VARCHAR(30),
+    IN p_id_estado        INT,
+    IN p_id_especie       INT,
+    IN p_id_raza          INT,
+    IN p_nombre           VARCHAR(100),
+    IN p_fecha_nacimiento DATE,
+    IN p_genero           VARCHAR(10),
+    IN p_imagen_url       VARCHAR(500),
+    IN p_modificado_por   VARCHAR(50)
+)
+BEGIN
+    DECLARE v_id_mascota INT DEFAULT NULL;
+    DECLARE v_id_usuario INT DEFAULT NULL;
+    DECLARE v_id_cliente INT DEFAULT NULL;
+    DECLARE v_existente  INT DEFAULT 0;
+
+    -- =====================================
+    -- OBTENER ID DE LA MASCOTA
+    -- =====================================
+    SELECT 
+        ID_MASCOTA_PK,
+        ID_USUARIO_FK,
+        ID_CLIENTE_FK
+    INTO 
+        v_id_mascota,
+        v_id_usuario,
+        v_id_cliente
+    FROM HUELLITAS_MASCOTA_TB
+    WHERE CODIGO_MASCOTA = p_codigo_mascota
+    LIMIT 1;
+
+    -- Si no existe
+    IF v_id_mascota IS NULL THEN
+        SELECT
+            NULL AS ID_MASCOTA,
+            p_codigo_mascota AS CODIGO_MASCOTA,
+            0 AS EXITO,
+            '⚠ La mascota no existe.' AS MENSAJE;
+    ELSE
+
+        -- =====================================
+        -- VALIDAR DUPLICADO (MISMO DUEÑO)
+        -- =====================================
+        SELECT COUNT(*)
+        INTO v_existente
+        FROM HUELLITAS_MASCOTA_TB
+        WHERE NOMBRE_MASCOTA = p_nombre
+          AND FECHA_NACIMIENTO = p_fecha_nacimiento
+          AND (
+                (v_id_usuario IS NOT NULL AND ID_USUARIO_FK = v_id_usuario)
+                OR
+                (v_id_cliente IS NOT NULL AND ID_CLIENTE_FK = v_id_cliente)
+              )
+          AND ID_MASCOTA_PK <> v_id_mascota; -- excluir actual
+
+        IF v_existente > 0 THEN
+            SELECT
+                v_id_mascota AS ID_MASCOTA,
+                p_codigo_mascota AS CODIGO_MASCOTA,
+                0 AS EXITO,
+                '⚠ Ya existe otra mascota con este nombre y fecha para el mismo dueño.' AS MENSAJE;
+        ELSE
+
+            -- =====================================
+            -- ACTUALIZAR (SIN MODIFICAR DUEÑO)
+            -- =====================================
+            UPDATE HUELLITAS_MASCOTA_TB
+            SET 
+                ID_ESTADO_FK          = p_id_estado,
+                ID_MASCOTA_ESPECIE_FK = p_id_especie,
+                ID_MASCOTA_RAZA_FK    = p_id_raza,
+                NOMBRE_MASCOTA        = p_nombre,
+                FECHA_NACIMIENTO      = p_fecha_nacimiento,
+                GENERO                = p_genero,
+                MASCOTA_IMAGEN_URL    = p_imagen_url
+            WHERE ID_MASCOTA_PK = v_id_mascota;
+
+            SELECT
+                v_id_mascota AS ID_MASCOTA,
+                p_codigo_mascota AS CODIGO_MASCOTA,
+                1 AS EXITO,
+                '🐾 Mascota actualizada correctamente.' AS MENSAJE;
+        END IF;
+
+    END IF;
+
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGREGAR_HISTORIAL_MEDICO_SP
+-- DESCRIPCIÓN: Procedimiento para agregar histiriales medicos asociados a una mascota.
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_AGREGAR_HISTORIAL_MEDICO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_AGREGAR_HISTORIAL_MEDICO_SP(
+    IN P_ID_MASCOTA INT,
+    IN P_ID_CONSULTA INT,
+    IN P_ID_USUARIO INT,
+    IN P_ID_ESTADO INT,
+
+    IN P_HISTORIA_CLINICA TEXT,
+    IN P_ANAMNESIS TEXT,
+
+    IN P_PESO DECIMAL(5,2),
+    IN P_TEMPERATURA DECIMAL(4,1),
+    IN P_FRECUENCIA_CARDIACA INT,
+    IN P_FRECUENCIA_RESPIRATORIA INT,
+
+    IN P_SONIDOS_PULMONARES VARCHAR(500),
+    IN P_CONDICION_CORPORAL VARCHAR(255),
+    IN P_REFLEJO_DEGLUTORIO VARCHAR(255),
+    IN P_REFLEJO_TUSIGENO VARCHAR(255),
+    IN P_LIMONADOS VARCHAR(255),
+    IN P_PALPACION_ABDOMINAL VARCHAR(500),
+    IN P_PIEL VARCHAR(500),
+    IN P_MUCOSA VARCHAR(255),
+    IN P_PULSO VARCHAR(255),
+    IN P_ESTADO_MENTAL VARCHAR(255),
+
+    IN P_LISTA_DIAGNOSTICO_PRESUNTIVO TEXT,
+    IN P_LISTA_DEPURADA TEXT,
+    IN P_EXAMENES TEXT,
+    IN P_DIAGNOSTICO_FINAL TEXT,
+
+    IN P_HISTORIAL_DIAGNOSTICO VARCHAR(1000),
+    IN P_HISTORIAL_TRATAMIENTO VARCHAR(1000),
+    IN P_HISTORIAL_NOTAS VARCHAR(1000)
+)
+BEGIN
+    -- ==========================================
+    -- Validar que la mascota exista
+    -- ==========================================
+    IF NOT EXISTS (SELECT 1 FROM HUELLITAS_MASCOTA_TB WHERE ID_MASCOTA_PK = P_ID_MASCOTA) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'La mascota especificada no existe.';
+    END IF;
+
+    -- ==========================================
+    -- Validar que la consulta exista
+    -- ==========================================
+    IF NOT EXISTS (SELECT 1 FROM HUELLITAS_CONSULTAS_TB WHERE ID_CONSULTA_PK = P_ID_CONSULTA) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'La consulta especificada no existe.';
+    END IF;
+
+    -- ==========================================
+    -- Validar que no exista un historial duplicado
+    -- ==========================================
+    IF EXISTS (
+        SELECT 1 
+        FROM HUELLITAS_HISTORIALES_MEDICOS_TB
+        WHERE ID_MASCOTA_FK = P_ID_MASCOTA
+        AND ID_CONSULTA_FK = P_ID_CONSULTA
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Esta mascota ya tiene un historial asociado a esta consulta.';
+    END IF;
+
+    -- ==========================================
+    -- Inserción del historial clínico
+    -- ==========================================
+    INSERT INTO HUELLITAS_HISTORIALES_MEDICOS_TB (
+        ID_MASCOTA_FK,
+        ID_CONSULTA_FK,
+        ID_USUARIO_FK,
+        ID_ESTADO_FK,
+
+        HISTORIA_CLINICA,
+        ANAMNESIS,
+
+        PESO,
+        TEMPERATURA,
+        FRECUENCIA_CARDIACA,
+        FRECUENCIA_RESPIRATORIA,
+
+        SONIDOS_PULMONARES,
+        CONDICION_CORPORAL,
+        REFLEJO_DEGLUTORIO,
+        REFLEJO_TUSIGENO,
+        LIMONADOS,
+        PALPACION_ABDOMINAL,
+        PIEL,
+        MUCOSA,
+        PULSO,
+        ESTADO_MENTAL,
+
+        LISTA_DIAGNOSTICO_PRESUNTIVO,
+        LISTA_DEPURADA,
+        EXAMENES,
+        DIAGNOSTICO_FINAL,
+
+        HISTORIAL_DIAGNOSTICO,
+        HISTORIAL_TRATAMIENTO,
+        HISTORIAL_NOTAS
+    )
+    VALUES (
+        P_ID_MASCOTA,
+        P_ID_CONSULTA,
+        P_ID_USUARIO,
+        P_ID_ESTADO,
+
+        P_HISTORIA_CLINICA,
+        P_ANAMNESIS,
+
+        P_PESO,
+        P_TEMPERATURA,
+        P_FRECUENCIA_CARDIACA,
+        P_FRECUENCIA_RESPIRATORIA,
+
+        P_SONIDOS_PULMONARES,
+        P_CONDICION_CORPORAL,
+        P_REFLEJO_DEGLUTORIO,
+        P_REFLEJO_TUSIGENO,
+        P_LIMONADOS,
+        P_PALPACION_ABDOMINAL,
+        P_PIEL,
+        P_MUCOSA,
+        P_PULSO,
+        P_ESTADO_MENTAL,
+
+        P_LISTA_DIAGNOSTICO_PRESUNTIVO,
+        P_LISTA_DEPURADA,
+        P_EXAMENES,
+        P_DIAGNOSTICO_FINAL,
+
+        P_HISTORIAL_DIAGNOSTICO,
+        P_HISTORIAL_TRATAMIENTO,
+        P_HISTORIAL_NOTAS
+    );
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_MASCOTA_POR_CODIGO_SP
+-- DESCRIPCIÓN: Obtiene toda la información de una mascota según su código,
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_MASCOTA_POR_CODIGO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_MASCOTA_POR_CODIGO_SP(
+    IN P_CODIGO_MASCOTA VARCHAR(30)
+)
+BEGIN
+
+    SELECT 
+        M.ID_MASCOTA_PK,
+        M.CODIGO_MASCOTA,
+        M.NOMBRE_MASCOTA,
+        M.FECHA_NACIMIENTO,
+        M.GENERO,
+        M.MASCOTA_IMAGEN_URL,
+
+        -- Estado
+        E.ESTADO_DESCRIPCION AS ESTADO,
+
+        -- Especie y raza
+        ES.ID_MASCOTA_ESPECIE_PK AS ID_ESPECIE_FK,
+        ES.NOMBRE_ESPECIE AS ESPECIE,
+        R.ID_MASCOTA_RAZA_PK AS ID_MASCOTA_RAZA_FK,
+        R.NOMBRE_RAZA AS RAZA,
+
+        -- Dueño Cliente (si existe)
+        C.ID_CLIENTE_PK AS CLIENTE_ID,
+        C.CODIGO_CLIENTE AS CODIGO_CLIENTE,
+        C.CLIENTE_NOMBRE AS CLIENTE_NOMBRE,
+        C.CLIENTE_CORREO AS CLIENTE_CORREO,
+
+        -- Dueño Usuario (si existe)
+        U.ID_USUARIO_PK AS USUARIO_ID,
+        U.CODIGO_USUARIO AS CODIGO_USUARIO,
+        U.USUARIO_NOMBRE AS USUARIO_NOMBRE,
+        U.USUARIO_CORREO AS USUARIO_CORREO
+
+    FROM HUELLITAS_MASCOTA_TB M
+    INNER JOIN HUELLITAS_ESTADO_TB E 
+        ON M.ID_ESTADO_FK = E.ID_ESTADO_PK
+    INNER JOIN HUELLITAS_MASCOTA_ESPECIE_TB ES 
+        ON M.ID_MASCOTA_ESPECIE_FK = ES.ID_MASCOTA_ESPECIE_PK
+    LEFT JOIN HUELLITAS_MASCOTA_RAZA_TB R 
+        ON M.ID_MASCOTA_RAZA_FK = R.ID_MASCOTA_RAZA_PK
+
+    LEFT JOIN HUELLITAS_CLIENTES_TB C 
+        ON M.ID_CLIENTE_FK = C.ID_CLIENTE_PK
+
+    LEFT JOIN HUELLITAS_USUARIOS_TB U 
+        ON M.ID_USUARIO_FK = U.ID_USUARIO_PK
+
+    WHERE M.CODIGO_MASCOTA = P_CODIGO_MASCOTA
+    LIMIT 1;
+
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_HISTORIALES_MASCOTA_CODIGO_SP
+-- DESCRIPCIÓN: Procedimiento para listar todos los procedimientos almacenados de una mascota.
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_HISTORIALES_MASCOTA_CODIGO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_HISTORIALES_MASCOTA_CODIGO_SP(
+    IN P_CODIGO_MASCOTA VARCHAR(30)
+)
+BEGIN
+    SELECT
+        C.ID_CONSULTA_PK AS ID,
+        C.CONSULTA_FECHA AS FECHA,
+        DATE_FORMAT(H.HISTORIAL_FECHA_REGISTRO, '%H:%i:%s') AS HORA,
+        M.DESCRIPCION_MOTIVO AS MOTIVO
+    FROM HUELLITAS_MASCOTA_TB MS
+    INNER JOIN HUELLITAS_HISTORIALES_MEDICOS_TB H 
+        ON MS.ID_MASCOTA_PK = H.ID_MASCOTA_FK
+    INNER JOIN HUELLITAS_CONSULTAS_TB C 
+        ON H.ID_CONSULTA_FK = C.ID_CONSULTA_PK
+    INNER JOIN HUELLITAS_CONSULTA_MOTIVO_TB M
+        ON C.ID_CONSULTA_MOTIVO_FK = M.ID_CONSULTA_MOTIVO_PK
+    WHERE MS.CODIGO_MASCOTA = P_CODIGO_MASCOTA
+    ORDER BY C.CONSULTA_FECHA DESC, H.HISTORIAL_FECHA_REGISTRO DESC;
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_ESPECIES_SP
+-- DESCRIPCIÓN: Procedimiento para listar las especies de mascotas
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_ESPECIES_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_ESPECIES_SP()
+BEGIN
+    SELECT 
+        ID_MASCOTA_ESPECIE_PK,
+        NOMBRE_ESPECIE
+    FROM HUELLITAS_MASCOTA_ESPECIE_TB
+    WHERE ID_ESTADO_FK = 1
+    ORDER BY NOMBRE_ESPECIE ASC;
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_RAZAS_SP
+-- DESCRIPCIÓN: Procedimiento para listar todas las razas de las mascotas
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_RAZAS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_RAZAS_SP()
+BEGIN
+    SELECT 
+        ID_MASCOTA_RAZA_PK,
+        NOMBRE_RAZA
+    FROM HUELLITAS_MASCOTA_RAZA_TB
+    WHERE ID_ESTADO_FK = 1
+    ORDER BY NOMBRE_RAZA ASC;
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_RAZAS_POR_ESPECIE_SP
+-- DESCRIPCIÓN: Procedimiento para listar todas las razas por especie
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_RAZAS_POR_ESPECIE_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_RAZAS_POR_ESPECIE_SP(
+    IN P_ID_ESPECIE INT
+)
+BEGIN
+    SELECT 
+        R.ID_MASCOTA_RAZA_PK,
+        R.NOMBRE_RAZA
+    FROM HUELLITAS_MASCOTA_RAZA_TB R
+    WHERE 
+        R.ID_ESTADO_FK = 1
+        AND R.ID_MASCOTA_ESPECIE_FK = P_ID_ESPECIE
+    ORDER BY R.NOMBRE_RAZA ASC;
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_BUSCAR_RAZAS_POR_ESPECIE_SP
+-- DESCRIPCIÓN: Procedimiento para buscar todas las razas por especie
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_BUSCAR_RAZAS_POR_ESPECIE_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_BUSCAR_RAZAS_POR_ESPECIE_SP(
+    IN P_ID_ESPECIE INT,
+    IN P_BUSQUEDA VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        R.ID_MASCOTA_RAZA_PK,
+        R.NOMBRE_RAZA
+    FROM HUELLITAS_MASCOTA_RAZA_TB R
+    WHERE 
+        R.ID_ESTADO_FK = 1
+        AND R.ID_MASCOTA_ESPECIE_FK = P_ID_ESPECIE
+        AND (
+            P_BUSQUEDA = '' OR
+            R.NOMBRE_RAZA LIKE CONCAT('%', P_BUSQUEDA, '%')
+        )
+    ORDER BY R.NOMBRE_RAZA ASC;
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_AGENDAR_CITA_SP
+-- DESCRIPCIÓN: Procedimiento para agendar citas
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_AGENDAR_CITA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_AGENDAR_CITA_SP(
+    IN P_ID_VETERINARIO INT,
+    IN P_ID_SERVICIO INT,
+    IN P_CODIGO_CLIENTE VARCHAR(30),
+    IN P_CODIGO_USUARIO VARCHAR(30),
+    IN P_FECHA_INICIO DATETIME,
+    IN P_FECHA_FIN DATETIME,
+    IN P_MOTIVO VARCHAR(500),
+    IN P_JSON_MASCOTAS JSON,
+    IN P_CLIENTE_MANUAL JSON,
+
+    OUT P_ID_CITA INT,
+    OUT P_MENSAJE VARCHAR(300)
+)
+BEGIN
+    DECLARE V_EXISTE INT DEFAULT 0;
+    DECLARE V_ID_ESTADO_ACTIVO INT DEFAULT 1;
+
+    DECLARE V_NOMBRE VARCHAR(200);
+    DECLARE V_CORREO VARCHAR(150);
+    DECLARE V_TELEFONO VARCHAR(30);
+    DECLARE V_IDENTIFICACION VARCHAR(30);
+    DECLARE V_MASCOTA_MANUAL VARCHAR(200);
+    
+	DECLARE v_id_mascota INT DEFAULT NULL;
+    DECLARE mascota_codigo VARCHAR(30);
+    DECLARE total INT DEFAULT 0;
+    DECLARE i INT DEFAULT 0;
+
+    SET P_ID_CITA = NULL;
+    SET P_MENSAJE = '';
+
+
+    /* ==========================================
+       VALIDAR VETERINARIO
+    ========================================== */
+    SELECT COUNT(*) INTO V_EXISTE
+    FROM HUELLITAS_USUARIOS_TB
+    WHERE ID_USUARIO_PK = P_ID_VETERINARIO
+      AND ID_ESTADO_FK = V_ID_ESTADO_ACTIVO;
+
+    IF V_EXISTE = 0 THEN
+        SET P_MENSAJE = 'El veterinario no existe o está inactivo.';
+    ELSE
+
+        /* ==========================================
+           VALIDAR SERVICIO
+        ========================================== */
+        SELECT COUNT(*) INTO V_EXISTE
+        FROM HUELLITAS_SERVICIOS_TB
+        WHERE ID_SERVICIO_PK = P_ID_SERVICIO
+          AND ID_ESTADO_FK = V_ID_ESTADO_ACTIVO;
+
+        IF V_EXISTE = 0 THEN
+            SET P_MENSAJE = 'El servicio no existe o está inactivo.';
+        ELSE
+
+            /* ==========================================
+               VALIDAR DISPONIBILIDAD HORARIA
+            ========================================== */
+            SELECT COUNT(*) INTO V_EXISTE
+            FROM HUELLITAS_CITAS_TB
+            WHERE ID_VETERINARIO_FK = P_ID_VETERINARIO
+              AND (
+                    (P_FECHA_INICIO BETWEEN FECHA_INICIO AND FECHA_FIN)
+                 OR (P_FECHA_FIN   BETWEEN FECHA_INICIO AND FECHA_FIN)
+                 OR (FECHA_INICIO  BETWEEN P_FECHA_INICIO AND P_FECHA_FIN)
+                  );
+
+            IF V_EXISTE > 0 THEN
+                SET P_MENSAJE = 'El veterinario ya tiene una cita en ese horario.';
+            ELSE
+
+                /* ======================================================
+                   OBTENER DATOS DEL CLIENTE (MANUAL, REGISTRADO O USUARIO)
+                ====================================================== */
+
+                -- Caso 1: Cliente manual
+                IF P_CLIENTE_MANUAL IS NOT NULL AND JSON_VALID(P_CLIENTE_MANUAL) = 1 THEN
+                
+                    SET V_NOMBRE         = JSON_UNQUOTE(JSON_EXTRACT(P_CLIENTE_MANUAL, '$.nombre'));
+                    SET V_CORREO         = JSON_UNQUOTE(JSON_EXTRACT(P_CLIENTE_MANUAL, '$.correo'));
+                    SET V_TELEFONO       = JSON_UNQUOTE(JSON_EXTRACT(P_CLIENTE_MANUAL, '$.telefono'));
+                    SET V_IDENTIFICACION = JSON_UNQUOTE(JSON_EXTRACT(P_CLIENTE_MANUAL, '$.identificacion'));
+                    SET V_MASCOTA_MANUAL = JSON_UNQUOTE(JSON_EXTRACT(P_CLIENTE_MANUAL, '$.mascota'));
+
+                -- Caso 2: Cliente registrado (HUELLITAS_CLIENTES_TB)
+                ELSEIF P_CODIGO_CLIENTE IS NOT NULL AND P_CODIGO_CLIENTE <> '' THEN
+
+                    SELECT 
+                        CLIENTE_NOMBRE,
+                        CLIENTE_CORREO,
+                        CLIENTE_IDENTIFICACION,
+                        (SELECT TELEFONO_CONTACTO 
+                         FROM HUELLITAS_TELEFONO_CONTACTO_TB 
+                         WHERE ID_TELEFONO_CONTACTO_PK = c.ID_TELEFONO_CONTACTO_FK)
+                    INTO 
+                        V_NOMBRE,
+                        V_CORREO,
+                        V_IDENTIFICACION,
+                        V_TELEFONO
+                    FROM HUELLITAS_CLIENTES_TB c
+                    WHERE c.CODIGO_CLIENTE = P_CODIGO_CLIENTE
+                    LIMIT 1;
+
+                -- Caso 3: Usuario registrado (HUELLITAS_USUARIOS_TB)
+                ELSEIF P_CODIGO_USUARIO IS NOT NULL AND P_CODIGO_USUARIO <> '' THEN
+
+                    SELECT 
+                        USUARIO_NOMBRE,
+                        USUARIO_CORREO,
+                        USUARIO_IDENTIFICACION,
+                        (SELECT TELEFONO_CONTACTO 
+                         FROM HUELLITAS_TELEFONO_CONTACTO_TB 
+                         WHERE ID_TELEFONO_CONTACTO_PK = u.ID_TELEFONO_CONTACTO_FK)
+                    INTO 
+                        V_NOMBRE,
+                        V_CORREO,
+                        V_IDENTIFICACION,
+                        V_TELEFONO
+                    FROM HUELLITAS_USUARIOS_TB u
+                    WHERE u.CODIGO_USUARIO = P_CODIGO_USUARIO
+                    LIMIT 1;
+
+                ELSE
+                    SET V_NOMBRE = NULL;
+                    SET V_CORREO = NULL;
+                    SET V_TELEFONO = NULL;
+                    SET V_IDENTIFICACION = NULL;
+                END IF;
+
+
+                /* ==========================================
+                   INSERTAR CITA
+                ========================================== */
+                INSERT INTO HUELLITAS_CITAS_TB(
+                    ID_VETERINARIO_FK,
+                    ID_SERVICIO_FK,
+                    CODIGO_CLIENTE,
+                    CODIGO_USUARIO,
+                    FECHA_INICIO,
+                    FECHA_FIN,
+                    MOTIVO,
+                    ID_ESTADO_FK,
+                    CLIENTE_NOMBRE,
+                    CLIENTE_CORREO,
+                    CLIENTE_TELEFONO,
+                    CLIENTE_IDENTIFICACION
+                )
+                VALUES(
+                    P_ID_VETERINARIO,
+                    P_ID_SERVICIO,
+                    P_CODIGO_CLIENTE,
+                    P_CODIGO_USUARIO,
+                    P_FECHA_INICIO,
+                    P_FECHA_FIN,
+                    P_MOTIVO,
+                    1,
+                    V_NOMBRE,
+                    V_CORREO,
+                    V_TELEFONO,
+                    V_IDENTIFICACION
+                );
+
+                SET P_ID_CITA = LAST_INSERT_ID();
+                
+                /* ==========================================
+				   SI ES CLIENTE MANUAL → INSERTAR MASCOTA MANUAL
+				========================================== */
+				IF V_MASCOTA_MANUAL IS NOT NULL AND V_MASCOTA_MANUAL <> '' THEN
+					INSERT INTO HUELLITAS_CITAS_MASCOTAS_TB(
+						ID_CITA_FK,
+						ID_MASCOTA_FK,
+						MASCOTA_NOMBRE_MANUAL
+					) VALUES (
+						P_ID_CITA,
+						NULL,
+						V_MASCOTA_MANUAL
+					);
+				END IF;
+
+
+                /* ==========================================
+				INSERTAR MASCOTAS ASOCIADAS
+				========================================== */
+				IF P_JSON_MASCOTAS IS NOT NULL 
+				   AND JSON_VALID(P_JSON_MASCOTAS) = 1
+				   AND JSON_LENGTH(P_JSON_MASCOTAS) > 0 THEN
+
+					SET total = JSON_LENGTH(P_JSON_MASCOTAS);
+					SET i = 0;
+
+					WHILE i < total DO
+
+						SET mascota_codigo = JSON_UNQUOTE(
+							JSON_EXTRACT(P_JSON_MASCOTAS, CONCAT('$[', i, ']'))
+						);
+
+						IF mascota_codigo IS NOT NULL AND mascota_codigo <> '' THEN
+
+							-- Buscar ID real de la mascota
+							SELECT ID_MASCOTA_PK INTO v_id_mascota
+							FROM HUELLITAS_MASCOTA_TB
+							WHERE CODIGO_MASCOTA = mascota_codigo
+							LIMIT 1;
+
+							-- Si existe mascota registrada
+							IF v_id_mascota IS NOT NULL THEN
+								INSERT INTO HUELLITAS_CITAS_MASCOTAS_TB(
+									ID_CITA_FK,
+									ID_MASCOTA_FK,
+									MASCOTA_NOMBRE_MANUAL
+								)
+								VALUES(
+									P_ID_CITA,
+									v_id_mascota,
+									NULL
+								);
+
+							ELSE
+								-- Mascota manual (solo nombre)
+								INSERT INTO HUELLITITAS_CITAS_MASCOTAS_TB(
+									ID_CITA_FK,
+									ID_MASCOTA_FK,
+									MASCOTA_NOMBRE_MANUAL
+								)
+								VALUES(
+									P_ID_CITA,
+									NULL,
+									mascota_codigo
+								);
+							END IF;
+
+						END IF;
+
+						SET i = i + 1;
+					END WHILE;
+				END IF;
+
+
+                SET P_MENSAJE = 'Cita agendada correctamente.';
+
+            END IF;
+        END IF;
+    END IF;
+
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_CITAS_FULLCALENDAR_SP
+-- DESCRIPCIÓN: Procedimiento obtener las citas agendadas para ser mostradas con fullcalendar
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_CITAS_FULLCALENDAR_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_CITAS_FULLCALENDAR_SP(
+    IN P_ID_VETERINARIO INT,
+    IN P_CODIGO_CLIENTE VARCHAR(30),
+    IN P_CODIGO_USUARIO VARCHAR(30),
+    IN P_CODIGO_MASCOTA VARCHAR(30)
+)
+BEGIN
+    SELECT 
+        C.ID_CITA_PK AS id,
+        C.FECHA_INICIO AS start,
+        C.FECHA_FIN AS end,
+
+        CONCAT('Servicio: ', S.NOMBRE_SERVICIO) AS title,
+
+        -- Mascotas registradas + manuales
+        GROUP_CONCAT(
+            COALESCE(M.NOMBRE_MASCOTA, CM.MASCOTA_NOMBRE_MANUAL)
+            SEPARATOR ', '
+        ) AS MASCOTAS,
+
+        C.CLIENTE_NOMBRE,
+        C.CODIGO_CLIENTE,
+        C.CODIGO_USUARIO,
+        U.USUARIO_NOMBRE AS veterinario,
+        S.NOMBRE_SERVICIO AS servicio,
+        C.MOTIVO,
+        C.ID_ESTADO_FK
+
+    FROM HUELLITAS_CITAS_TB C
+    INNER JOIN HUELLITAS_USUARIOS_TB U 
+        ON C.ID_VETERINARIO_FK = U.ID_USUARIO_PK
+    INNER JOIN HUELLITAS_SERVICIOS_TB S
+        ON C.ID_SERVICIO_FK = S.ID_SERVICIO_PK
+
+    LEFT JOIN HUELLITAS_CITAS_MASCOTAS_TB CM
+        ON CM.ID_CITA_FK = C.ID_CITA_PK
+
+    LEFT JOIN HUELLITAS_MASCOTA_TB M
+        ON CM.ID_MASCOTA_FK = M.ID_MASCOTA_PK   -- CORRECTO AHORA
+
+    WHERE 
+        C.ID_ESTADO_FK = 1
+        AND (P_ID_VETERINARIO IS NULL OR C.ID_VETERINARIO_FK = P_ID_VETERINARIO)
+        AND (P_CODIGO_CLIENTE IS NULL OR C.CODIGO_CLIENTE = P_CODIGO_CLIENTE)
+        AND (P_CODIGO_USUARIO IS NULL OR C.CODIGO_USUARIO = P_CODIGO_USUARIO)
+
+        -- Filtrar si buscan por mascota
+        AND (
+            P_CODIGO_MASCOTA IS NULL 
+            OR M.CODIGO_MASCOTA = P_CODIGO_MASCOTA
+        )
+
+    GROUP BY C.ID_CITA_PK
+    ORDER BY C.FECHA_INICIO ASC;
+END$$
+DELIMITER ;
+
+-- ======================================================
+-- NOMBRE: HUELLITAS_OBTENER_CITAS_FULL_SP
+-- DESCRIPCIÓN: Obtener todos los datos de las citas agendadas.
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_CITAS_FULL_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_CITAS_FULL_SP()
+BEGIN
+    SELECT
+        -- =============== DATOS DE LA CITA =================
+        c.ID_CITA_PK,
+        c.CODIGO_CLIENTE,
+        c.CODIGO_USUARIO,
+        c.CLIENTE_NOMBRE AS CLIENTE_MANUAL_NOMBRE,
+        c.CLIENTE_CORREO AS CLIENTE_MANUAL_CORREO,
+        c.CLIENTE_TELEFONO AS CLIENTE_MANUAL_TELEFONO,
+        c.CLIENTE_IDENTIFICACION AS CLIENTE_MANUAL_IDENTIFICACION,
+
+        c.FECHA_INICIO,
+        c.FECHA_FIN,
+        c.MOTIVO,
+        c.FECHA_CREACION,
+
+        -- Estado de la cita
+        est.ESTADO_DESCRIPCION AS ESTADO_CITA,
+
+        -- =============== DATOS DEL USUARIO CLIENTE =================
+        u.ID_USUARIO_PK AS USUARIO_ID,
+        u.USUARIO_NOMBRE AS USUARIO_NOMBRE,
+        u.USUARIO_CORREO AS USUARIO_CORREO,
+        u.USUARIO_IDENTIFICACION AS USUARIO_IDENTIFICACION,
+
+        cli.ID_CLIENTE_PK AS CLIENTE_ID,
+        cli.CLIENTE_NOMBRE AS CLIENTE_NOMBRE,
+        cli.CLIENTE_CORREO AS CLIENTE_CORREO,
+        cli.CLIENTE_IDENTIFICACION AS CLIENTE_IDENTIFICACION,
+
+        -- =============== DATOS DEL VETERINARIO =================
+        vet.ID_USUARIO_PK AS VETERINARIO_ID,
+        vet.USUARIO_NOMBRE AS VETERINARIO_NOMBRE,
+        vet.USUARIO_CORREO AS VETERINARIO_CORREO,
+        vet.USUARIO_IMAGEN_URL AS VETERINARIO_IMAGEN,
+
+        -- =============== SERVICIO =================
+        s.ID_SERVICIO_PK AS SERVICIO_ID,
+        s.NOMBRE_SERVICIO,
+        s.DESCRIPCION_SERVICIO,
+        s.IMAGEN_URL AS SERVICIO_IMAGEN,
+
+        -- =============== MASCOTAS =================
+        cm.ID_CITA_MASCOTA_PK,
+        m.ID_MASCOTA_PK,
+        m.CODIGO_MASCOTA,
+        m.NOMBRE_MASCOTA,
+        m.MASCOTA_IMAGEN_URL,
+        m.GENERO AS MASCOTA_GENERO,
+        m.FECHA_NACIMIENTO AS MASCOTA_FECHA_NACIMIENTO,
+
+        -- Mascota manual
+        cm.MASCOTA_NOMBRE_MANUAL
+
+    FROM HUELLITAS_CITAS_TB c
+
+    -- Estado
+    INNER JOIN HUELLITAS_ESTADO_TB est
+        ON est.ID_ESTADO_PK = c.ID_ESTADO_FK
+
+    -- Veterinario
+    INNER JOIN HUELLITAS_USUARIOS_TB vet
+        ON vet.ID_USUARIO_PK = c.ID_VETERINARIO_FK
+
+    -- Servicio
+    INNER JOIN HUELLITAS_SERVICIOS_TB s
+        ON s.ID_SERVICIO_PK = c.ID_SERVICIO_FK
+
+    -- Cliente registrado mediante CODIGO_USUARIO (opcional)
+    LEFT JOIN HUELLITAS_USUARIOS_TB u
+        ON u.CODIGO_USUARIO = c.CODIGO_USUARIO
+
+    -- Cliente registrado mediante CODIGO_CLIENTE (opcional)
+    LEFT JOIN HUELLITAS_CLIENTES_TB cli
+        ON cli.CODIGO_CLIENTE = c.CODIGO_CLIENTE
+
+    -- Mascotas de la cita
+    LEFT JOIN HUELLITAS_CITAS_MASCOTAS_TB cm
+        ON cm.ID_CITA_FK = c.ID_CITA_PK
+
+    LEFT JOIN HUELLITAS_MASCOTA_TB m
+        ON m.ID_MASCOTA_PK = cm.ID_MASCOTA_FK
+
+    ORDER BY c.FECHA_INICIO ASC, c.ID_CITA_PK;
+END$$
+DELIMITER ;
+
+
+-- ======================================================
+-- NOMBRE: HUELLITAS_CLIENTE_EXISTE_SP
+-- DESCRIPCIÓN: Verifica si existe un cliente veterinario por correo
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CLIENTE_EXISTE_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CLIENTE_EXISTE_SP(
+    IN P_CORREO VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        ID_CLIENTE_PK
+    FROM HUELLITAS_CLIENTES_TB
+    WHERE CLIENTE_CORREO = P_CORREO
+    LIMIT 1;
+END $$
+DELIMITER ;
+
+-- ======================================================
+-- NOMBRE: HUELLITAS_LISTAR_EMPLEADOS_SP
+-- DESCRIPCIÓN: Procedimiento almacenado para listar los usuarios con rol de empleado
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_EMPLEADOS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_EMPLEADOS_SP()
+BEGIN
+    SELECT 
+        u.ID_USUARIO_PK,
+        u.CODIGO_USUARIO,
+        u.USUARIO_NOMBRE,
+        u.USUARIO_CORREO,
+        u.USUARIO_IDENTIFICACION,
+        u.ID_ROL_USUARIO_FK,
+        ru.DESCRIPCION_ROL_USUARIO AS ROL,
+        u.ID_ESTADO_FK,
+        e.ESTADO_DESCRIPCION AS ESTADO,
+        u.ID_DIRECCION_FK,
+        u.ID_TELEFONO_CONTACTO_FK,
+        u.USUARIO_IMAGEN_URL
+    FROM HUELLITAS_USUARIOS_TB u
+    INNER JOIN HUELLITAS_ROL_USUARIO_TB ru 
+        ON ru.ID_ROL_USUARIO_PK = u.ID_ROL_USUARIO_FK
+    INNER JOIN HUELLITAS_ESTADO_TB e 
+        ON e.ID_ESTADO_PK = u.ID_ESTADO_FK
+    WHERE u.ID_ROL_USUARIO_FK = (
+        SELECT ID_ROL_USUARIO_PK 
+        FROM HUELLITAS_ROL_USUARIO_TB 
+        WHERE DESCRIPCION_ROL_USUARIO = 'EMPLEADO'
+        LIMIT 1
+    )
+    AND u.ID_ESTADO_FK = 1
+    ORDER BY u.USUARIO_NOMBRE ASC;
+
+END$$
+DELIMITER ;
 
 
 

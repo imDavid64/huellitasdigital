@@ -81,30 +81,14 @@ class SupplierModel extends BaseModel
     // Contar total de proveedores para paginación
     public function countSuppliers($query)
     {
-        $stmt = $this->conn->prepare("
-        SELECT COUNT(*) AS total
-        FROM HUELLITAS_PROVEEDORES_TB p
-        INNER JOIN HUELLITAS_ESTADO_TB e ON p.ID_ESTADO_FK = e.ID_ESTADO_PK
-        LEFT JOIN HUELLITAS_DIRECCION_TB d ON p.ID_DIRECCION_FK = d.ID_DIRECCION_PK
-        LEFT JOIN HUELLITAS_DIRECCION_PROVINCIA_TB prov ON d.ID_DIRECCION_PROVINCIA_FK = prov.ID_DIRECCION_PROVINCIA_PK
-        LEFT JOIN HUELLITAS_DIRECCION_CANTON_TB cant ON d.ID_DIRECCION_CANTON_FK = cant.ID_DIRECCION_CANTON_PK
-        LEFT JOIN HUELLITAS_DIRECCION_DISTRITO_TB dist ON d.ID_DIRECCION_DISTRITO_FK = dist.ID_DIRECCION_DISTRITO_PK
-        WHERE 
-            p.PROVEEDOR_NOMBRE LIKE CONCAT('%', ?, '%')
-            OR p.PROVEEDOR_CORREO LIKE CONCAT('%', ?, '%')
-            OR p.NOMBRE_REPRESENTANTE LIKE CONCAT('%', ?, '%')
-            OR p.PROVEEDOR_DESCRIPCION_PRODUCTOS LIKE CONCAT('%', ?, '%')
-            OR e.ESTADO_DESCRIPCION LIKE CONCAT('%', ?, '%')
-            OR prov.NOMBRE_PROVINCIA LIKE CONCAT('%', ?, '%')
-            OR cant.NOMBRE_CANTON LIKE CONCAT('%', ?, '%')
-            OR dist.NOMBRE_DISTRITO LIKE CONCAT('%', ?, '%')
-    ");
-        $stmt->bind_param("ssssssss", $query, $query, $query, $query, $query, $query, $query, $query);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_CONTAR_PROVEEDORES_SP(?)");
+        $stmt->bind_param("s", $query);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
         return $result['total'] ?? 0;
     }
-
 
 }
 
