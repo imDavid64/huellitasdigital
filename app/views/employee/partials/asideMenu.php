@@ -2,8 +2,8 @@
     <div class="aside-container">
         <div class="aside-main">
             <ul>
-                <li><a href="<?= BASE_URL ?>/index.php?controller=employee&action=index"><i
-                            class="bi bi-house-fill"></i>Inicio</a></li>
+                <li><a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index"><i
+                            class="bi bi-house-fill"></i>Dashboard</a></li>
                 <li><a href="<?= BASE_URL ?>/index.php?controller=employeeClient&action=index"><i
                             class="bi bi-people-fill"></i>Clientes</a></li>
                 <li><a href="<?= BASE_URL ?>/index.php?controller=employeeAppointment&action=index"><i

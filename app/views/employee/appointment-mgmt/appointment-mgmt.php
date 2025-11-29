@@ -29,7 +29,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                 <nav class="breadcrumbs-container">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="<?= BASE_URL ?>/index.php?controller=employee&action=index">Inicio</a>
+                            <a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index">Inicio</a>
                         </li>
                         <li class="breadcrumb-item current-page">Gestión de Citas</li>
                     </ol>
