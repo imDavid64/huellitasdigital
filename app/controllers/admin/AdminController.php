@@ -16,6 +16,6 @@ class AdminController
 
     public function index()
     {
-        require VIEW_PATH . '/admin/home.php';
+        require VIEW_PATH . '/admin/dashboard-mgmt/dashboard-mgmt.php';
     }
 }

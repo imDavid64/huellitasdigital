@@ -18,28 +18,4 @@ class EmployeeModel extends BaseModel
         }
         return $data;
     }
-
-    public function getDashboardKpis($idVeterinario)
-    {
-        // Preparar el procedimiento almacenado
-        $stmt = $this->conn->prepare("CALL HUELLITAS_DASHBOARD_KPIS_SP(?)");
-        $stmt->bind_param("i", $idVeterinario);
-        $stmt->execute();
-
-        // Obtener resultado
-        $result = $stmt->get_result();
-        $data = $result->fetch_assoc();
-
-        // Cerrar el statement
-        $stmt->close();
-
-        // Limpiar cualquier result set extra
-        while ($this->conn->more_results() && $this->conn->next_result()) {
-            ;
-        }
-
-        return $data ?? [];
-    }
-
-
 }

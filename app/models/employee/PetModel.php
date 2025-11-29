@@ -287,8 +287,4 @@ class PetModel extends BaseModel
             return [];
         }
     }
-
-
-
-
 }

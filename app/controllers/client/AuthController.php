@@ -77,7 +77,7 @@ class AuthController
                 // Definir la URL según el rol
                 switch ($_SESSION['user_role']) {
                     case 'ADMINISTRADOR':
-                        $redirect = BASE_URL . '/index.php?controller=admin&action=index';
+                        $redirect = BASE_URL . '/index.php?controller=adminDashboard&action=index';
                         break;
                     case 'EMPLEADO':
                         $redirect = BASE_URL . '/index.php?controller=employee&action=index';

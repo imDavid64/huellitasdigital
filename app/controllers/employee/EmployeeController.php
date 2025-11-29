@@ -24,7 +24,6 @@ class EmployeeController
     public function index()
     {
         $citas = $this->employeeModel->getAllAppointments();
-        $kpis = $this->employeeModel->getDashboardKpis($_SESSION['user_id']);
         require VIEW_PATH . '/employee/home.php';
     }
 
