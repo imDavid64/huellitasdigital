@@ -45,11 +45,11 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                     <!-- Estadísticas Rápidas - Diseño Mejorado -->
                     <div class="row mb-4">
                         <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card dashboard-card border-0 shadow-sm h-100">
+                            <div class="card dashboard-card border-0 h-100" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-grow-1">
-                                            <h5 class="card-title text-muted mb-2">Citas Pendientes</h5>
+                                            <h5 class="card-title mb-2">Citas Pendientes</h5>
                                             <h2 class="fw-bold text-primary mb-0" id="citas-pendientes">
                                                 <?php echo $data['citas_pendientes']; ?>
                                             </h2>
@@ -68,7 +68,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                         </div>
                         
                         <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card dashboard-card border-0 shadow-sm h-100">
+                            <div class="card dashboard-card border-0 h-100" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-grow-1">
@@ -91,7 +91,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                         </div>
                         
                         <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card dashboard-card border-0 shadow-sm h-100">
+                            <div class="card dashboard-card border-0 h-100" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-grow-1">
@@ -114,7 +114,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                         </div>
                         
                         <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card dashboard-card border-0 shadow-sm h-100">
+                            <div class="card dashboard-card border-0 h-100" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-grow-1">
@@ -141,7 +141,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                     <div class="row mb-4">
                         <!-- Citas de Hoy -->
                         <div class="col-lg-8 mb-4">
-                            <div class="card border-0 shadow-sm h-100">
+                            <div class="card border-0 h-100" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-header bg-white border-0 py-3">
                                     <h5 class="card-title mb-0 text-primary">
                                         <i class="fas fa-calendar-day me-2"></i>Citas Programadas para Hoy
@@ -152,11 +152,11 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                                         <table class="table table-hover align-middle mb-0">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th class="ps-4">Hora</th>
-                                                    <th>Servicio</th>
-                                                    <th>Mascota</th>
-                                                    <th>Cliente</th>
-                                                    <th class="text-center">Estado</th>
+                                                    <th class="ps-4" style="color: #002557 !important;">Hora</th>
+                                                    <th style="color: #002557 !important;">Servicio</th>
+                                                    <th style="color: #002557 !important;">Mascota</th>
+                                                    <th style="color: #002557 !important;">Cliente</th>
+                                                    <th class="text-center" style="color: #002557 !important;">Estado</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -208,7 +208,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
 
                         <!-- Servicios del Mes -->
                         <div class="col-lg-4 mb-4">
-                            <div class="card border-0 shadow-sm h-100">
+                            <div class="card border-0 h-100" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-header bg-white border-0 py-3">
                                     <h5 class="card-title mb-0 text-success">
                                         <i class="fas fa-chart-pie me-2"></i>Servicios del Mes
@@ -245,7 +245,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                     <div class="row mb-4">
                         <!-- Pedidos Pendientes -->
                         <div class="col-lg-6 mb-4">
-                            <div class="card border-0 shadow-sm h-100">
+                            <div class="card border-0 h-100" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-header bg-white border-0 py-3">
                                     <h5 class="card-title mb-0 text-info">
                                         <i class="fas fa-shopping-bag me-2"></i>Pedidos Pendientes
@@ -256,11 +256,11 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                                         <table class="table table-hover align-middle mb-0">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th class="ps-4">Código</th>
-                                                    <th>Cliente</th>
-                                                    <th>Fecha</th>
-                                                    <th class="text-end">Total</th>
-                                                    <th class="text-center">Estado</th>
+                                                    <th class="ps-4" style="color: #002557 !important">Código</th>
+                                                    <th style="color: #002557 !important">Cliente</th>
+                                                    <th style="color: #002557 !important">Fecha</th>
+                                                    <th class="text-end" style="color: #002557 !important">Total</th>
+                                                    <th class="text-center" style="color: #002557 !important">Estado</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -307,7 +307,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
 
                         <!-- Movimientos de Inventario -->
                         <div class="col-lg-6 mb-4">
-                            <div class="card border-0 shadow-sm h-100">
+                            <div class="card border-0 h-100" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-header bg-white border-0 py-3">
                                     <h5 class="card-title mb-0 text-secondary">
                                         <i class="fas fa-warehouse me-2"></i>Movimientos de Inventario
@@ -318,10 +318,10 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                                         <table class="table table-hover align-middle mb-0">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th class="ps-4">Producto</th>
-                                                    <th class="text-center">Tipo</th>
-                                                    <th class="text-center">Cantidad</th>
-                                                    <th class="text-center">Fecha</th>
+                                                    <th class="ps-4" style="color: #002557 !important">Producto</th>
+                                                    <th class="text-center" style="color: #002557 !important">Tipo</th>
+                                                    <th class="text-center" style="color: #002557 !important">Cantidad</th>
+                                                    <th class="text-center" style="color: #002557 !important">Fecha</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -368,7 +368,7 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                     <!-- Comparación de Citas -->
                     <div class="row">
                         <div class="col-12">
-                            <div class="card border-0 shadow-sm">
+                            <div class="card border-0" style="box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);">
                                 <div class="card-header bg-white border-0 py-3">
                                     <h5 class="card-title mb-0 text-dark">
                                         <i class="fas fa-chart-line me-2"></i>Comparación de Citas Mensuales

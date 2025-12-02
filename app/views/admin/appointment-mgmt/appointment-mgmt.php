@@ -3,6 +3,9 @@
 include_once __DIR__ . '/../includes/auth.php';
 checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 ?>
+<script>
+    window.APPOINTMENT_CONTROLLER = "adminAppointment";
+</script>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -39,61 +42,29 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                     <div class="tittles">
                         <h2><i class="bi bi-calendar-week-fill"></i><strong> Gestión de Citas</strong></h2>
                         <div>
-                            <a href="add-appointment.html" class="btn-blue"><strong>Agendar Cita</strong>
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminAppointment&action=create"
+                                class="btn-green"><strong>Agendar Cita</strong>
                                 <i class="bi bi-calendar-plus-fill"></i></a>
                         </div>
                     </div>
-                </div>
-                <section class="admin-main-content-mgmt">
+                    <section class="admin-main-content-mgmt">
 
-                    <div class="calendar" id="calendar" class="mt-3"></div>
+                        <div id="calendar" class="calendar mt-3"></div>
+                        <?php include __DIR__ . "/partials/cita-detalle.php"; ?>
 
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            var calendarEl = document.getElementById('calendar');
-                            var calendar = new FullCalendar.Calendar(calendarEl, {
-                                initialView: 'dayGridMonth',
-                                locale: 'es',
-                                headerToolbar: {
-                                    left: 'prev,next today',
-                                    center: 'title',
-                                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                                },
-                                events: [
-                                    {
-                                        title: 'Consulta - Juan Pérez / Firulais',
-                                        start: '2025-08-20T10:00:00',
-                                        end: '2025-08-20T11:00:00',
-                                        color: '#198754'
-                                    },
-                                    {
-                                        title: 'Vacunación - María López / Pelusa',
-                                        start: '2025-08-21T14:00:00',
-                                        end: '2025-08-21T14:30:00',
-                                        color: '#ffc107'
-                                    }
-                                ],
-                                eventClick: function (info) {
-                                    alert('Cita: ' + info.event.title + '\nHora: ' + info.event.start.toLocaleString());
-                                }
-                            });
-                            calendar.render();
-                        });
-                    </script>
-                </section>
+                    </section>
             </section>
         </section>
     </main>
     <!--CONTENIDO CENTRAL-->
+
+    <!--FOOTER-->
+    <footer>
+        <div class="post-footer" style="background-color: #002557; color: white;">
+            <span>&copy; 2025 - Dra Huellitas</span>
+        </div>
+    </footer>
+    <!--FOOTER-->
 </body>
-
-<!--FOOTER-->
-<footer>
-    <div class="post-footer" style="background-color: #002557; color: white;">
-        <span>&copy; 2025 - Dra Huellitas</span>
-    </div>
-</footer>
-<!--FOOTER-->
-
 
 </html>

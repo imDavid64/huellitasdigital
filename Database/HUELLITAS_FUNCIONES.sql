@@ -303,6 +303,43 @@ BEGIN
 END //
 DELIMITER ;
 
+-- ==========================================
+-- NOMBRE: GENERAR_CODIGO_HISTORIAL_FN
+-- DESCRIPCIÓN: Función exclusivamente para generar códigos de historiales medicos
+-- ==========================================
+DROP FUNCTION IF EXISTS GENERAR_CODIGO_HISTORIAL_FN;
+DELIMITER //
+CREATE FUNCTION GENERAR_CODIGO_HISTORIAL_FN()
+RETURNS VARCHAR(30)
+DETERMINISTIC
+BEGIN
+    DECLARE v_codigo VARCHAR(30);
+    DECLARE v_id INT;
+
+    -- Registrar temporal para obtener consecutivo
+    INSERT INTO HUELLITAS_CODIGOS_GENERALES_TB (CODIGO_UNICO)
+    VALUES ('TEMP');
+
+    SET v_id = LAST_INSERT_ID();
+
+    -- Formato: HIS-20251201-0001
+    SET v_codigo = CONCAT(
+        'HIS-',
+        DATE_FORMAT(NOW(), '%Y%m%d'),
+        '-',
+        LPAD(v_id, 4, '0')
+    );
+
+    -- Actualizar el registro temporal
+    UPDATE HUELLITAS_CODIGOS_GENERALES_TB
+    SET CODIGO_UNICO = v_codigo
+    WHERE ID_CODIGO_PK = v_id;
+
+    RETURN v_codigo;
+END //
+DELIMITER ;
+
+
 
 
 

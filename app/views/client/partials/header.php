@@ -233,23 +233,36 @@ if ($message === "pass_changed") {
         <input type="search" id="header-search" placeholder="Buscar producto...">
         <i class="bi bi-search"></i>
       </div>
-      <!--Boton de carrito-->
-      <div class="header-cart">
-        <div>
-          <a class="btn-orange" href="<?= BASE_URL ?>/index.php?controller=cart&action=index">Carrito <i
-              class="bi bi-cart"></i></a>
-        </div>
-      </div>
     </div>
 
     <!--Botones de Login, registro e info del usuario-->
     <div class="header-container-right">
       <?php if (isset($_SESSION['user_name'])): ?>
         <!-- Si hay sesión, mostrar bienvenida y menú -->
+        <!--Boton de carrito-->
+        <div class="header-cart">
+          <div>
+            <a class="btn-orange" href="<?= BASE_URL ?>/index.php?controller=cart&action=index">Carrito <i
+                class="bi bi-cart"></i></a>
+          </div>
+        </div>
+        <!--Boton de Mis Mascotas-->
         <div class="header-myPets">
           <div>
             <a class="btn-green" href="<?= BASE_URL ?>/index.php?controller=pets&action=index">Mis Mascotas <i
                 class="bi bi-clipboard-heart"></i></a>
+          </div>
+        </div>
+        <!-- Botón de notificaciones -->
+        <div class="notification-icon">
+          <a href="#" id="btnNotifications"><i class="bi bi-bell-fill"></i>
+            <span id="notification-count" class="notification-count-client">0</span></a>
+          <div class="notification-dropdown-client" id="notificationDropdown" style="display:none;">
+            <div class="notification-header rounded-0 rounded-top-4">Notificaciones</div>
+            <div class="notification-list"></div>
+            <div class="notification-footer">
+              <button id="markAsRead" class="btn btn-sm btn-link">Marcar todas como leídas</button>
+            </div>
           </div>
         </div>
         <div class="header-user">
@@ -265,20 +278,20 @@ if ($message === "pass_changed") {
               <?php if ($_SESSION['user_role'] === 'ADMINISTRADOR'): ?>
                 <li><a href="<?= BASE_URL ?>/index.php?controller=adminDashboard&action=index">
                     <i class="bi bi-gear-fill"></i> Modo Administrador</a></li>
-                <li><a href="<?= BASE_URL ?>/index.php?controller=employee&action=index">
+                <li><a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index">
                     <i class="bi bi-person-vcard-fill"></i> Modo Empleado</a></li>
               <?php endif; ?>
               <?php if ($_SESSION['user_role'] === 'EMPLEADO'): ?>
-                <li><a href="<?= BASE_URL ?>/index.php?controller=employee&action=index">
+                <li><a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index">
                     <i class="bi bi-person-vcard-fill"></i> Modo Empleado</a></li>
               <?php endif; ?>
               <li><a href="<?= BASE_URL ?>/index.php?controller=user&action=index">
                   <i class="bi bi-person-fill"></i> Mi Perfil</a></li>
               <li><a href="<?= BASE_URL ?>/index.php?controller=orders&action=list">
                   <i class="bi bi-bag-check-fill"></i> Mis Pedidos</a></li>
-              <li><a href="pages/myAppointment.php">
+              <li><a href="<?= BASE_URL ?>/index.php?controller=appointment&action=misCitas">
                   <i class="bi bi-calendar-event-fill"></i> Mis Citas</a></li>
-              <li><a href="<?= BASE_URL ?>/index.php?controller=auth&action=logout">
+              <li class="client-logout"><a href="<?= BASE_URL ?>/index.php?controller=auth&action=logout">
                   <i class="bi bi-door-open-fill"></i> Cerrar Sesión</a>
               </li>
             </ul>

@@ -2272,8 +2272,10 @@ $(function () {
     });
 
     // ============================================
-    // GESTIÓN DE CITAS - EMPLEADO
+    // GESTIÓN DE CITAS
     // ============================================
+
+    const CTRL = window.APPOINTMENT_CONTROLLER ?? "employeeAppointment";
 
     const calendarEl = document.getElementById('calendar');
     if (calendarEl) {
@@ -2292,7 +2294,7 @@ $(function () {
             },
 
             events: {
-                url: `${BASE_URL}/index.php?controller=employeeAppointment&action=api`,
+                url: `${BASE_URL}/index.php?controller=${CTRL}&action=api`,
                 method: "GET",
                 failure: () => alert("Error al cargar las citas.")
             },
@@ -2405,7 +2407,7 @@ $(function () {
             }
 
             $.ajax({
-                url: `${BASE_URL}/index.php?controller=employeeAppointment&action=buscarCliente`,
+                url: `${BASE_URL}/index.php?controller=${CTRL}&action=buscarCliente`,
                 type: "GET",
                 data: { q: query },
                 dataType: "json",
@@ -2418,21 +2420,25 @@ $(function () {
                     } else {
                         data.forEach(item => {
                             html += `
-                    <button type="button"
-                        class="list-group-item list-group-item-action seleccionar-cliente"
-                        data-codigo="${item.CODIGO}"
-                        data-nombre="${item.NOMBRE}"
-                        data-correo="${item.CORREO}"
-                        data-identificacion="${item.IDENTIFICACION ?? ''}"
-                        data-telefono="${item.TELEFONO ?? ''}"
-                        data-direccion="${item.DIRECCION ?? ''}">
-                        
-                        <strong>${item.NOMBRE}</strong>
-                        <br><small>${item.CORREO}</small>
-                        <br><small>Código: ${item.CODIGO}</small>
-                    </button>
-                `;
+                                <button type="button"
+                                    class="list-group-item list-group-item-action seleccionar-cliente"
+                                    data-tipo="${item.TIPO}"
+                                    data-codigo-cliente="${item.TIPO === 'CLIENTE' ? item.CODIGO : ''}"
+                                    data-codigo-usuario="${item.TIPO === 'USUARIO' ? item.CODIGO : ''}"
+
+                                    data-nombre="${item.NOMBRE}"
+                                    data-correo="${item.CORREO}"
+                                    data-identificacion="${item.IDENTIFICACION ?? ''}"
+                                    data-telefono="${item.TELEFONO ?? ''}"
+                                    data-direccion="${item.DIRECCION ?? ''}">
+                                    
+                                    <strong>${item.NOMBRE}</strong>
+                                    <br><small>${item.CORREO}</small>
+                                    <br><small>Código: ${item.CODIGO}</small>
+                                </button>
+                            `;
                         });
+
                     }
 
                     $("#listaResultados").html(html).show();
@@ -2447,31 +2453,34 @@ $(function () {
         // =====================================================
         $(document).on("click", ".seleccionar-cliente", function () {
 
-            let cod = $(this).data("codigo");
+            let tipo = $(this).data("tipo");
 
-            $("#codigoClienteSeleccionado").val(cod);
-            $("#codigoUsuarioSeleccionado").val(cod);
+            let codCliente = $(this).data("codigo-cliente");
+            let codUsuario = $(this).data("codigo-usuario");
 
-            // Rellenar inputs
+            if (tipo === "CLIENTE") {
+                $("#codigoClienteSeleccionado").val(codCliente);
+                $("#codigoUsuarioSeleccionado").val("");
+            } else {
+                $("#codigoUsuarioSeleccionado").val(codUsuario);
+                $("#codigoClienteSeleccionado").val("");
+            }
+
+            // Rellenar los campos visibles
             $("#clienteNombreInput").val($(this).data("nombre"));
             $("#clienteCorreoInput").val($(this).data("correo"));
             $("#clienteIdentificacionInput").val($(this).data("identificacion"));
             $("#clienteTelefonoInput").val($(this).data("telefono"));
             $("#clienteDireccionInput").val($(this).data("direccion"));
 
-            // Mostrar recuadro del cliente
             $("#datosClienteSeleccionado").show();
-
-            // Ocultar formulario manual y desactivar switch
-            $("#clienteManualContainer").hide();
-            $("#chkClienteManual").prop("checked", false);
-
             $("#listaResultados").hide();
-            $("#buscadorGeneral").val($(this).data("nombre"));
 
-            // Cargar mascotas del cliente
-            cargarMascotas(cod);
+            // Cargar mascotas dependiendo si es cliente o usuario
+            let codigoReal = tipo === "CLIENTE" ? codCliente : codUsuario;
+            cargarMascotas(codigoReal);
         });
+
 
 
         /* =======================================================
@@ -2498,7 +2507,7 @@ $(function () {
         ======================================================= */
         function cargarMascotas(codigoCliente) {
             $.ajax({
-                url: `${BASE_URL}/index.php?controller=employeeAppointment&action=obtenerMascotas`,
+                url: `${BASE_URL}/index.php?controller=${CTRL}&action=obtenerMascotas`,
                 type: "GET",
                 data: { codigo: codigoCliente },
                 dataType: "json",
@@ -2599,7 +2608,7 @@ $(function () {
 
 
             /* ============ VALIDACIONES ============ */
-
+            // Validar campos obligatorios
             if (!data.id_vet || !data.id_servicio || !data.start || !data.end) {
                 Swal.fire({
                     icon: "warning",
@@ -2608,8 +2617,12 @@ $(function () {
                 });
                 return;
             }
-
-            if (!$("#chkClienteManual").is(":checked") && !data.codigo_cliente) {
+            // Validar que se haya seleccionado un cliente o modo manual
+            if (
+                !$("#chkClienteManual").is(":checked") &&
+                !data.codigo_cliente &&
+                !data.codigo_usuario
+            ) {
                 Swal.fire({
                     icon: "warning",
                     title: "Seleccione un cliente",
@@ -2693,7 +2706,7 @@ $(function () {
             });
 
             $.ajax({
-                url: `${BASE_URL}/index.php?controller=employeeAppointment&action=store`,
+                url: `${BASE_URL}/index.php?controller=${CTRL}&action=store`,
                 type: "POST",
                 data: data,
                 dataType: "json",
@@ -2708,7 +2721,7 @@ $(function () {
                             text: response.MENSAJE
                         }).then(() => {
                             location.href =
-                                `${BASE_URL}/index.php?controller=employeeAppointment&action=index`;
+                                `${BASE_URL}/index.php?controller=${CTRL}&action=index`;
                         });
                     } else {
                         Swal.fire({
@@ -2730,5 +2743,70 @@ $(function () {
             });
         });
     });
+
+    // ============================================
+    // VER DETALLE HISTORIAL MÉDICO (AJAX)
+    // ============================================
+    $(document).on("click", ".ver-historial-btn", function () {
+        let codigo = $(this).data("code");
+
+        $.ajax({
+            url: `${BASE_URL}/index.php?controller=pets&action=ajaxGetHistory&code=${codigo}`,
+            method: "GET",
+            dataType: "json",
+            beforeSend: function () {
+                $("#historial-detalle").html("<p>Cargando...</p>");
+            },
+            success: function (data) {
+                if (data.error) {
+                    $("#historial-detalle").html(`<p>Error: ${data.error}</p>`);
+                    return;
+                }
+
+                $("#historial-detalle").html(`
+                <div class="my-pets-info-medical-history-info-content-left">
+                    <div><h5><strong>Temperatura</strong></h5><div class="pet-data-item"><span>${data.TEMPERATURA ?? "Sin Registro"} °C</span></div></div>
+                    <div><h5><strong>Sonidos Pulmonares</strong></h5><div class="pet-data-item"><span>${data.SONIDOS_PULMONARES ?? "Sin Registro"}</span></div></div>
+                    <div><h5><strong>Piel</strong></h5><div class="pet-data-item"><span>${data.PIEL ?? "Sin Registro"}</span></div></div>
+                    <div><h5><strong>Frecuencia Cardiaca</strong></h5><div class="pet-data-item"><span>${data.FRECUENCIA_CARDIACA ?? "Sin Registro"} lpm</span></div></div>
+                </div>
+
+                <div class="my-pets-info-medical-history-info-content-right">
+                    <div><h5><strong>Peso</strong></h5><div class="pet-data-item"><span>${data.PESO ?? "Sin Registro"} kg</span></div></div>
+                    <div><h5><strong>Mucosa</strong></h5><div class="pet-data-item"><span>${data.MUCOSA ?? "Sin Registro"}</span></div></div>
+                    <div><h5><strong>Condición Corporal</strong></h5><div class="pet-data-item"><span>${data.CONDICION_CORPORAL ?? "Sin Registro"}</span></div></div>
+                    <div><h5><strong>Frecuencia Respiratoria</strong></h5><div class="pet-data-item"><span>${data.FRECUENCIA_RESPIRATORIA ?? "Sin Registro"} rpm</span></div></div>
+                </div>
+            `);
+            },
+            error: function () {
+                $("#historial-detalle").html("<p>Error al cargar el historial.</p>");
+            }
+        });
+    });
+
+
+    // ============================================
+    // VER DETALLE CITA EN MODAL
+    // ============================================
+    $(document).on("click", ".btn-detalle-cita", function (e) {
+        e.preventDefault();
+
+        $("#det-fecha").text($(this).data("fecha"));
+        $("#det-servicio").text($(this).data("servicio"));
+        $("#det-veterinario").text($(this).data("veterinario"));
+
+        $("#det-cliente").text($(this).data("cliente"));
+        $("#det-correo").text("📧 " + $(this).data("correo-cliente"));
+        $("#det-telefono").text("📞 " + $(this).data("telefono"));
+        $("#det-identificacion").text("🆔 " + $(this).data("identificacion"));
+
+        $("#det-mascota").text($(this).data("mascota"));
+        $("#det-motivo").text($(this).data("motivo"));
+
+        let modal = new bootstrap.Modal(document.getElementById("modalDetalleCita"));
+        modal.show();
+    });
+
 
 });

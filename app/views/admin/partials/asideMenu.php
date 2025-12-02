@@ -18,11 +18,13 @@
                         <i class="bi bi-building-fill"></i> Gestión de Proveedores
                     </a></li>
 
+                <!--
                 <li><a href="<?= BASE_URL ?>/index.php?controller=adminAccountingRecord&action=index">
                         <i class="bi bi-calculator-fill"></i> Registro Contable
                     </a></li>
+                -->
 
-                <li><a href="<?= BASE_URL ?>/index.php?controller=adminCita&action=index">
+                <li><a href="<?= BASE_URL ?>/index.php?controller=adminAppointment&action=index">
                         <i class="bi bi-calendar-week-fill"></i> Gestión de Citas
                     </a></li>
 

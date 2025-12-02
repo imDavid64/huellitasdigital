@@ -54,11 +54,13 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                                 <h5><strong>Nombre:</strong> <?= htmlspecialchars($mascota['NOMBRE_MASCOTA']) ?></h5>
                                 <h5><strong>Especie:</strong> <?= htmlspecialchars($mascota['ESPECIE']) ?></h5>
                                 <h5><strong>Raza:</strong> <?= htmlspecialchars($mascota['RAZA']) ?></h5>
-                                <h5><strong>Fecha de Nacimiento:</strong> <?= htmlspecialchars($mascota['FECHA_NACIMIENTO']) ?></h5>
+                                <h5><strong>Fecha de Nacimiento:</strong>
+                                    <?= htmlspecialchars($mascota['FECHA_NACIMIENTO']) ?></h5>
                             </div>
                             <div class="my-pets-info-header-right">
                                 <a href="#">
-                                    <img src="<?= htmlspecialchars($mascota['MASCOTA_IMAGEN_URL']) ?>" height="200px" width="200px"
+                                    <img src="<?= htmlspecialchars($mascota['MASCOTA_IMAGEN_URL']) ?>" height="200px"
+                                        width="200px"
                                         alt="Imagen de <?= htmlspecialchars($mascota['NOMBRE_MASCOTA']) ?>">
                                     <div class="overlay">
                                         <i class="bi bi-pencil">Editar</i>
@@ -68,142 +70,49 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                         </div>
                         <div class="my-pets-info-main-content">
                             <div class="my-pets-info-medical-history">
-                                <h4><strong>Historial Medico</strong></h4>
+                                <h4><strong style="color: white;">Historial Medico</strong></h4>
                                 <div class="my-pets-info-medical-history-list">
-                                    <div class="my-pets-info-medical-history-item">
-                                        <a href="#">
-                                            <div>
-                                                <span><strong>Fecha:</strong> 18/08/2025</span>
-                                                <span><strong>Hora:</strong> 2:00p.m </span>
+                                    <?php
+                                    if (empty($historiales)) {
+                                        echo "
+                                        <div class=\"my-pets-info-medical-history-item\">
+                                        <span>No hay historiales médicos registrados.</span>
+                                        </div>
+                                        ";
+                                    } else {
+                                        foreach ($historiales as $historial) {
+                                            ?>
+                                            <div class="my-pets-info-medical-history-item">
+                                                <div>
+                                                    <span><strong>Fecha:</strong>
+                                                        <?= htmlspecialchars($historial['HISTORIAL_FECHA']) ?></span>
+                                                    <span><strong>Hora:</strong>
+                                                        <?= htmlspecialchars(date('h:ia', strtotime($historial['HISTORIAL_HORA']))) ?>
+                                                    </span>
+                                                </div>
+                                                <button class="btn-green ver-historial-btn"
+                                                    data-code="<?= htmlspecialchars($historial['CODIGO_HISTORIAL']) ?>">
+                                                    Ver
+                                                </button>
                                             </div>
-                                            <a class="btn-green">Ver</a>
-                                        </a>
-                                    </div>
-                                    <div class="my-pets-info-medical-history-item">
-                                        <a href="#">
-                                            <div>
-                                                <span><strong>Fecha:</strong> 22/07/2025</span>
-                                                <span><strong>Hora:</strong> 4:00p.m </span>
-                                            </div>
-                                            <a class="btn-green">Ver</a>
-                                        </a>
-                                    </div>
-                                    <div class="my-pets-info-medical-history-item">
-                                        <a href="#">
-                                            <div>
-                                                <span><strong>Fecha:</strong> 1/12/2024</span>
-                                                <span><strong>Hora:</strong> 2:00p.m </span>
-                                            </div>
-                                            <a class="btn-green">Ver</a>
-                                        </a>
-                                    </div>
-                                    <div class="my-pets-info-medical-history-item">
-                                        <a href="#">
-                                            <div>
-                                                <span><strong>Fecha:</strong> 12/08/2024</span>
-                                                <span><strong>Hora:</strong> 2:00p.m </span>
-                                            </div>
-                                            <a class="btn-green">Ver</a>
-                                        </a>
-                                    </div>
-                                    <div class="my-pets-info-medical-history-item">
-                                        <a href="#">
-                                            <div>
-                                                <span><strong>Fecha:</strong> 12/08/2024</span>
-                                                <span><strong>Hora:</strong> 2:00p.m </span>
-                                            </div>
-                                            <a class="btn-green">Ver</a>
-                                        </a>
-                                    </div>
-                                    <div class="my-pets-info-medical-history-item">
-                                        <a href="#">
-                                            <div>
-                                                <span><strong>Fecha:</strong> 12/08/2024</span>
-                                                <span><strong>Hora:</strong> 2:00p.m </span>
-                                            </div>
-                                            <a class="btn-green">Ver</a>
-                                        </a>
-                                    </div>
+                                            <?php
+                                        }
+                                    }
+                                    ?>
                                 </div>
                             </div>
                             <div class="my-pets-info-medical-history-info">
                                 <div class="my-pets-info-medical-history-info-header">
                                     <h4><strong>Información Médica</strong></h4>
                                 </div>
-                                <div class="my-pets-info-medical-history-info-content">
-                                    <div class="my-pets-info-medical-history-info-content-left">
-                                        <div>
-                                            <h5><strong>Temperatura</strong></h5>
-                                            <div class="pet-data-item">
-                                                <span>38.5 °C</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h5><strong>Sonido de Pulmones</strong></h5>
-                                            <div class="pet-data-item">
-                                                <span>Normales</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h5><strong>Piel</strong></h5>
-                                            <div class="pet-data-item">
-                                                <span>Alopecia</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h5><strong>Diagnostico</strong></h5>
-                                            <div class="pet-data-item">
-                                                <p>
-                                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sed
-                                                    risus
-                                                    ipsum. Curabitur ultrices dui vitae ipsum faucibus, eget ullamcorper
-                                                    diam interdum. Praesent vestibulum tortor nisi, eget tempus nisl
-                                                    feugiat
-                                                    vel. Nullam magna arcu, fermentum et cursus vel, dictum sit amet
-                                                    neque.
-                                                    Sed ultricies interdum ligula, eu malesuada justo gravida vel.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="my-pets-info-medical-history-info-content-right">
-                                        <div>
-                                            <h5><strong>Frecuencia Cardiaca</strong></h5>
-                                            <div class="pet-data-item">
-                                                <span>100lpm</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h5><strong>Mucosa</strong></h5>
-                                            <div class="pet-data-item">
-                                                <span>Rosadas</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h5><strong>Condición Coporal</strong></h5>
-                                            <div class="pet-data-item">
-                                                <span>3/5</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h5><strong>Tratamiento</strong></h5>
-                                            <div class="pet-data-item">
-                                                <p>
-                                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sed
-                                                    risus
-                                                    ipsum. Curabitur ultrices dui vitae ipsum faucibus, eget ullamcorper
-                                                    diam interdum. Praesent vestibulum tortor nisi, eget tempus nisl
-                                                    feugiat
-                                                    vel. Nullam magna arcu, fermentum et cursus vel, dictum sit amet
-                                                    neque.
-                                                    Sed ultricies interdum ligula, eu malesuada justo gravida vel.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+
+                                <div id="historial-detalle" class="my-pets-info-medical-history-info-content">
+                                    <p style="opacity: .8;">Seleccione un historial médico para ver sus detalles.</p>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
             </section>
         </main>
         <!--CONTENIDO CENTRAL-->

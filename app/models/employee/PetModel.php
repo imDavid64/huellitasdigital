@@ -3,6 +3,8 @@ namespace App\Models\Employee;
 
 use App\Models\BaseModel;
 
+use mysqli_sql_exception;
+
 class PetModel extends BaseModel
 {
     public function agregarMascota(
@@ -284,6 +286,39 @@ class PetModel extends BaseModel
 
         } catch (\Throwable $e) {
             error_log("Error en buscarRazasPorEspecie: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function listarHistorialesResumen(string $codigoMascota): array
+    {
+        try {
+            $stmt = $this->conn->prepare("
+                CALL HUELLITAS_LISTAR_HISTORIALES_RESUMEN_SP(?)
+            ");
+
+            if (!$stmt) {
+                throw new mysqli_sql_exception(
+                    "Error preparando SP: " . $this->conn->error
+                );
+            }
+
+            $stmt->bind_param("s", $codigoMascota);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $historiales = $result->fetch_all(MYSQLI_ASSOC);
+
+            $stmt->close();
+
+            // Evitar 'commands out of sync'
+            while ($this->conn->more_results() && $this->conn->next_result()) {
+            }
+
+            return $historiales;
+
+        } catch (\Throwable $e) {
+            error_log("Error en listarHistorialesResumen: " . $e->getMessage());
             return [];
         }
     }

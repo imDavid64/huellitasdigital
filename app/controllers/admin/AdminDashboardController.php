@@ -11,7 +11,7 @@ class AdminDashboardController
 
     public function __construct()
     {
-        // Tu lógica de autenticación existente
+        
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'ADMINISTRADOR') {
             header("Location: " . BASE_URL . "/index.php?controller=home&action=error403");
             exit;

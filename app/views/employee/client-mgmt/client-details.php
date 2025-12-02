@@ -149,7 +149,6 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </tbody>
-
                                 </table>
                             </div>
                         </div>

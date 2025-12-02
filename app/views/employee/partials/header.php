@@ -43,7 +43,7 @@ if (!defined('BASE_URL')) {
                 <!---->
                 <div class="admin-header-user-menu" id="header-user-menu">
                     <ul>
-                        <li><a href="pages/profile.html"><i class="bi bi-person-fill"></i> Mi Pefil</a></li>
+                        <li><a href="<?= BASE_URL ?>/index.php?controller=user&action=index"><i class="bi bi-person-fill"></i> Mi Pefil</a></li>
                         <li><a href="<?= BASE_URL ?>/index.php?controller=home&action=index">
                                 <i class="bi bi-bag-fill"></i> Modo Cliente</a></li>
                         <li><a href="<?= BASE_URL ?>/index.php?controller=auth&action=logout">

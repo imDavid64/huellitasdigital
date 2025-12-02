@@ -4662,11 +4662,65 @@ END $$
 DELIMITER ;
 
 
-
-
 -- ==========================================
 -- NOMBRE: HUELLITAS_OBTENER_MASCOTAS_POR_USUARIO_SP
 -- DESCRIPCIÓN: Obtiene la lista de mascotas asociadas a un usuario
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_MASCOTAS_POR_USUARIO_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_OBTENER_MASCOTAS_POR_USUARIO_SP(
+    IN P_CODIGO_USUARIO VARCHAR(30)
+)
+BEGIN
+    -- =====================================
+    -- Validar que el usuario exista
+    -- =====================================
+    DECLARE V_ID_USUARIO INT;
+
+    SELECT ID_USUARIO_PK
+    INTO V_ID_USUARIO
+    FROM HUELLITAS_USUARIOS_TB
+    WHERE CODIGO_USUARIO = P_CODIGO_USUARIO
+    LIMIT 1;
+
+    IF V_ID_USUARIO IS NULL THEN
+        SELECT 
+            'ERROR' AS ESTADO,
+            'No se encontró ningún usuario con el código proporcionado.' AS MENSAJE;
+    ELSE
+        -- =====================================
+        -- Obtener las mascotas asociadas al usuario
+        -- =====================================
+        SELECT 
+            M.ID_MASCOTA_PK,
+            M.CODIGO_MASCOTA,
+            M.NOMBRE_MASCOTA,
+            M.FECHA_NACIMIENTO,
+            M.GENERO,
+            M.MASCOTA_IMAGEN_URL,
+            E.NOMBRE_ESPECIE AS ESPECIE,
+            R.NOMBRE_RAZA AS RAZA,
+            ES.ESTADO_DESCRIPCION AS ESTADO,
+            C.CLIENTE_NOMBRE AS CLIENTE_ASOCIADO,
+            C.CODIGO_CLIENTE AS CODIGO_CLIENTE_ASOCIADO
+        FROM HUELLITAS_MASCOTA_TB M
+        INNER JOIN HUELLITAS_MASCOTA_ESPECIE_TB E 
+            ON M.ID_MASCOTA_ESPECIE_FK = E.ID_MASCOTA_ESPECIE_PK
+        LEFT JOIN HUELLITAS_MASCOTA_RAZA_TB R 
+            ON M.ID_MASCOTA_RAZA_FK = R.ID_MASCOTA_RAZA_PK
+        INNER JOIN HUELLITAS_ESTADO_TB ES 
+            ON M.ID_ESTADO_FK = ES.ID_ESTADO_PK
+        LEFT JOIN HUELLITAS_CLIENTES_TB C 
+            ON M.ID_CLIENTE_FK = C.ID_CLIENTE_PK
+        WHERE M.ID_USUARIO_FK = V_ID_USUARIO
+        ORDER BY M.NOMBRE_MASCOTA ASC;
+    END IF;
+END //
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_MASCOTAS_SP
+-- DESCRIPCIÓN: listar todas las mascotas por codigo de cliente/usuario
 -- ==========================================
 DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_MASCOTAS_SP;
 DELIMITER //
@@ -4960,10 +5014,9 @@ DELIMITER ;
 -- ==========================================
 DROP PROCEDURE IF EXISTS HUELLITAS_AGREGAR_HISTORIAL_MEDICO_SP;
 DELIMITER $$
+
 CREATE PROCEDURE HUELLITAS_AGREGAR_HISTORIAL_MEDICO_SP(
-    IN P_ID_MASCOTA INT,
-    IN P_ID_CONSULTA INT,
-    IN P_ID_USUARIO INT,
+    IN P_CODIGO_MASCOTA VARCHAR(30),
     IN P_ID_ESTADO INT,
 
     IN P_HISTORIA_CLINICA TEXT,
@@ -4978,7 +5031,7 @@ CREATE PROCEDURE HUELLITAS_AGREGAR_HISTORIAL_MEDICO_SP(
     IN P_CONDICION_CORPORAL VARCHAR(255),
     IN P_REFLEJO_DEGLUTORIO VARCHAR(255),
     IN P_REFLEJO_TUSIGENO VARCHAR(255),
-    IN P_LIMONADOS VARCHAR(255),
+    IN P_LINFONODOS VARCHAR(255),
     IN P_PALPACION_ABDOMINAL VARCHAR(500),
     IN P_PIEL VARCHAR(500),
     IN P_MUCOSA VARCHAR(255),
@@ -4996,41 +5049,22 @@ CREATE PROCEDURE HUELLITAS_AGREGAR_HISTORIAL_MEDICO_SP(
 )
 BEGIN
     -- ==========================================
-    -- Validar que la mascota exista
+    -- Validar que el código de mascota exista
     -- ==========================================
-    IF NOT EXISTS (SELECT 1 FROM HUELLITAS_MASCOTA_TB WHERE ID_MASCOTA_PK = P_ID_MASCOTA) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'La mascota especificada no existe.';
-    END IF;
-
-    -- ==========================================
-    -- Validar que la consulta exista
-    -- ==========================================
-    IF NOT EXISTS (SELECT 1 FROM HUELLITAS_CONSULTAS_TB WHERE ID_CONSULTA_PK = P_ID_CONSULTA) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'La consulta especificada no existe.';
-    END IF;
-
-    -- ==========================================
-    -- Validar que no exista un historial duplicado
-    -- ==========================================
-    IF EXISTS (
+    IF NOT EXISTS (
         SELECT 1 
-        FROM HUELLITAS_HISTORIALES_MEDICOS_TB
-        WHERE ID_MASCOTA_FK = P_ID_MASCOTA
-        AND ID_CONSULTA_FK = P_ID_CONSULTA
+        FROM HUELLITAS_MASCOTA_TB 
+        WHERE CODIGO_MASCOTA = P_CODIGO_MASCOTA
     ) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Esta mascota ya tiene un historial asociado a esta consulta.';
+        SET MESSAGE_TEXT = 'El código de mascota especificado no existe.';
     END IF;
 
     -- ==========================================
-    -- Inserción del historial clínico
+    -- Inserción del historial médico
     -- ==========================================
     INSERT INTO HUELLITAS_HISTORIALES_MEDICOS_TB (
-        ID_MASCOTA_FK,
-        ID_CONSULTA_FK,
-        ID_USUARIO_FK,
+        CODIGO_MASCOTA,
         ID_ESTADO_FK,
 
         HISTORIA_CLINICA,
@@ -5045,7 +5079,7 @@ BEGIN
         CONDICION_CORPORAL,
         REFLEJO_DEGLUTORIO,
         REFLEJO_TUSIGENO,
-        LIMONADOS,
+        LINFONODOS,
         PALPACION_ABDOMINAL,
         PIEL,
         MUCOSA,
@@ -5062,9 +5096,7 @@ BEGIN
         HISTORIAL_NOTAS
     )
     VALUES (
-        P_ID_MASCOTA,
-        P_ID_CONSULTA,
-        P_ID_USUARIO,
+        P_CODIGO_MASCOTA,
         P_ID_ESTADO,
 
         P_HISTORIA_CLINICA,
@@ -5079,7 +5111,7 @@ BEGIN
         P_CONDICION_CORPORAL,
         P_REFLEJO_DEGLUTORIO,
         P_REFLEJO_TUSIGENO,
-        P_LIMONADOS,
+        P_LINFONODOS,
         P_PALPACION_ABDOMINAL,
         P_PIEL,
         P_MUCOSA,
@@ -5096,11 +5128,140 @@ BEGIN
         P_HISTORIAL_NOTAS
     );
 END $$
+
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_HISTORIAL_MEDICO_SP
+-- DESCRIPCIÓN: Actualiza los datos de un historial médico existente
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_ACTUALIZAR_HISTORIAL_MEDICO_SP;
+DELIMITER $$
+
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_HISTORIAL_MEDICO_SP(
+    IN P_CODIGO_HISTORIAL VARCHAR(30),
+    IN P_ID_ESTADO INT,
+
+    -- Datos clínicos
+    IN P_HISTORIA_CLINICA TEXT,
+    IN P_ANAMNESIS TEXT,
+
+    -- Signos vitales
+    IN P_PESO DECIMAL(5,2),
+    IN P_TEMPERATURA DECIMAL(4,1),
+    IN P_FRECUENCIA_CARDIACA INT,
+    IN P_FRECUENCIA_RESPIRATORIA INT,
+
+    -- Exploración física
+    IN P_SONIDOS_PULMONARES VARCHAR(500),
+    IN P_CONDICION_CORPORAL VARCHAR(255),
+    IN P_REFLEJO_DEGLUTORIO VARCHAR(255),
+    IN P_REFLEJO_TUSIGENO VARCHAR(255),
+    IN P_LINFONODOS VARCHAR(255),
+    IN P_PALPACION_ABDOMINAL VARCHAR(500),
+    IN P_PIEL VARCHAR(500),
+    IN P_MUCOSA VARCHAR(255),
+    IN P_PULSO VARCHAR(255),
+    IN P_ESTADO_MENTAL VARCHAR(255),
+
+    -- Diagnósticos
+    IN P_LISTA_DIAGNOSTICO_PRESUNTIVO TEXT,
+    IN P_LISTA_DEPURADA TEXT,
+    IN P_EXAMENES TEXT,
+    IN P_DIAGNOSTICO_FINAL TEXT
+)
+BEGIN
+    -- Validar que el historial exista
+    IF NOT EXISTS (
+        SELECT 1 FROM HUELLITAS_HISTORIALES_MEDICOS_TB 
+        WHERE CODIGO_HISTORIAL = P_CODIGO_HISTORIAL
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'El código de historial no existe.';
+    END IF;
+
+    -- Actualizar el registro
+    UPDATE HUELLITAS_HISTORIALES_MEDICOS_TB
+    SET 
+        ID_ESTADO_FK = P_ID_ESTADO,
+
+        HISTORIA_CLINICA = P_HISTORIA_CLINICA,
+        ANAMNESIS = P_ANAMNESIS,
+
+        PESO = P_PESO,
+        TEMPERATURA = P_TEMPERATURA,
+        FRECUENCIA_CARDIACA = P_FRECUENCIA_CARDIACA,
+        FRECUENCIA_RESPIRATORIA = P_FRECUENCIA_RESPIRATORIA,
+
+        SONIDOS_PULMONARES = P_SONIDOS_PULMONARES,
+        CONDICION_CORPORAL = P_CONDICION_CORPORAL,
+        REFLEJO_DEGLUTORIO = P_REFLEJO_DEGLUTORIO,
+        REFLEJO_TUSIGENO = P_REFLEJO_TUSIGENO,
+        LINFONODOS = P_LINFONODOS,
+        PALPACION_ABDOMINAL = P_PALPACION_ABDOMINAL,
+        PIEL = P_PIEL,
+        MUCOSA = P_MUCOSA,
+        PULSO = P_PULSO,
+        ESTADO_MENTAL = P_ESTADO_MENTAL,
+
+        LISTA_DIAGNOSTICO_PRESUNTIVO = P_LISTA_DIAGNOSTICO_PRESUNTIVO,
+        LISTA_DEPURADA = P_LISTA_DEPURADA,
+        EXAMENES = P_EXAMENES,
+        DIAGNOSTICO_FINAL = P_DIAGNOSTICO_FINAL
+
+    WHERE CODIGO_HISTORIAL = P_CODIGO_HISTORIAL;
+END$$
+
+DELIMITER ;
+
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_LISTAR_HISTORIALES_RESUMEN_SP
+-- DESCRIPCIÓN: Listar todos los historiales medicos de la mascota solo obteniendo fechas y el codigo
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_HISTORIALES_RESUMEN_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_HISTORIALES_RESUMEN_SP(
+    IN P_CODIGO_MASCOTA VARCHAR(30)
+)
+BEGIN
+    SELECT 
+        H.ID_HISTORIAL_PK,
+        H.CODIGO_HISTORIAL,
+        H.HISTORIAL_FECHA,
+        H.HISTORIAL_HORA
+    FROM HUELLITAS_HISTORIALES_MEDICOS_TB H
+    WHERE H.CODIGO_MASCOTA = P_CODIGO_MASCOTA
+    ORDER BY H.HISTORIAL_FECHA DESC, H.HISTORIAL_HORA DESC;
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_HISTORIAL_COMPLETO_SP
+-- DESCRIPCIÓN: Obtener 
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_HISTORIAL_COMPLETO_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_HISTORIAL_COMPLETO_SP(
+    IN P_CODIGO_HISTORIAL VARCHAR(30)
+)
+BEGIN
+    SELECT 
+        H.*,
+        E.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_HISTORIALES_MEDICOS_TB H
+    INNER JOIN HUELLITAS_ESTADO_TB E
+        ON H.ID_ESTADO_FK = E.ID_ESTADO_PK
+    WHERE P_CODIGO_HISTORIAL IS NOT NULL AND H.CODIGO_HISTORIAL = P_CODIGO_HISTORIAL
+    LIMIT 1;
+END $$
+
+DELIMITER ;
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_OBTENER_MASCOTA_POR_CODIGO_SP
--- DESCRIPCIÓN: Obtiene toda la información de una mascota según su código,
+-- DESCRIPCIÓN: Obtiene toda la información de una mascota según su código
 -- ==========================================
 DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_MASCOTA_POR_CODIGO_SP;
 DELIMITER $$
@@ -5678,6 +5839,109 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- ======================================================
+-- NOMBRE: HUELLITAS_LISTAR_PROXIMAS_CITAS_SP
+-- DESCRIPCIÓN: Lista las citas FUTURAS de un usuario
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_PROXIMAS_CITAS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_PROXIMAS_CITAS_SP(
+    IN P_CODIGO_USUARIO VARCHAR(30)
+)
+BEGIN
+    SELECT 
+        C.ID_CITA_PK,
+        C.CODIGO_USUARIO,
+        C.CODIGO_CLIENTE,
+
+        C.FECHA_INICIO,
+        C.FECHA_FIN,
+        C.MOTIVO,
+        C.FECHA_CREACION,
+
+        E.ESTADO_DESCRIPCION AS ESTADO,
+
+        S.NOMBRE_SERVICIO,
+
+        U.USUARIO_NOMBRE AS VETERINARIO_NOMBRE,
+        U.USUARIO_CORREO AS VETERINARIO_CORREO,
+
+        C.CLIENTE_NOMBRE,
+        C.CLIENTE_CORREO,
+        C.CLIENTE_TELEFONO,
+        C.CLIENTE_IDENTIFICACION,
+
+        M.ID_MASCOTA_FK,
+        MS.CODIGO_MASCOTA,
+        MS.NOMBRE_MASCOTA,
+        M.MASCOTA_NOMBRE_MANUAL
+
+    FROM HUELLITAS_CITAS_TB C
+    INNER JOIN HUELLITAS_ESTADO_TB E ON C.ID_ESTADO_FK = E.ID_ESTADO_PK
+    INNER JOIN HUELLITAS_SERVICIOS_TB S ON C.ID_SERVICIO_FK = S.ID_SERVICIO_PK
+    INNER JOIN HUELLITAS_USUARIOS_TB U ON C.ID_VETERINARIO_FK = U.ID_USUARIO_PK
+    LEFT JOIN HUELLITAS_CITAS_MASCOTAS_TB M ON C.ID_CITA_PK = M.ID_CITA_FK
+    LEFT JOIN HUELLITAS_MASCOTA_TB MS ON M.ID_MASCOTA_FK = MS.ID_MASCOTA_PK
+
+    WHERE C.CODIGO_USUARIO = P_CODIGO_USUARIO
+      AND C.FECHA_FIN > NOW()
+
+    ORDER BY C.FECHA_INICIO ASC;
+END $$
+DELIMITER ;
+
+-- ======================================================
+-- NOMBRE: HUELLITAS_LISTAR_CITAS_PASADAS_SP
+-- DESCRIPCIÓN: Lista las citas PASADAS de un usuario
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_LISTAR_CITAS_PASADAS_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_LISTAR_CITAS_PASADAS_SP(
+    IN P_CODIGO_USUARIO VARCHAR(30)
+)
+BEGIN
+    SELECT 
+        C.ID_CITA_PK,
+        C.CODIGO_USUARIO,
+        C.CODIGO_CLIENTE,
+
+        C.FECHA_INICIO,
+        C.FECHA_FIN,
+        C.MOTIVO,
+        C.FECHA_CREACION,
+
+        E.ESTADO_DESCRIPCION AS ESTADO,
+
+        S.NOMBRE_SERVICIO,
+
+        U.USUARIO_NOMBRE AS VETERINARIO_NOMBRE,
+        U.USUARIO_CORREO AS VETERINARIO_CORREO,
+
+        C.CLIENTE_NOMBRE,
+        C.CLIENTE_CORREO,
+        C.CLIENTE_TELEFONO,
+        C.CLIENTE_IDENTIFICACION,
+
+        M.ID_MASCOTA_FK,
+        MS.CODIGO_MASCOTA,
+        MS.NOMBRE_MASCOTA,
+        M.MASCOTA_NOMBRE_MANUAL
+
+    FROM HUELLITAS_CITAS_TB C
+    INNER JOIN HUELLITAS_ESTADO_TB E ON C.ID_ESTADO_FK = E.ID_ESTADO_PK
+    INNER JOIN HUELLITAS_SERVICIOS_TB S ON C.ID_SERVICIO_FK = S.ID_SERVICIO_PK
+    INNER JOIN HUELLITAS_USUARIOS_TB U ON C.ID_VETERINARIO_FK = U.ID_USUARIO_PK
+    LEFT JOIN HUELLITAS_CITAS_MASCOTAS_TB M ON C.ID_CITA_PK = M.ID_CITA_FK
+    LEFT JOIN HUELLITAS_MASCOTA_TB MS ON M.ID_MASCOTA_FK = MS.ID_MASCOTA_PK
+
+    WHERE C.CODIGO_USUARIO = P_CODIGO_USUARIO
+      AND C.FECHA_FIN < NOW()
+
+    ORDER BY C.FECHA_INICIO DESC;
+END $$
+DELIMITER ;
+
+
 
 -- ======================================================
 -- NOMBRE: HUELLITAS_CLIENTE_EXISTE_SP
@@ -5734,6 +5998,154 @@ BEGIN
 
 END$$
 DELIMITER ;
+
+-- ======================================================
+-- NOMBRE: HUELLITAS_OBTENER_CITAS_MANANA_SP
+-- DESCRIPCIÓN: Procedimiento para obtener las citas de mañana
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_CITAS_MANANA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_CITAS_MANANA_SP()
+BEGIN
+    SELECT 
+        C.ID_CITA_PK,
+        C.CLIENTE_NOMBRE,
+        C.CLIENTE_CORREO,
+        C.MOTIVO,
+        C.FECHA_INICIO,
+        GROUP_CONCAT(
+            IFNULL(M.NOMBRE_MASCOTA, CM.MASCOTA_NOMBRE_MANUAL)
+            SEPARATOR ', '
+        ) AS MASCOTAS
+    FROM HUELLITAS_CITAS_TB C
+    LEFT JOIN HUELLITAS_CITAS_MASCOTAS_TB CM 
+        ON CM.ID_CITA_FK = C.ID_CITA_PK
+    LEFT JOIN HUELLITAS_MASCOTA_TB M 
+        ON M.ID_MASCOTA_PK = CM.ID_MASCOTA_FK
+    WHERE DATE(C.FECHA_INICIO) = CURDATE() + INTERVAL 1 DAY
+    GROUP BY C.ID_CITA_PK;
+END$$
+DELIMITER ;
+
+-- ======================================================
+-- NOMBRE: HUELLITAS_OBTENER_CITAS_EN_1_HORA_SP
+-- DESCRIPCIÓN: Procedimiento para obtener las citas de dentro de una hora
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_CITAS_EN_1_HORA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_CITAS_EN_1_HORA_SP()
+BEGIN
+    SELECT 
+        C.ID_CITA_PK,
+        C.CLIENTE_NOMBRE,
+        C.CLIENTE_CORREO,
+        C.MOTIVO,
+        C.FECHA_INICIO,
+        GROUP_CONCAT(
+            IFNULL(M.NOMBRE_MASCOTA, CM.MASCOTA_NOMBRE_MANUAL)
+            SEPARATOR ', '
+        ) AS MASCOTAS
+    FROM HUELLITAS_CITAS_TB C
+    LEFT JOIN HUELLITAS_CITAS_MASCOTAS_TB CM 
+        ON CM.ID_CITA_FK = C.ID_CITA_PK
+    LEFT JOIN HUELLITAS_MASCOTA_TB M 
+        ON M.ID_MASCOTA_PK = CM.ID_MASCOTA_FK
+    WHERE 
+        C.FECHA_INICIO BETWEEN NOW() 
+        AND DATE_ADD(NOW(), INTERVAL 1 HOUR)
+    GROUP BY C.ID_CITA_PK;
+END$$
+DELIMITER ;
+
+
+-- ======================================================
+-- NOMBRE: HUELLITAS_GENERAR_NOTIF_CITAS_MANANA_SP
+-- DESCRIPCIÓN: Procedimiento para crear notificaciones de citas de mañana
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_GENERAR_NOTIF_CITAS_MANANA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_GENERAR_NOTIF_CITAS_MANANA_SP()
+BEGIN
+    INSERT INTO HUELLITAS_NOTIFICACIONES_TB (
+        ID_USUARIO_FK,
+        ID_ESTADO_FK,
+        TITULO_NOTIFICACION,
+        MENSAJE_NOTIFICACION,
+        TIPO_NOTIFICACION,
+        PRIORIDAD,
+        URL_REDIRECCION
+    )
+    SELECT 
+        U.ID_USUARIO_PK AS ID_USUARIO_FK,
+        1 AS ID_ESTADO_FK, -- ACTIVA
+        'Recordatorio de cita para mañana' AS TITULO,
+        CONCAT(
+            'Estimado(a) ', C.CLIENTE_NOMBRE,
+            ', tienes una cita programada para mañana a las ',
+            DATE_FORMAT(C.FECHA_INICIO, '%h:%i %p'),
+            '. Motivo: ', IFNULL(C.MOTIVO, 'Sin motivo registrado'),
+            '. Mascotas: ',
+            IFNULL(
+                (SELECT GROUP_CONCAT(IFNULL(M.NOMBRE_MASCOTA, CM.MASCOTA_NOMBRE_MANUAL) SEPARATOR ', ')
+                 FROM HUELLITAS_CITAS_MASCOTAS_TB CM
+                 LEFT JOIN HUELLITAS_MASCOTA_TB M ON M.ID_MASCOTA_PK = CM.ID_MASCOTA_FK
+                 WHERE CM.ID_CITA_FK = C.ID_CITA_PK),
+            'N/A')
+        ) AS MENSAJE,
+        'CITA' AS TIPO_NOTIF,
+        'ALTA' AS PRIORIDAD,
+        CONCAT('/index.php?controller=employeeAppointment&action=detalle&id=', C.ID_CITA_PK) AS URL_REDIRECCION
+    FROM HUELLITAS_CITAS_TB C
+    LEFT JOIN HUELLITAS_USUARIOS_TB U
+        ON U.CODIGO_USUARIO = C.CODIGO_USUARIO
+    WHERE DATE(C.FECHA_INICIO) = CURDATE() + INTERVAL 1 DAY;
+END$$
+DELIMITER ;
+
+-- ======================================================
+-- NOMBRE: HUELLITAS_GENERAR_NOTIF_CITAS_EN_1_HORA_SP
+-- DESCRIPCIÓN: Procedimiento para crear notificaciones de citas de cada hora
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_GENERAR_NOTIF_CITAS_EN_1_HORA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_GENERAR_NOTIF_CITAS_EN_1_HORA_SP()
+BEGIN
+    INSERT INTO HUELLITAS_NOTIFICACIONES_TB (
+        ID_USUARIO_FK,
+        ID_ESTADO_FK,
+        TITULO_NOTIFICACION,
+        MENSAJE_NOTIFICACION,
+        TIPO_NOTIFICACION,
+        PRIORIDAD,
+        URL_REDIRECCION
+    )
+    SELECT 
+        U.ID_USUARIO_PK AS ID_USUARIO_FK,
+        1 AS ID_ESTADO_FK, -- ACTIVA
+        'Tu cita empieza en aproximadamente 1 hora' AS TITULO,
+        CONCAT(
+            'Hola ', C.CLIENTE_NOMBRE,
+            ', tu cita inicia a las ',
+            DATE_FORMAT(C.FECHA_INICIO, '%h:%i %p'),
+            '. Motivo: ', IFNULL(C.MOTIVO, 'Sin motivo registrado'),
+            '. Mascotas: ',
+            IFNULL(
+                (SELECT GROUP_CONCAT(IFNULL(M.NOMBRE_MASCOTA, CM.MASCOTA_NOMBRE_MANUAL) SEPARATOR ', ')
+                 FROM HUELLITAS_CITAS_MASCOTAS_TB CM
+                 LEFT JOIN HUELLITAS_MASCOTA_TB M ON M.ID_MASCOTA_PK = CM.ID_MASCOTA_FK
+                 WHERE CM.ID_CITA_FK = C.ID_CITA_PK),
+            'N/A')
+        ) AS MENSAJE,
+        'CITA' AS TIPO_NOTIF,
+        'ALTA' AS PRIORIDAD,
+        CONCAT('/index.php?controller=employeeAppointment&action=detalle&id=', C.ID_CITA_PK) AS URL_REDIRECCION
+    FROM HUELLITAS_CITAS_TB C
+    LEFT JOIN HUELLITAS_USUARIOS_TB U
+        ON U.CODIGO_USUARIO = C.CODIGO_USUARIO
+    WHERE C.FECHA_INICIO BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 1 HOUR);
+END$$
+DELIMITER ;
+
 
 -- ==========================================
 -- STORED PROCEDURES PARA EL DASHBOARD
@@ -5876,9 +6288,9 @@ DELIMITER ;
 -- ==========================================
 -- SP: HUELLITAS_DASHBOARD_CITAS_HOY_SP
 -- ==========================================
-DROP PROCEDURE IF EXISTS HUELLITAS_DASHBOARD_CITAS_HOY_SP;
+DROP PROCEDURE IF EXISTS HUELLITAS_DASHBOARD_EMPLEADO_CITAS_HOY_SP;
 DELIMITER $$
-CREATE PROCEDURE HUELLITAS_DASHBOARD_CITAS_HOY_SP(IN p_id_empleado INT)
+CREATE PROCEDURE HUELLITAS_DASHBOARD_EMPLEADO_CITAS_HOY_SP(IN p_id_empleado INT)
 BEGIN
     SELECT 
         c.ID_CITA_PK,
@@ -6032,3 +6444,6 @@ BEGIN
     AND rc.ID_ESTADO_FK = 1;
 END$$
 DELIMITER ;
+
+
+

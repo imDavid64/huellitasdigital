@@ -20,7 +20,7 @@
             <?php foreach ($clientes as $cliente): ?>
                 <tr>
                     <td><?= htmlspecialchars($cliente['CODIGO']) ?></td>
-                    <td><span class="badge <?= $cliente['TIPO'] === 'USUARIO' ? 'bg-info' : 'bg-secondary' ?>">
+                    <td><span class="badge <?= $cliente['TIPO'] === 'USUARIO' ? 'bg-info' : 'bg-success' ?>">
                             <?= htmlspecialchars($cliente['TIPO']) ?></span></td>
                     <td><?= htmlspecialchars($cliente['NOMBRE']) ?></td>
                     <td><?= htmlspecialchars($cliente['CORREO']) ?></td>

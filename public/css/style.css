@@ -63,7 +63,6 @@ header {
     padding-left: 5rem;
     height: 100px;
     display: flex;
-    gap: 30px;
 }
 
 .header-container-left {
@@ -144,6 +143,10 @@ header {
 .header-user-menu li:hover {
     background-color: #0026572d;
     border-radius: 10px;
+}
+
+.client-logout:hover a{
+    color: #be2828;
 }
 
 /*NAVBAR*/
@@ -495,6 +498,7 @@ header {
 
 .header-cart {
     padding-left: 2rem;
+    padding-right: 2rem;
 }
 
 .header-myPets {
@@ -1349,6 +1353,7 @@ header {
 }
 
 .circle-item {
+    font-size: 23px;
     flex: 0 0 auto;
     /* evita que el item se reduzca y mantén ancho fijo */
     text-align: center;
@@ -1670,12 +1675,12 @@ header {
 
 .admin-notification-icon {
     text-decoration: none;
-    font-size: 25px;
     padding-right: 2rem;
 }
 
 .admin-notification-icon i {
     color: white;
+    font-size: 25px;
 }
 
 .admin-main {
@@ -1924,6 +1929,26 @@ header {
     padding-bottom: 2rem;
 }
 
+.form-container-medicalHistory {
+    display: flex;
+    flex-direction: column;
+    width: 1100px;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+}
+
+.container-medicalHistory {
+    display: flex;
+    gap: 2rem;
+    justify-content: space-between;
+}
+
+.container-medicalHistory .form-item {
+    width: 100%;
+}
+
 .form-item {
     display: flex;
     flex-direction: column;
@@ -2151,6 +2176,21 @@ header {
     background-color: #ffffff;
 }
 
+.client-vet-pet-info-content {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    width: 1290px;
+}
+
+.vet-client-pet-container {
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    width: 700px;
+}
+
 .vet-client-container {
     box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
     border-radius: 10px;
@@ -2164,6 +2204,19 @@ header {
 }
 
 .vet-client-info span {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.vet-client-pet-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+.vet-client-pet-info span {
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
@@ -2368,8 +2421,8 @@ header {
     background-color: #004AAD;
     box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
-    color: white;
-    max-height: 620px;
+    max-height: 550px;
+    min-height: 550px;
 }
 
 .my-pets-info-medical-history-list {
@@ -2419,11 +2472,11 @@ header {
 }
 
 .my-pets-info-medical-history-info-content-left {
-    width: 100%;
+    min-width: 390px;
 }
 
 .my-pets-info-medical-history-info-content-right {
-    width: 100%;
+    min-width: 390px;
 }
 
 .pet-data-item {
@@ -3112,60 +3165,75 @@ input[type=number]::-webkit-outer-spin-button {
     color: #fff;
 }
 
-.kpi-card {
-    background: white;
-    min-width: 190px;
-    max-width: 190px;
-    padding: 1rem;
-    border-radius: 14px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-    text-align: center;
+.card-title {
+    color: #002557 !important;
+}
+
+.stat-card {
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.card {
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.notification-icon {
+    text-decoration: none;
+    padding-right: 2rem;
+}
+
+.notification-icon i {
     color: #002557;
-    border-left: 6px solid rgba(0, 0, 0, 0.15);
-    transition: 0.25s ease;
+    font-size: 25px;
 }
 
-.kpi-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+.notification-dropdown-client {
+    position: absolute;
+    right: 100px;
+    top: 100px;
+    background: #fff;
+    border: 1px solid #ddd;
+    width: 300px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    z-index: 2000;
 }
 
-.kpi-card i {
-    font-size: 32px;
-    margin-bottom: 10px;
+.notification-count-client {
+    position: absolute;
+    top: 25px;
+    right: 294px;
+    background: #e63946;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    padding: 2px 6px;
+    min-width: 18px;
+    text-align: center;
+    font-weight: bold;
+    display: none;
 }
 
-/* Colores por categoría */
-.kpi-blue {
-    border-left-color: #004AAD;
+.medical-history-details .hist-section {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    margin-bottom: 25px;
 }
 
-.kpi-yellow {
-    border-left-color: #FFD600;
+.medical-history-details label {
+    color: #003780;
 }
 
-.kpi-green {
-    border-left-color: #91CD00;
+.medical-history-details h4 {
+    font-weight: bold;
+    color: #002557;
 }
 
-.kpi-purple {
-    border-left-color: #7E0689;
-}
-
-.kpi-cyan {
-    border-left-color: #8FCEFF;
-}
-
-.kpi-orange {
-    border-left-color: #FF9100;
-}
-
-.kpi-red {
-    border-left-color: #D10000;
-}
-
-.kpi-dark {
-    border-left-color: #002557;
+.no-data {
+    color: #8a8a8a;
+    font-style: italic;
 }
 
 

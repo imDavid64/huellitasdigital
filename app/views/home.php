@@ -73,15 +73,13 @@ require_once __DIR__ . '/../../app/config/bootstrap.php';
                         <?php if (!empty($brands)): ?>
                             <?php foreach ($brands as $brand): ?>
                                 <div class="circle-item">
-                                    <a href="#">
-                                        <div class="circle-container">
-                                            <img src="<?= htmlspecialchars($brand['MARCA_IMAGEN_URL']) ?>"
-                                                alt="<?= htmlspecialchars($brand['NOMBRE_MARCA']) ?>">
-                                        </div>
-                                        <div>
-                                            <span><?= htmlspecialchars($brand['NOMBRE_MARCA']) ?></span>
-                                        </div>
-                                    </a>
+                                    <div class="circle-container">
+                                        <img src="<?= htmlspecialchars($brand['MARCA_IMAGEN_URL']) ?>"
+                                            alt="<?= htmlspecialchars($brand['NOMBRE_MARCA']) ?>">
+                                    </div>
+                                    <div>
+                                        <span><?= htmlspecialchars($brand['NOMBRE_MARCA']) ?></span>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>

@@ -1,11 +1,11 @@
 <?php
-namespace App\Controllers\Employee;
+namespace App\Controllers\admin;
 
 use App\Models\Admin\CatalogModel;
 use App\Models\Employee\ClientModel;
 use App\Models\Employee\AppointmentModel;
 
-class EmployeeAppointmentController
+class AdminAppointmentController
 {
     private AppointmentModel $appointmentModel;
     private CatalogModel $catalogModel;
@@ -13,15 +13,10 @@ class EmployeeAppointmentController
 
     public function __construct()
     {
-        // Solo empleados o administradores
-        if (
-            !isset($_SESSION['user_role']) ||
-            ($_SESSION['user_role'] !== 'EMPLEADO' && $_SESSION['user_role'] !== 'ADMINISTRADOR')
-        ) {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'ADMINISTRADOR') {
             header("Location: " . BASE_URL . "/index.php?controller=home&action=error403");
             exit;
         }
-
 
         $this->appointmentModel = new AppointmentModel();
         $this->catalogModel = new CatalogModel();
@@ -32,7 +27,7 @@ class EmployeeAppointmentController
     {
         $citas = $this->appointmentModel->obtenerCitasFullCalendar();
 
-        require VIEW_PATH . "/employee/appointment-mgmt/appointment-mgmt.php";
+        require VIEW_PATH . "/admin/appointment-mgmt/appointment-mgmt.php";
     }
 
     public function api()
@@ -49,7 +44,7 @@ class EmployeeAppointmentController
     {
         $servicios = $this->appointmentModel->getAllServices();
         $empleados = $this->appointmentModel->getAllEmployees();
-        require VIEW_PATH . "/employee/appointment-mgmt/add-appointment.php";
+        require VIEW_PATH . "/admin/appointment-mgmt/add-appointment.php";
     }
 
     public function store()

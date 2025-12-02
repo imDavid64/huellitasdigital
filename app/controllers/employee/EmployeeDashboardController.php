@@ -10,6 +10,14 @@ class EmployeeDashboardController
     public function __construct()
     {
         // Solo empleados o administradores
+        if (
+            !isset($_SESSION['user_role']) ||
+            ($_SESSION['user_role'] !== 'EMPLEADO' && $_SESSION['user_role'] !== 'ADMINISTRADOR')
+        ) {
+            header("Location: " . BASE_URL . "/index.php?controller=home&action=error403");
+            exit;
+        }
+
         $this->dashboardModel = new DashboardModel();
     }
 
@@ -17,7 +25,7 @@ class EmployeeDashboardController
     {
         // Obtener ID del empleado desde la sesión
         $id_empleado = $_SESSION['user_id'] ?? null;
-        
+
         if (!$id_empleado) {
             throw new \Exception("Usuario no autenticado");
         }
@@ -42,7 +50,7 @@ class EmployeeDashboardController
 
         try {
             $id_empleado = $_SESSION['user_id'] ?? null;
-            
+
             if (!$id_empleado) {
                 echo json_encode(['error' => 'Usuario no autenticado']);
                 exit;
@@ -56,7 +64,7 @@ class EmployeeDashboardController
             ];
 
             echo json_encode($estadisticas, JSON_UNESCAPED_UNICODE);
-            
+
         } catch (\Exception $e) {
             echo json_encode(['error' => $e->getMessage()]);
         }

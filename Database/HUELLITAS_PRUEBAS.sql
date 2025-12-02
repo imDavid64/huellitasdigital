@@ -1038,12 +1038,3 @@ CALL HUELLITAS_VALIDAR_LOGIN_SP('maria.lopez@email.com', 'ClaveSegura2024!');
 
 -- Probar login fallido
 CALL HUELLITAS_VALIDAR_LOGIN_SP('maria.lopez@email.com', 'clave_incorrecta');
-
--- Cambiar contraseña
-CALL HUELLITAS_CAMBIAR_CONTRASENNA_SP(1, 'ClaveSegura2024!', 'NuevaClaveSuperSegura2024!');
-
--- Probar que la nueva contraseña funciona
-CALL HUELLITAS_VALIDAR_LOGIN_SP('maria.lopez@email.com', 'NuevaClaveSuperSegura2024!');
-
-
-CALL HUELLITAS_LISTAR_PRODUCTOS_ACTIVOS_SP();

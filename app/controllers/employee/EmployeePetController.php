@@ -41,7 +41,7 @@ class EmployeePetController
         }
 
         $mascota = $this->petModel->obtenerMascotaPorCodigo($codigo);
-        $historiales = $this->petModel->obtenerHistorialesMedicos($codigo);
+        $historiales = $this->petModel->listarHistorialesResumen($codigo);
 
         require VIEW_PATH . "/employee/pet-mgmt/pet-details.php";
     }
@@ -131,8 +131,6 @@ class EmployeePetController
         echo json_encode($resultado, JSON_UNESCAPED_UNICODE);
 
     }
-
-
 
     public function edit()
     {

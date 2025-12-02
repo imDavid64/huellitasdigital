@@ -75,18 +75,17 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                                 <div class="subtittles">
                                     <h3>Historial Médico</h3>
                                     <div>
-                                        <a href="<?= BASE_URL ?>/index.php?controller=employeePet&action=add"
+                                        <a href="<?= BASE_URL ?>/index.php?controller=employeeMedicalHistory&action=create&codigo=<?= urlencode($mascota['CODIGO_MASCOTA']) ?>"
                                             class="btn-blue"><strong>Crear Historial</strong>
-                                            <i class="bi bi-patch-plus-fill"></i></a>
+                                            <i class="bi bi-file-earmark-plus"></i></a>
                                     </div>
                                 </div>
                                 <table class="table">
                                     <thead>
                                         <tr class="text-center">
-                                            <th scope="col">ID</th>
+                                            <th scope="col">Codigo</th>
                                             <th scope="col">Fecha</th>
                                             <th scope="col">Hora</th>
-                                            <th scope="col">Motivo</th>
                                             <th style="" scope="col"></th>
                                         </tr>
                                     </thead>
@@ -98,15 +97,14 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                                         <?php else: ?>
                                             <?php foreach ($historiales as $h): ?>
                                                 <tr>
-                                                    <td><?= $m['ID_CONSULTA_FK'] ?></td>
-                                                    <td><?= htmlspecialchars($h['CONSULTA_FECHA']) ?></td>
-                                                    <td><?= htmlspecialchars($h['HORA']) ?></td>
-                                                    <td><?= htmlspecialchars($h['MOTIVO']) ?></td>
+                                                    <td><?= htmlspecialchars($h['CODIGO_HISTORIAL']) ?></td>
+                                                    <td><?= htmlspecialchars($h['HISTORIAL_FECHA']) ?></td>
+                                                    <td><?= htmlspecialchars($h['HISTORIAL_HORA']) ?></td>
                                                     <td class="text-center">
                                                         <div class="btn-group" role="group">
-                                                            <a href="<?= BASE_URL ?>/index.php?controller=employeePet&action=details&codigo=<?= urlencode($cliente['CODIGO']) ?>"
-                                                                class="btn btn-dark-blue btn-sm">Ver Mascota <i
-                                                                    class="bi bi-pencil-square"></i></a>
+                                                            <a href="<?= BASE_URL ?>/index.php?controller=employeeMedicalHistory&action=details&codigo=<?= urlencode($h['CODIGO_HISTORIAL']) ?>&codigo_mascota=<?= urlencode($mascota['CODIGO_MASCOTA']) ?>"
+                                                                class="btn btn-dark-blue btn-sm">Ver Detalles<i
+                                                                    class="bi bi-file-text"></i></a>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -118,7 +116,6 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
             </section>
         </section>

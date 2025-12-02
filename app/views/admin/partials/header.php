@@ -28,7 +28,7 @@ if (!defined('BASE_URL')) {
             <div class="admin-notification-icon">
                 <a href="#" id="btnNotifications"><i class="bi bi-bell-fill"></i>
                     <span id="notification-count" class="notification-count">0</span></a>
-                <div class="notification-dropdown" id="notificationDropdown" style="display:none;">
+                <div class="notification-dropdown-client" id="notificationDropdown" style="display:none;">
                     <div class="notification-header">Notificaciones</div>
                     <div class="notification-list"></div>
                     <div class="notification-footer">
@@ -43,7 +43,7 @@ if (!defined('BASE_URL')) {
                 <!---->
                 <div class="admin-header-user-menu" id="header-user-menu">
                     <ul>
-                        <li><a href="pages/profile.html"><i class="bi bi-person-fill"></i> Mi Pefil</a></li>
+                        <li><a href="<?= BASE_URL ?>/index.php?controller=user&action=index"><i class="bi bi-person-fill"></i> Mi Pefil</a></li>
                         <li><a href="<?= BASE_URL ?>/index.php?controller=home&action=index">
                                 <i class="bi bi-bag-fill"></i> Modo Cliente</a></li>
                         <li><a href="<?= BASE_URL ?>/index.php?controller=auth&action=logout">

@@ -80,7 +80,7 @@ class AuthController
                         $redirect = BASE_URL . '/index.php?controller=adminDashboard&action=index';
                         break;
                     case 'EMPLEADO':
-                        $redirect = BASE_URL . '/index.php?controller=employee&action=index';
+                        $redirect = BASE_URL . '/index.php?controller=employeeDashboard&action=index';
                         break;
                     default:
                         $redirect = BASE_URL . '/index.php?controller=home&action=index';
@@ -99,10 +99,10 @@ class AuthController
             $_SESSION['success'] = $msg;
             switch ($_SESSION['user_role']) {
                 case 'ADMINISTRADOR':
-                    header('Location: ' . BASE_URL . '/index.php?controller=admin&action=index');
+                    header('Location: ' . BASE_URL . '/index.php?controller=adminDashboard&action=index');
                     break;
                 case 'EMPLEADO':
-                    header('Location: ' . BASE_URL . '/index.php?controller=employee&action=index');
+                    header('Location: ' . BASE_URL . '/index.php?controller=employeeDashboard&action=index');
                     break;
                 default:
                     header('Location: ' . BASE_URL . '/index.php?controller=home&action=index');

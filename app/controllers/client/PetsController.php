@@ -71,9 +71,29 @@ class PetsController
         $codigoMascota = $_GET['codigo'] ?? '';
 
         $mascota = $this->petsModel->obtenerMascotaPorCodigo($codigoMascota);
+        $historiales = $this->petsModel->listarHistorialesResumen($codigoMascota);
         $categories = $this->productModel->getAllActiveCategories();
         $services = $this->serviceModel->getAllActiveServices();
 
         require VIEW_PATH . '/client/myPets/pet-details.php';
     }
+
+    public function ajaxGetHistory()
+    {
+        header("Content-Type: application/json");
+
+        $codigoHistorial = $_GET['code'] ?? null;
+
+        if (!$codigoHistorial) {
+            echo json_encode(["error" => "Código no proporcionado"]);
+            return;
+        }
+
+        $historial = $this->petsModel->getMedicalHistoryByCode($codigoHistorial);
+
+        echo json_encode($historial ?: ["error" => "No encontrado"]);
+    }
+
+    
+
 }

@@ -169,5 +169,58 @@ class EmailHelper
         }
     }
 
+    public static function enviarRecordatorioCita(array $cita): bool
+    {
+        if (empty($_ENV['SMTP_USER']) || empty($_ENV['SMTP_PASS'])) {
+            error_log('⚠️ Configuración SMTP ausente (.env).');
+            return false;
+        }
+
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = $_ENV['SMTP_USER'];
+            $mail->Password = $_ENV['SMTP_PASS'];
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+            $mail->CharSet = 'UTF-8';
+
+            $mail->setFrom($_ENV['SMTP_USER'], 'Huellitas Digital');
+            $mail->addAddress($cita['CLIENTE_CORREO'], $cita['CLIENTE_NOMBRE']);
+
+            $mail->isHTML(true);
+            $mail->Subject = '⏰ Recordatorio de cita veterinaria - Huellitas Digital';
+
+            $fecha = date('d/m/Y h:i A', strtotime($cita['FECHA_INICIO']));
+
+            $mail->Body = "
+            <div style='font-family: Arial, sans-serif; color:#333'>
+                <h2>Hola {$cita['CLIENTE_NOMBRE']} 🐾</h2>
+                <p>Este es un recordatorio de tu cita veterinaria.</p>
+
+                <p><b>Fecha:</b> {$fecha}</p>
+                <p><b>Mascota(s):</b> {$cita['MASCOTAS']}</p>
+                <p><b>Motivo:</b> {$cita['MOTIVO']}</p>
+
+                <p style='margin-top:20px;'>
+                    Nos vemos pronto en <b>Huellitas Digital</b>.
+                </p>
+            </div>
+        ";
+
+            return $mail->send();
+        } catch (Exception $e) {
+            error_log('❌ Error enviando recordatorio cita: ' . $mail->ErrorInfo);
+            return false;
+        } finally {
+            if (method_exists($mail, 'smtpClose')) {
+                $mail->smtpClose();
+            }
+        }
+    }
+
 
 }

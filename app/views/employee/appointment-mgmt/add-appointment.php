@@ -4,6 +4,9 @@ include_once __DIR__ . '/../includes/auth.php';
 checkRole(['EMPLEADO', 'ADMINISTRADOR']);
 ?>
 
+<script>
+    window.APPOINTMENT_CONTROLLER = "employeeAppointment";
+</script>
 
 <!DOCTYPE html>
 <html lang="es">

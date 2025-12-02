@@ -357,6 +357,23 @@ END //
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_HISTORIAL_GENERAR_CODIGO_TRG
+-- DESCRIPCIÓN: Trigger para asignar automáticamente un código al registrar historial medico
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_HISTORIAL_GENERAR_CODIGO_TRG;
+DELIMITER //
+CREATE TRIGGER HUELLITAS_HISTORIAL_GENERAR_CODIGO_TRG
+BEFORE INSERT ON HUELLITAS_HISTORIALES_MEDICOS_TB
+FOR EACH ROW
+BEGIN
+    IF NEW.CODIGO_HISTORIAL IS NULL OR NEW.CODIGO_HISTORIAL = '' THEN
+        SET NEW.CODIGO_HISTORIAL = GENERAR_CODIGO_HISTORIAL_FN();
+    END IF;
+END //
+DELIMITER ;
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_MASCOTA_VALIDATE_OWNER_INSERT_TRG
 -- DESCRIPCIÓN: Trigger validar el propietario de la mascota antes de un insert
 -- ==========================================

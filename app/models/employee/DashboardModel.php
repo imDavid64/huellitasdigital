@@ -8,7 +8,7 @@ class DashboardModel extends BaseModel
     public function getCitasHoy(int $id_empleado): array
     {
         try {
-            $stmt = $this->conn->prepare("CALL HUELLITAS_DASHBOARD_CITAS_HOY_SP(?)");
+            $stmt = $this->conn->prepare("CALL HUELLITAS_DASHBOARD_EMPLEADO_CITAS_HOY_SP(?)");
             $stmt->bind_param("i", $id_empleado);
             $stmt->execute();
             $result = $stmt->get_result();
