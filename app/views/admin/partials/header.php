@@ -1,12 +1,15 @@
 <?php
 //NO QUITAR//
 if (!defined('BASE_URL')) {
-  require_once __DIR__ . '/../../../config/bootstrap.php';
+    require_once __DIR__ . '/../../../config/bootstrap.php';
 }
 
+$userPhoto = !empty($_SESSION['user_image'])
+    ? $_SESSION['user_image']
+    : BASE_URL . '/public/assets/images/default-user-image.png';
 ?>
 <script>
-  const BASE_URL = "<?= BASE_URL ?>";
+    const BASE_URL = "<?= BASE_URL ?>";
 </script>
 <!--NO QUITAR-->
 
@@ -28,7 +31,7 @@ if (!defined('BASE_URL')) {
             <div class="admin-notification-icon">
                 <a href="#" id="btnNotifications"><i class="bi bi-bell-fill"></i>
                     <span id="notification-count" class="notification-count">0</span></a>
-                <div class="notification-dropdown-client" id="notificationDropdown" style="display:none;">
+                <div class="notification-dropdown" id="notificationDropdown" style="display:none;">
                     <div class="notification-header">Notificaciones</div>
                     <div class="notification-list"></div>
                     <div class="notification-footer">
@@ -38,12 +41,17 @@ if (!defined('BASE_URL')) {
             </div>
             <div class="header-menu-icon">
                 <button class="header-user-img header-user-admin" id="header-user-img">
-                    <i class="bi bi-person-fill"></i>
+                    <?php if (!empty($_SESSION['user_image'])): ?>
+                        <img src="<?= htmlspecialchars($userPhoto) ?>" alt="Foto" class="header-user-photo">
+                    <?php else: ?>
+                        <i class="bi bi-person-fill"></i>
+                    <?php endif; ?>
                 </button>
                 <!---->
                 <div class="admin-header-user-menu" id="header-user-menu">
                     <ul>
-                        <li><a href="<?= BASE_URL ?>/index.php?controller=user&action=index"><i class="bi bi-person-fill"></i> Mi Pefil</a></li>
+                        <li><a href="<?= BASE_URL ?>/index.php?controller=user&action=index"><i
+                                    class="bi bi-person-fill"></i> Mi Pefil</a></li>
                         <li><a href="<?= BASE_URL ?>/index.php?controller=home&action=index">
                                 <i class="bi bi-bag-fill"></i> Modo Cliente</a></li>
                         <li><a href="<?= BASE_URL ?>/index.php?controller=auth&action=logout">

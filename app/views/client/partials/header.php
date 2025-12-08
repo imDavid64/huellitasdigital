@@ -4,6 +4,10 @@ if (!defined('BASE_URL')) {
   require_once __DIR__ . '/../../../config/bootstrap.php';
 }
 
+$userPhoto = !empty($_SESSION['user_image'])
+  ? $_SESSION['user_image']
+  : BASE_URL . '/public/assets/images/default-user-image.png';
+
 ?>
 <script>
   const BASE_URL = "<?= BASE_URL ?>";
@@ -271,7 +275,11 @@ if ($message === "pass_changed") {
         </div>
         <div>
           <button class="header-user-img" id="header-user-img">
-            <i class="bi bi-person-fill"></i>
+            <?php if (!empty($_SESSION['user_image'])): ?>
+              <img src="<?= htmlspecialchars($userPhoto) ?>" alt="Foto" class="header-user-photo">
+            <?php else: ?>
+              <i class="bi bi-person-fill"></i>
+            <?php endif; ?>
           </button>
           <div class="header-user-menu" id="header-user-menu">
             <ul>

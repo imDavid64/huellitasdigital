@@ -575,6 +575,11 @@ $(function () {
                     url: `${BASE_URL}/index.php`,
                     action: "search",
                     controller: "employeeClient"
+                },
+                notification: {
+                    url: `${BASE_URL}/index.php`,
+                    action: "search",
+                    controller: "adminNotification"
                 }
             };
 
@@ -660,6 +665,11 @@ $(function () {
                 url: `${BASE_URL}/index.php`,
                 action: "search",
                 controller: "employeeClient"
+            },
+            notification: {
+                url: `${BASE_URL}/index.php`,
+                action: "search",
+                controller: "adminNotification"
             }
         };
 
@@ -2353,10 +2363,10 @@ $(function () {
                 info.el.style.setProperty("padding", "4px", "important");
             },
 
-
-
             eventClick: function (info) {
                 const data = info.event.extendedProps;
+
+                const idCita = info.event.id;
 
                 const cliente = data.CLIENTE_NOMBRE || "Sin nombre";
                 const mascotas = data.MASCOTAS || "Ninguna";
@@ -2379,17 +2389,54 @@ $(function () {
                     title: `<strong style="color:#002557;"><i class="bi bi-calendar-event-fill"></i> Detalle de la Cita</strong>`,
                     html: wrapper.innerHTML,
                     width: 600,
-                    confirmButtonText: "Cerrar",
-                    confirmButtonColor: "#003780"
+                    showCancelButton: true,
+                    cancelButtonText: "Cerrar",
+                    confirmButtonText: "Cancelar Cita",
+                    confirmButtonColor: "#000000ff",
+                    cancelButtonColor: "#003780"
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: "¿Cancelar la cita?",
+                            text: "Esta acción no se puede deshacer.",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Sí, cancelar",
+                            cancelButtonText: "No",
+                            confirmButtonColor: "#D90429"
+                        }).then(r => {
+                            if (r.isConfirmed) {
+                                cancelarCita(idCita, info.event);
+                            }
+                        });
+                    }
                 });
             }
+
         });
 
         calendar.render();
     }
 
-
-
+    // Función para cancelar cita vía AJAX
+    function cancelarCita(idCita, event) {
+        $.ajax({
+            url: `${BASE_URL}/index.php?controller=${CTRL}&action=cancel`,
+            method: "POST",
+            data: { id_cita: idCita },
+            success: function (response) {
+                if (response.EXITO === 1) {
+                    Swal.fire("Cita cancelada", response.MENSAJE, "success");
+                    event.remove(); // ❌ Elimina la cita del calendario
+                } else {
+                    Swal.fire("Error", response.MENSAJE, "error");
+                }
+            },
+            error: function () {
+                Swal.fire("Error", "No se pudo cancelar la cita.", "error");
+            }
+        });
+    }
 
 
     $(document).ready(function () {
@@ -2806,6 +2853,347 @@ $(function () {
 
         let modal = new bootstrap.Modal(document.getElementById("modalDetalleCita"));
         modal.show();
+    });
+
+    /* ============================================================
+   GESTIÓN DE EXPEDIENTES - AJAX + PAGINACIÓN + BÚSQUEDA EN VIVO
+   ============================================================ */
+
+    let paginaActual = 1;
+    let ultimoTermino = "";
+
+    // Detectar si estamos en la página de gestión de expedientes
+    $(document).ready(function () {
+
+        if ($("#expedientesContainer").length > 0) {
+            cargarExpedientes("", 1);
+
+            // Búsqueda en tiempo real
+            $("#searchExpediente").on("input", function () {
+                let termino = $(this).val();
+                ultimoTermino = termino;
+                cargarExpedientes(termino, 1);
+            });
+        }
+    });
+
+    /* ============================
+       🔹 Cargar expedientes vía AJAX
+       ============================ */
+    function cargarExpedientes(termino, pagina) {
+
+        $.ajax({
+            url: BASE_URL_JS + "/index.php",
+            method: "GET",
+            data: {
+                controller: "employeeFile",
+                action: "ajaxBuscarExpedientes",
+                q: termino,
+                page: pagina
+            },
+
+            success: function (response) {
+                renderExpedientes(response.data);
+                renderPaginacion(response.total_paginas, response.pagina);
+            },
+
+            error: function () {
+                $("#expedientesContainer").html(`
+                <div class="col-12 text-center text-danger mt-4">
+                    Error al cargar expedientes.
+                </div>
+            `);
+            }
+        });
+    }
+
+    /* ============================
+       🔹 Renderizar las tarjetas
+       ============================ */
+    function renderExpedientes(lista) {
+
+        let cont = $("#expedientesContainer");
+        cont.html("");
+
+        if (!lista || lista.length === 0) {
+            cont.html(`
+            <div class="col-12 text-center text-muted mt-4">
+                No se encontraron expedientes.
+            </div>
+        `);
+            return;
+        }
+
+        lista.forEach(exp => {
+
+            let imagen = exp.MASCOTA_IMAGEN_URL && exp.MASCOTA_IMAGEN_URL !== ""
+                ? exp.MASCOTA_IMAGEN_URL
+                : BASE_URL_JS + "/public/assets/images/default-pet-image.jpg";
+
+            cont.append(`
+            <div class="col-md-6 col-lg-4">
+                <div class="card expediente-card shadow" style="border-radius: 14px;">
+                    
+                    <div class="card-img-top"
+                        style="height: 200px; overflow:hidden; border-radius: 14px 14px 0 0;">
+                        <img src="${imagen}" class="w-100 h-100 object-fit-cover">
+                    </div>
+
+                    <div class="card-body">
+                        <h5 class="card-title mb-1">
+                            <i class="bi bi-paw-fill"></i> ${exp.NOMBRE_MASCOTA}
+                        </h5>
+
+                        <p class="text-muted small mb-2">
+                            Código: <strong>${exp.CODIGO_MASCOTA}</strong>
+                        </p>
+
+                        <ul class="list-unstyled small mb-3">
+                            <li><i class="bi bi-person-fill"></i> Dueño: ${exp.DUENNO_NOMBRE}</li>
+                            <li><i class="bi bi-gender-ambiguous"></i> ${exp.GENERO}, ${exp.EDAD_APROX} años</li>
+                            <li><i class="bi bi-heart-pulse-fill"></i>
+                                Última consulta: ${exp.ULTIMA_CONSULTA ?? "Sin registros"}
+                            </li>
+                        </ul>
+
+                        <a href="${BASE_URL_JS}/index.php?controller=employeePet&action=details&codigo=${exp.CODIGO_MASCOTA}"
+                           class="btn-blue">
+                            Ver Expediente
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        `);
+        });
+    }
+
+    /* ============================
+       🔹 Renderizar paginación
+       ============================ */
+    function renderPaginacion(totalPaginas, paginaActual) {
+        let nav = $("#paginationNav");
+        nav.html("");
+
+        if (totalPaginas <= 1) return;
+
+        let html = `<ul class="pagination justify-content-center">`;
+
+        for (let i = 1; i <= totalPaginas; i++) {
+            html += `
+            <li class="page-item ${i === paginaActual ? "active" : ""}">
+                <a class="page-link" href="#" onclick="cargarExpedientes(ultimoTermino, ${i}); return false;">
+                    ${i}
+                </a>
+            </li>`;
+        }
+
+        html += `</ul>`;
+
+        nav.html(html);
+    }
+
+    // ============================================
+    // GESTIÓN DE NOTIFICACIONES ADMINISTRADOR
+    // ============================================
+    // -----------------------------
+    // CAMBIAR ENTRE GLOBAL / PERSONA
+    // -----------------------------
+    const radios = document.querySelectorAll("input[name='notificationTarget']");
+    const userSearchContainer = document.getElementById("userSearchContainer");
+    const userInfoBox = document.getElementById("selectedUserInfo");
+
+    radios.forEach(radio => {
+        radio.addEventListener("change", function () {
+
+            const infoBox = document.getElementById("selectedUserInfo");
+            const placeholder = document.getElementById("selectedUserPlaceholder");
+            const dataBox = document.getElementById("selectedUserData");
+
+            if (this.value === "PERSONA") {
+
+                // Mostrar buscador
+                userSearchContainer.style.display = "block";
+
+                // Mostrar el recuadro vacío
+                infoBox.style.display = "block";
+                placeholder.style.display = "block";
+                dataBox.style.display = "none";
+
+            } else {
+
+                // Ocultar buscador y recuadro
+                userSearchContainer.style.display = "none";
+                infoBox.style.display = "none";
+
+                // Limpiar valores
+                document.getElementById("selectedUserId").value = "";
+                document.getElementById("userSearchResults").style.display = "none";
+            }
+        });
+    });
+
+
+
+    // -----------------------------
+    // BUSCADOR DE USUARIOS DINÁMICO
+    // -----------------------------
+    const searchInput = document.getElementById("userSearch");
+    const resultsBox = document.getElementById("userSearchResults");
+
+    if (searchInput) {
+        searchInput.addEventListener("keyup", function () {
+
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                resultsBox.style.display = "none";
+                return;
+            }
+
+            $.ajax({
+                url: BASE_URL + "/index.php?controller=adminNotification&action=searchUserAjax",
+                method: "GET",
+                data: { query },
+                success: function (data) {
+                    console.log("Usuarios encontrados:", data);
+                    const users = JSON.parse(data);
+
+                    resultsBox.innerHTML = "";
+
+                    if (users.length === 0) {
+                        resultsBox.innerHTML = "<div class='user-result-item'>No se encontraron usuarios</div>";
+                    } else {
+                        users.forEach(user => {
+                            const item = document.createElement("div");
+                            item.className = "user-result-item";
+                            item.textContent = `${user.NOMBRE} (${user.CORREO})`;
+
+                            item.addEventListener("click", function () {
+
+                                searchInput.value = item.textContent;
+                                document.getElementById("selectedUserId").value = user.ID_USUARIO_PK;
+                                resultsBox.style.display = "none";
+
+                                // Mostrar datos del usuario seleccionado
+                                document.getElementById("selectedUserName").textContent = user.NOMBRE;
+                                document.getElementById("selectedUserEmail").textContent = user.CORREO;
+                                document.getElementById("selectedUserState").textContent = user.ESTADO;
+
+                                userInfoBox.style.display = "block";
+                            });
+
+                            resultsBox.appendChild(item);
+                        });
+                    }
+
+                    resultsBox.style.display = "block";
+                }
+            });
+        });
+    }
+
+    // -----------------------------
+    // VALIDAR ENVÍO DEL FORMULARIO
+    // -----------------------------
+    const form = document.getElementById("notificationForm");
+
+    if (form) {
+        form.addEventListener("submit", function (e) {
+
+            const target = document.querySelector("input[name='notificationTarget']:checked").value;
+
+            if (target === "PERSONA" && !document.getElementById("selectedUserId").value) {
+                e.preventDefault();
+                alert("Debes seleccionar un usuario para enviar esta notificación.");
+            }
+        });
+    }
+
+    // Mostrar/ocultar buscador según opción (GLOBAL / PERSONA)
+    $("input[name='notificationTarget']").on("change", function () {
+
+        if (this.value === "PERSONA") {
+            $("#buscadorNotificacionWrapper").show();
+            $("#datosUsuarioSeleccionado").hide();
+            $("#selectedUserId").val("");
+        } else {
+            $("#buscadorNotificacionWrapper").hide();
+            $("#listaResultadosNotificacion").hide();
+            $("#datosUsuarioSeleccionado").hide();
+            $("#selectedUserId").val("");
+        }
+    });
+
+
+    // =====================================================
+    // BUSCADOR AJAX PARA CLIENTES / USUARIOS
+    // =====================================================
+    $(document).on("keyup", "#buscadorNotificacion", function () {
+
+        let query = $(this).val().trim();
+
+        if (query.length < 2) {
+            $("#listaResultadosNotificacion").hide();
+            return;
+        }
+
+        $.ajax({
+            url: BASE_URL + "/index.php?controller=adminNotification&action=searchUserAjax",
+            type: "GET",
+            data: { query },
+            dataType: "json",
+            success: function (data) {
+
+                let html = "";
+
+                if (data.length === 0) {
+                    html = `<div class="list-group-item text-center text-muted">
+                            Sin resultados
+                        </div>`;
+                } else {
+                    data.forEach(item => {
+
+                        html += `
+                        <button type="button" 
+                            class="list-group-item list-group-item-action seleccionar-usuario"
+                            data-id="${item.ID}"
+                            data-nombre="${item.NOMBRE}"
+                            data-correo="${item.CORREO}"
+                            data-identificacion="${item.IDENTIFICACION ?? ''}"
+                            data-telefono="${item.TELEFONO ?? ''}"
+                            data-direccion="${item.DIRECCION ?? ''}">
+                            
+                            <strong>${item.NOMBRE}</strong><br>
+                            <small>${item.CORREO}</small><br>
+                            <small>Código: ${item.CODIGO}</small>
+                        </button>
+                    `;
+                    });
+                }
+
+                $("#listaResultadosNotificacion").html(html).show();
+            }
+        });
+
+    });
+
+
+    // =====================================================
+    // SELECCIONAR USUARIO DESDE LISTA
+    // =====================================================
+    $(document).on("click", ".seleccionar-usuario", function () {
+
+        $("#selectedUserId").val($(this).data("id"));
+
+        $("#usuarioNombreInput").val($(this).data("nombre"));
+        $("#usuarioCorreoInput").val($(this).data("correo"));
+        $("#usuarioIdentificacionInput").val($(this).data("identificacion"));
+        $("#usuarioTelefonoInput").val($(this).data("telefono"));
+        $("#usuarioDireccionInput").val($(this).data("direccion"));
+
+        $("#datosUsuarioSeleccionado").show();
+        $("#listaResultadosNotificacion").hide();
     });
 
 

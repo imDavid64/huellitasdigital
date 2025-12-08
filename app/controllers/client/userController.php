@@ -128,6 +128,7 @@ class UserController
         if ($resultado) {
             $_SESSION['user_name'] = $nombre;
             $_SESSION['user_first_name'] = explode(' ', $nombre)[0];
+            $_SESSION['user_image'] = $new_user_image_url;
             $_SESSION['success'] = "✅ Perfil actualizado correctamente.";
         } else {
             $_SESSION['error'] = "❌ No se pudo actualizar el perfil.";

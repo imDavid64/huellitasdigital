@@ -64,19 +64,25 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
 
                             <div class="row g-4">
                                 <?php foreach ($proximascitas as $proxc): ?>
-
                                     <div class="col-md-6 col-lg-4">
-                                        <div class="card border-0 rounded-4 h-100">
+                                        <div class="card border-0 rounded-4 h-100 position-relative">
 
                                             <!-- ENCABEZADO -->
                                             <div class="card-header text-white rounded-0 rounded-top-4"
-                                                style="background-color: #003780;">
+                                                style="background-color: <?= $proxc["ESTADO"] === "CANCELADO" ? '#6c757d' : '#003780' ?>;">
                                                 <strong>
                                                     📅 <?= htmlspecialchars($proxc["NOMBRE_SERVICIO"]) ?>
                                                 </strong>
                                             </div>
 
                                             <div class="card-body">
+
+                                                <!-- Si está cancelada, mostrar aviso -->
+                                                <?php if ($proxc["ESTADO"] === "CANCELADO"): ?>
+                                                    <p class="text-danger fw-bold">⚠ Cita cancelada.</p>
+                                                <?php elseif ($proxc["ESTADO"] === "ACTIVO"): ?>
+                                                    <p class="text-success fw-bold">✔ Cita activa. </p>
+                                                <?php endif; ?>
 
                                                 <!-- Fecha -->
                                                 <p>⏰
@@ -109,19 +115,32 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
 
                                             <!-- FOOTER -->
                                             <div class="card-footer text-end bg-light rounded-4 rounded-top-0">
-                                                <a href="#" class="btn-blue btn-detalle-cita" style="width: 150px;"
-                                                    data-id="<?= $proxc['ID_CITA_PK'] ?>"
-                                                    data-fecha="<?= date("d/m/Y h:i A", strtotime($proxc['FECHA_INICIO'])) ?>"
-                                                    data-servicio="<?= htmlspecialchars($proxc['NOMBRE_SERVICIO']) ?>"
-                                                    data-veterinario="<?= htmlspecialchars($proxc['VETERINARIO_NOMBRE']) ?>"
-                                                    data-motivo="<?= htmlspecialchars($proxc['MOTIVO'] ?? 'Sin motivo') ?>"
-                                                    data-cliente="<?= htmlspecialchars($proxc['CLIENTE_NOMBRE'] ?? 'Cliente manual') ?>"
-                                                    data-correo-cliente="<?= htmlspecialchars($proxc['CLIENTE_CORREO'] ?? '---') ?>"
-                                                    data-telefono="<?= htmlspecialchars($proxc['CLIENTE_TELEFONO'] ?? '---') ?>"
-                                                    data-identificacion="<?= htmlspecialchars($proxc['CLIENTE_IDENTIFICACION'] ?? '---') ?>"
-                                                    data-mascota="<?= htmlspecialchars($proxc['NOMBRE_MASCOTA'] ?? $proxc['MASCOTA_NOMBRE_MANUAL'] ?? '---') ?>">
-                                                    Ver detalle <i class="bi bi-eye"></i>
-                                                </a>
+
+                                                <?php if ($proxc["ESTADO"] === "CANCELADO"): ?>
+
+                                                    <!-- Botón deshabilitado para citas canceladas -->
+                                                    <button class="btn btn-secondary w-100" disabled>
+                                                        Cita Cancelada
+                                                    </button>
+
+                                                <?php else: ?>
+
+                                                    <!-- Botón ver detalle -->
+                                                    <a href="#" class="btn-blue btn-detalle-cita" style="width: 150px;"
+                                                        data-id="<?= $proxc['ID_CITA_PK'] ?>"
+                                                        data-fecha="<?= date("d/m/Y h:i A", strtotime($proxc['FECHA_INICIO'])) ?>"
+                                                        data-servicio="<?= htmlspecialchars($proxc['NOMBRE_SERVICIO']) ?>"
+                                                        data-veterinario="<?= htmlspecialchars($proxc['VETERINARIO_NOMBRE']) ?>"
+                                                        data-motivo="<?= htmlspecialchars($proxc['MOTIVO'] ?? 'Sin motivo') ?>"
+                                                        data-cliente="<?= htmlspecialchars($proxc['CLIENTE_NOMBRE'] ?? 'Cliente manual') ?>"
+                                                        data-correo-cliente="<?= htmlspecialchars($proxc['CLIENTE_CORREO'] ?? '---') ?>"
+                                                        data-telefono="<?= htmlspecialchars($proxc['CLIENTE_TELEFONO'] ?? '---') ?>"
+                                                        data-identificacion="<?= htmlspecialchars($proxc['CLIENTE_IDENTIFICACION'] ?? '---') ?>"
+                                                        data-mascota="<?= htmlspecialchars($proxc['NOMBRE_MASCOTA'] ?? $proxc['MASCOTA_NOMBRE_MANUAL'] ?? '---') ?>">
+                                                        Ver detalle <i class="bi bi-eye"></i>
+                                                    </a>
+
+                                                <?php endif; ?>
 
                                             </div>
 
@@ -135,6 +154,10 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
 
                     </div>
                 </div>
+
+                <!-- =======================
+                     CITAS PASADAS
+                ======================= -->
                 <?php if (!empty($citasPasadas)): ?>
                     <div class="tittles mt-5">
                         <h1><strong>Citas pasadas ⏳</strong></h1>
@@ -142,14 +165,22 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
 
                     <div class="row g-4">
                         <?php foreach ($citasPasadas as $pasc): ?>
-                            <div class="col-md-6 col-lg-4">
-                                <div class="card border-0 rounded-4 h-100">
+                            <div class="col-md-6 col-lg-4" style="max-width: 438px;">
+                                <div class="card border-0 rounded-4 h-100 position-relative">
 
-                                    <div class="card-header text-white rounded-0 rounded-top-4" style="background-color: #6c757d;">
+                                    <div class="card-header text-white rounded-0 rounded-top-4"
+                                        style="background-color: <?= $pasc["ESTADO"] === "CANCELADO" ? '#6c757d' : '#6c757d' ?>;">
                                         <strong>📅 <?= htmlspecialchars($pasc["NOMBRE_SERVICIO"]) ?></strong>
                                     </div>
 
                                     <div class="card-body">
+
+                                        <!-- Si está cancelada, mostrar aviso -->
+                                        <?php if ($pasc["ESTADO"] === "CANCELADO"): ?>
+                                            <p class="text-danger fw-bold">⚠ Cita cancelada</p>
+                                        <?php elseif ($pasc["ESTADO"] === "ACTIVO"): ?>
+                                            <p class="text-secondary fw-bold">⌚ Cita pasada</p>
+                                        <?php endif; ?>
 
                                         <p>⏰ <strong><?= date("d/m/Y h:i A", strtotime($pasc["FECHA_INICIO"])) ?></strong></p>
 
@@ -168,19 +199,27 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                                     </div>
 
                                     <div class="card-footer text-end bg-light rounded-4 rounded-top-0">
-                                        <a href="#" class="btn btn-sm btn-blue btn-detalle-cita" style="width: 150px;"
-                                            data-id="<?= $pasc['ID_CITA_PK'] ?>"
-                                            data-fecha="<?= date("d/m/Y h:i A", strtotime($pasc['FECHA_INICIO'])) ?>"
-                                            data-servicio="<?= htmlspecialchars($pasc['NOMBRE_SERVICIO']) ?>"
-                                            data-veterinario="<?= htmlspecialchars($pasc['VETERINARIO_NOMBRE']) ?>"
-                                            data-motivo="<?= htmlspecialchars($pasc['MOTIVO'] ?? 'Sin motivo') ?>"
-                                            data-cliente="<?= htmlspecialchars($pasc['CLIENTE_NOMBRE'] ?? 'Cliente manual') ?>"
-                                            data-correo-cliente="<?= htmlspecialchars($pasc['CLIENTE_CORREO'] ?? '---') ?>"
-                                            data-telefono="<?= htmlspecialchars($pasc['CLIENTE_TELEFONO'] ?? '---') ?>"
-                                            data-identificacion="<?= htmlspecialchars($pasc['CLIENTE_IDENTIFICACION'] ?? '---') ?>"
-                                            data-mascota="<?= htmlspecialchars($pasc['NOMBRE_MASCOTA'] ?? $pasc['MASCOTA_NOMBRE_MANUAL'] ?? '---') ?>">
-                                            Ver detalle <i class="bi bi-eye"></i>
-                                        </a>
+
+                                        <?php if ($pasc["ESTADO"] === "CANCELADO"): ?>
+                                            <button class="btn btn-secondary w-100" disabled>
+                                                Cita cancelada
+                                            </button>
+                                        <?php else: ?>
+                                            <a href="#" class="btn btn-sm btn-blue btn-detalle-cita" style="width: 150px;"
+                                                data-id="<?= $pasc['ID_CITA_PK'] ?>"
+                                                data-fecha="<?= date("d/m/Y h:i A", strtotime($pasc['FECHA_INICIO'])) ?>"
+                                                data-servicio="<?= htmlspecialchars($pasc['NOMBRE_SERVICIO']) ?>"
+                                                data-veterinario="<?= htmlspecialchars($pasc['VETERINARIO_NOMBRE']) ?>"
+                                                data-motivo="<?= htmlspecialchars($pasc['MOTIVO'] ?? 'Sin motivo') ?>"
+                                                data-cliente="<?= htmlspecialchars($pasc['CLIENTE_NOMBRE'] ?? 'Cliente manual') ?>"
+                                                data-correo-cliente="<?= htmlspecialchars($pasc['CLIENTE_CORREO'] ?? '---') ?>"
+                                                data-telefono="<?= htmlspecialchars($pasc['CLIENTE_TELEFONO'] ?? '---') ?>"
+                                                data-identificacion="<?= htmlspecialchars($pasc['CLIENTE_IDENTIFICACION'] ?? '---') ?>"
+                                                data-mascota="<?= htmlspecialchars($pasc['NOMBRE_MASCOTA'] ?? $pasc['MASCOTA_NOMBRE_MANUAL'] ?? '---') ?>">
+                                                Ver detalle <i class="bi bi-eye"></i>
+                                            </a>
+                                        <?php endif; ?>
+
                                     </div>
 
                                 </div>
@@ -199,8 +238,8 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
     <!--FOOTER-->
 
     <!-- ============================
-     MODAL DETALLE DE CITA
-    ============================= -->
+         MODAL DETALLE DE CITA
+    ============================ -->
     <div class="modal fade" id="modalDetalleCita" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">

@@ -1939,6 +1939,53 @@ BEGIN
 END //
 DELIMITER ;
 
+
+-- ============================================================
+-- NOMBRE: HUELLITAS_BUSCAR_NOTIFICACIONES_ADMIN_SP
+-- DESCRIPCIÓN: Procedimiento para buscar notificaciones con paginación.
+-- ============================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_BUSCAR_NOTIFICACIONES_ADMIN_SP;
+DELIMITER //
+CREATE PROCEDURE HUELLITAS_BUSCAR_NOTIFICACIONES_ADMIN_SP(
+    IN P_SEARCH_TERM VARCHAR(150),
+    IN P_LIMIT_ROWS INT,
+    IN P_OFFSET_ROWS INT
+)
+BEGIN
+    SELECT 
+        N.ID_NOTIFICACION_PK,
+        N.ID_USUARIO_FK,
+        U.USUARIO_NOMBRE AS NOMBRE_USUARIO,
+        N.TITULO_NOTIFICACION,
+        N.MENSAJE_NOTIFICACION,
+        N.TIPO_NOTIFICACION,
+        N.PRIORIDAD,
+        N.ES_LEIDA,
+        N.URL_REDIRECCION,
+        N.FECHA_CREACION,
+        N.FECHA_LECTURA,
+        E.ESTADO_DESCRIPCION AS ESTADO
+    FROM HUELLITAS_NOTIFICACIONES_TB AS N
+    INNER JOIN HUELLITAS_ESTADO_TB AS E 
+        ON N.ID_ESTADO_FK = E.ID_ESTADO_PK
+    INNER JOIN HUELLITAS_USUARIOS_TB AS U
+        ON N.ID_USUARIO_FK = U.ID_USUARIO_PK
+    WHERE 
+        N.TITULO_NOTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR N.MENSAJE_NOTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR N.TIPO_NOTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR N.PRIORIDAD LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR E.ESTADO_DESCRIPCION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR U.USUARIO_NOMBRE LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR N.URL_REDIRECCION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR DATE_FORMAT(N.FECHA_CREACION, '%d/%m/%Y %H:%i') LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR DATE_FORMAT(N.FECHA_LECTURA, '%d/%m/%Y %H:%i') LIKE CONCAT('%', P_SEARCH_TERM, '%')
+    ORDER BY N.FECHA_CREACION DESC
+    LIMIT P_LIMIT_ROWS OFFSET P_OFFSET_ROWS;
+END //
+DELIMITER ;
+
+
 -- ==========================================
 -- NOMBRE: HUELLITAS_BUSCAR_ROLES_ADMIN_SP
 -- DESCRIPCIÓN: Procedimiento para buscar roles con paginación.
@@ -2158,6 +2205,73 @@ END //
 DELIMITER ;
 
 -- ==========================================
+-- NOMBRE: HUELLITAS_NOTIFICACION_MASIVA_SP
+-- DESCRIPCIÓN: Enviar notificaciones de forma global
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_NOTIFICACION_MASIVA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_NOTIFICACION_MASIVA_SP(
+    IN P_ID_ESTADO INT,
+    IN P_TITULO VARCHAR(150),
+    IN P_MENSAJE VARCHAR(1000),
+    IN P_TIPO VARCHAR(20),
+    IN P_PRIORIDAD VARCHAR(10),
+    IN P_URL_REDIRECCION VARCHAR(500)
+)
+BEGIN
+    INSERT INTO HUELLITAS_NOTIFICACIONES_TB (
+        ID_USUARIO_FK,
+        ID_ESTADO_FK,
+        TITULO_NOTIFICACION,
+        MENSAJE_NOTIFICACION,
+        TIPO_NOTIFICACION,
+        PRIORIDAD,
+        URL_REDIRECCION
+    )
+    SELECT
+        U.ID_USUARIO_PK,
+        P_ID_ESTADO,
+        P_TITULO,
+        P_MENSAJE,
+        P_TIPO,
+        P_PRIORIDAD,
+        P_URL_REDIRECCION
+    FROM HUELLITAS_USUARIOS_TB U
+    WHERE U.ID_ESTADO_FK = 1; -- Solo usuarios activos
+
+    SELECT ROW_COUNT() AS NOTIFICACIONES_GENERADAS;
+END $$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_OBTENER_NOTIFICACION_SP
+-- DESCRIPCIÓN: Procedimiento para obtener una notificación por ID
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_NOTIFICACION_POR_ID_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_NOTIFICACION_POR_ID_SP(
+    IN P_ID_NOTIFICACION INT
+)
+BEGIN
+    SELECT
+        N.ID_NOTIFICACION_PK,
+        N.ID_USUARIO_FK,
+        N.ID_ESTADO_FK,
+        N.TITULO_NOTIFICACION,
+        N.MENSAJE_NOTIFICACION,
+        N.TIPO_NOTIFICACION,
+        N.PRIORIDAD,
+        N.ES_LEIDA,
+        N.URL_REDIRECCION,
+        N.FECHA_CREACION,
+        N.FECHA_LECTURA
+    FROM HUELLITAS_NOTIFICACIONES_TB AS N
+    WHERE N.ID_NOTIFICACION_PK = P_ID_NOTIFICACION;
+END $$
+DELIMITER ;
+
+
+-- ==========================================
 -- NOMBRE: HUELLITAS_OBTENER_NOTIFICACIONES_SP
 -- DESCRIPCIÓN: Procedimiento para obtener todas las notificaciones por usuario
 -- ==========================================
@@ -2180,6 +2294,43 @@ BEGIN
     ORDER BY FECHA_CREACION DESC
     LIMIT 10;
 END //
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_ACTUALIZAR_NOTIFICACION_SP
+-- DESCRIPCIÓN: Procedimiento para actualizar una notificación
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_ACTUALIZAR_NOTIFICACION_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_ACTUALIZAR_NOTIFICACION_SP(
+    IN P_ID_NOTIFICACION INT,
+    IN P_ID_ESTADO INT,
+    IN P_TITULO VARCHAR(150),
+    IN P_MENSAJE VARCHAR(1000),
+    IN P_TIPO VARCHAR(20),
+    IN P_PRIORIDAD VARCHAR(10),
+    IN P_ES_LEIDA BOOLEAN,
+    IN P_URL_REDIRECCION VARCHAR(500)
+)
+BEGIN
+    UPDATE HUELLITAS_NOTIFICACIONES_TB
+    SET 
+        ID_ESTADO_FK = P_ID_ESTADO,
+        TITULO_NOTIFICACION = P_TITULO,
+        MENSAJE_NOTIFICACION = P_MENSAJE,
+        TIPO_NOTIFICACION = P_TIPO,
+        PRIORIDAD = P_PRIORIDAD,
+        ES_LEIDA = P_ES_LEIDA,
+        URL_REDIRECCION = P_URL_REDIRECCION,
+        FECHA_LECTURA = CASE 
+                            WHEN P_ES_LEIDA = TRUE AND FECHA_LECTURA IS NULL 
+                                THEN NOW()
+                            ELSE FECHA_LECTURA
+                        END
+    WHERE ID_NOTIFICACION_PK = P_ID_NOTIFICACION;
+
+    SELECT ROW_COUNT() AS FILAS_AFECTADAS;
+END $$
 DELIMITER ;
 
 -- ==========================================
@@ -2802,6 +2953,38 @@ BEGIN
         e.ESTADO_DESCRIPCION = 'Activo';
 END $$
 DELIMITER ;
+
+-- ============================================================
+-- NOMBRE: HUELLITAS_CONTAR_NOTIFICACIONES_ADMIN_SP
+-- DESCRIPCIÓN: Retorna la cantidad total de notificaciones que coinciden con un término de búsqueda.
+-- ============================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CONTAR_NOTIFICACIONES_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CONTAR_NOTIFICACIONES_SP(
+    IN P_SEARCH_TERM VARCHAR(150)
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS TOTAL
+    FROM 
+        HUELLITAS_NOTIFICACIONES_TB AS N
+        INNER JOIN HUELLITAS_ESTADO_TB AS E 
+            ON N.ID_ESTADO_FK = E.ID_ESTADO_PK
+        INNER JOIN HUELLITAS_USUARIOS_TB AS U
+            ON N.ID_USUARIO_FK = U.ID_USUARIO_PK
+    WHERE 
+        N.TITULO_NOTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR N.MENSAJE_NOTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR N.TIPO_NOTIFICACION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR N.PRIORIDAD LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR E.ESTADO_DESCRIPCION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR U.USUARIO_NOMBRE LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR N.URL_REDIRECCION LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR DATE_FORMAT(N.FECHA_CREACION, '%d/%m/%Y %H:%i') LIKE CONCAT('%', P_SEARCH_TERM, '%')
+        OR DATE_FORMAT(N.FECHA_LECTURA, '%d/%m/%Y %H:%i') LIKE CONCAT('%', P_SEARCH_TERM, '%');
+END$$
+DELIMITER ;
+
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_OBTENER_PROVEEDOR_POR_ID_SP
@@ -5490,21 +5673,22 @@ BEGIN
             SET P_MENSAJE = 'El servicio no existe o está inactivo.';
         ELSE
 
-            /* ==========================================
-               VALIDAR DISPONIBILIDAD HORARIA
-            ========================================== */
-            SELECT COUNT(*) INTO V_EXISTE
-            FROM HUELLITAS_CITAS_TB
-            WHERE ID_VETERINARIO_FK = P_ID_VETERINARIO
-              AND (
-                    (P_FECHA_INICIO BETWEEN FECHA_INICIO AND FECHA_FIN)
-                 OR (P_FECHA_FIN   BETWEEN FECHA_INICIO AND FECHA_FIN)
-                 OR (FECHA_INICIO  BETWEEN P_FECHA_INICIO AND P_FECHA_FIN)
-                  );
+			/* ==========================================
+			   VALIDAR DISPONIBILIDAD HORARIA
+			========================================== */
+			SELECT COUNT(*) INTO V_EXISTE
+			FROM HUELLITAS_CITAS_TB
+			WHERE ID_VETERINARIO_FK = P_ID_VETERINARIO
+			  AND ID_ESTADO_FK = V_ID_ESTADO_ACTIVO
+			  AND (
+					(P_FECHA_INICIO BETWEEN FECHA_INICIO AND FECHA_FIN)
+				 OR (P_FECHA_FIN   BETWEEN FECHA_INICIO AND FECHA_FIN)
+				 OR (FECHA_INICIO  BETWEEN P_FECHA_INICIO AND P_FECHA_FIN)
+				  );
 
-            IF V_EXISTE > 0 THEN
-                SET P_MENSAJE = 'El veterinario ya tiene una cita en ese horario.';
-            ELSE
+			IF V_EXISTE > 0 THEN
+				SET P_MENSAJE = 'El veterinario ya tiene una cita activa en ese horario.';
+			ELSE
 
                 /* ======================================================
                    OBTENER DATOS DEL CLIENTE (MANUAL, REGISTRADO O USUARIO)
@@ -5681,6 +5865,28 @@ BEGIN
 
 END$$
 DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CANCELAR_CITA_SP
+-- DESCRIPCIÓN: Procedimiento para cancelar citas.
+-- ==========================================
+DROP PROCEDURE IF EXISTS HUELLITAS_CANCELAR_CITA_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_CANCELAR_CITA_SP(
+    IN p_id_cita INT,
+    OUT p_mensaje VARCHAR(200)
+)
+BEGIN
+    DECLARE v_estado_cancelado INT DEFAULT 6;
+
+    UPDATE HUELLITAS_CITAS_TB
+    SET ID_ESTADO_FK = v_estado_cancelado
+    WHERE ID_CITA_PK = p_id_cita;
+
+    SET p_mensaje = 'La cita ha sido cancelada correctamente.';
+END$$
+DELIMITER ;
+
 
 -- ==========================================
 -- NOMBRE: HUELLITAS_LISTAR_CITAS_FULLCALENDAR_SP
@@ -6094,7 +6300,7 @@ BEGIN
         ) AS MENSAJE,
         'CITA' AS TIPO_NOTIF,
         'ALTA' AS PRIORIDAD,
-        CONCAT('/index.php?controller=employeeAppointment&action=detalle&id=', C.ID_CITA_PK) AS URL_REDIRECCION
+        CONCAT('/index.php?controller=appointment&action=misCitas') AS URL_REDIRECCION
     FROM HUELLITAS_CITAS_TB C
     LEFT JOIN HUELLITAS_USUARIOS_TB U
         ON U.CODIGO_USUARIO = C.CODIGO_USUARIO
@@ -6138,7 +6344,7 @@ BEGIN
         ) AS MENSAJE,
         'CITA' AS TIPO_NOTIF,
         'ALTA' AS PRIORIDAD,
-        CONCAT('/index.php?controller=employeeAppointment&action=detalle&id=', C.ID_CITA_PK) AS URL_REDIRECCION
+        CONCAT('/index.php?controller=appointment&action=misCitas') AS URL_REDIRECCION
     FROM HUELLITAS_CITAS_TB C
     LEFT JOIN HUELLITAS_USUARIOS_TB U
         ON U.CODIGO_USUARIO = C.CODIGO_USUARIO
@@ -6146,6 +6352,60 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- ======================================================
+-- NOMBRE: HUELLITAS_OBTENER_EXPEDIENTES_SP
+-- DESCRIPCIÓN: Procedimiento para recopilar información para los expedientes
+-- ======================================================
+DROP PROCEDURE IF EXISTS HUELLITAS_OBTENER_EXPEDIENTES_SP;
+DELIMITER $$
+CREATE PROCEDURE HUELLITAS_OBTENER_EXPEDIENTES_SP(
+    IN p_busqueda VARCHAR(100)
+)
+BEGIN
+
+    SELECT 
+        m.ID_MASCOTA_PK,
+        m.CODIGO_MASCOTA,
+        m.NOMBRE_MASCOTA,
+        m.GENERO,
+        m.MASCOTA_IMAGEN_URL,
+
+        -- Edad
+        TIMESTAMPDIFF(YEAR, m.FECHA_NACIMIENTO, CURDATE()) AS EDAD_APROX,
+
+        -- Obtener nombre del dueño desde ambas tablas
+        COALESCE(cli.CLIENTE_NOMBRE, usr.USUARIO_NOMBRE, 'Sin dueño registrado') AS DUENNO_NOMBRE,
+        COALESCE(cli.CLIENTE_CORREO, usr.USUARIO_CORREO, 'No disponible') AS DUENNO_CORREO,
+
+        -- Última consulta desde historiales médicos
+        (
+            SELECT MAX(HISTORIAL_FECHA_REGISTRO)
+            FROM HUELLITAS_HISTORIALES_MEDICOS_TB h
+            WHERE h.CODIGO_MASCOTA = m.CODIGO_MASCOTA
+        ) AS ULTIMA_CONSULTA
+
+    FROM HUELLITAS_MASCOTA_TB m
+
+    -- OWNER TIPO 1: Cliente del veterinario
+    LEFT JOIN HUELLITAS_CLIENTES_TB cli 
+        ON cli.ID_CLIENTE_PK = m.ID_CLIENTE_FK
+
+    -- OWNER TIPO 2: Usuario (cliente de tienda)
+    LEFT JOIN HUELLITAS_USUARIOS_TB usr
+        ON usr.ID_USUARIO_PK = m.ID_USUARIO_FK
+
+    WHERE 
+        p_busqueda IS NULL
+        OR p_busqueda = ''
+        OR m.NOMBRE_MASCOTA LIKE CONCAT('%', p_busqueda, '%')
+        OR m.CODIGO_MASCOTA LIKE CONCAT('%', p_busqueda, '%')
+        OR cli.CLIENTE_NOMBRE LIKE CONCAT('%', p_busqueda, '%')
+        OR usr.USUARIO_NOMBRE LIKE CONCAT('%', p_busqueda, '%')
+
+    ORDER BY m.NOMBRE_MASCOTA ASC;
+
+END $$
+DELIMITER ;
 
 -- ==========================================
 -- STORED PROCEDURES PARA EL DASHBOARD

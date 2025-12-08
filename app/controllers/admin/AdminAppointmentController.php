@@ -104,5 +104,22 @@ class AdminAppointmentController
         exit;
     }
 
+    public function cancel()
+    {
+        header("Content-Type: application/json");
+
+        $idCita = $_POST['id_cita'] ?? null;
+
+        if (!$idCita) {
+            echo json_encode(['EXITO' => 0, 'MENSAJE' => 'ID de cita no recibido']);
+            exit;
+        }
+
+        $result = $this->appointmentModel->cancelarCita($idCita);
+
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
 
 }

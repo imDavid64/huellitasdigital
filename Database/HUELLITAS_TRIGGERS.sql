@@ -442,6 +442,123 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- ==========================================
+-- NOMBRE: HUELLITAS_CITA_AGENDADA_TRG
+-- DESCRIPCIÓN: Genera notificación al agendar una cita
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_CITA_AGENDADA_TRG;
+DELIMITER $$
+CREATE TRIGGER HUELLITAS_CITA_AGENDADA_TRG
+AFTER INSERT ON HUELLITAS_CITAS_TB
+FOR EACH ROW
+BEGIN
+    DECLARE v_usuario_id INT;
+
+    -- Si la cita se agendó para un usuario registrado
+    IF NEW.CODIGO_USUARIO IS NOT NULL AND NEW.CODIGO_USUARIO <> '' THEN
+
+        -- Obtener el ID del usuario según su código
+        SELECT ID_USUARIO_PK INTO v_usuario_id
+        FROM HUELLITAS_USUARIOS_TB
+        WHERE CODIGO_USUARIO = NEW.CODIGO_USUARIO
+        LIMIT 1;
+
+        -- Crear la notificación solo si existe el usuario
+        IF v_usuario_id IS NOT NULL THEN
+
+            INSERT INTO HUELLITAS_NOTIFICACIONES_TB (
+                ID_USUARIO_FK,
+                ID_ESTADO_FK,
+                TITULO_NOTIFICACION,
+                MENSAJE_NOTIFICACION,
+                TIPO_NOTIFICACION,
+                PRIORIDAD,
+                URL_REDIRECCION
+            )
+            VALUES (
+                v_usuario_id,
+                1, -- ACTIVA
+                'Nueva Cita Agendada',
+                CONCAT(
+                    'Su cita ha sido agendada para el día ',
+                    DATE_FORMAT(NEW.FECHA_INICIO, '%d/%m/%Y'),
+                    ' a las ',
+                    DATE_FORMAT(NEW.FECHA_INICIO, '%H:%i'),
+                    '.'
+                ),
+                'CITA',
+                'MEDIA',
+                '/index.php?controller=appointment&action=misCitas'
+            );
+
+        END IF;
+
+    END IF;
+
+END$$
+DELIMITER ;
+
+-- ==========================================
+-- NOMBRE: HUELLITAS_CITA_CANCELADA_TRG
+-- DESCRIPCIÓN: Trigger para generar notificación al cancelar cita
+-- ==========================================
+DROP TRIGGER IF EXISTS HUELLITAS_CITA_CANCELADA_TRG;
+DELIMITER $$
+CREATE TRIGGER HUELLITAS_CITA_CANCELADA_TRG
+AFTER UPDATE ON HUELLITAS_CITAS_TB
+FOR EACH ROW
+BEGIN
+    DECLARE v_estado_cancelado INT;
+    DECLARE v_usuario_id INT;
+
+    -- Obtener ID del estado CANCELADO
+    SELECT ID_ESTADO_PK INTO v_estado_cancelado
+    FROM HUELLITAS_ESTADO_TB
+    WHERE ESTADO_DESCRIPCION = 'CANCELADO'
+    LIMIT 1;
+
+    -- Ejecutar solo si la cita cambia a estado CANCELADO
+    IF NEW.ID_ESTADO_FK = v_estado_cancelado AND OLD.ID_ESTADO_FK <> v_estado_cancelado THEN
+
+        -- Buscar el usuario dueño de la cita usando CODIGO_USUARIO
+        SELECT ID_USUARIO_PK INTO v_usuario_id
+        FROM HUELLITAS_USUARIOS_TB
+        WHERE CODIGO_USUARIO = NEW.CODIGO_USUARIO
+        LIMIT 1;
+
+        -- Si se encontró el usuario, generar notificación
+        IF v_usuario_id IS NOT NULL THEN
+
+            INSERT INTO HUELLITAS_NOTIFICACIONES_TB (
+                ID_USUARIO_FK,
+                ID_ESTADO_FK,
+                TITULO_NOTIFICACION,
+                MENSAJE_NOTIFICACION,
+                TIPO_NOTIFICACION,
+                PRIORIDAD,
+                URL_REDIRECCION
+            )
+            VALUES (
+                v_usuario_id,
+                1, -- ACTIVA
+                'Cita Cancelada',
+                CONCAT(
+                    'Su cita programada para el día ',
+                    DATE_FORMAT(NEW.FECHA_INICIO, '%d/%m/%Y a las %H:%i'),
+                    ' ha sido cancelada.'
+                ),
+                'CITA',
+                'MEDIA',
+                '/index.php?controller=appointment&action=misCitas'
+            );
+
+        END IF;
+    END IF;
+
+END$$
+DELIMITER ;
+
+
 
 
 

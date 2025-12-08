@@ -149,6 +149,32 @@ class AppointmentModel extends BaseModel
         }
     }
 
-    
+    public function cancelarCita($idCita)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL HUELLITAS_CANCELAR_CITA_SP(?, @OUT_MENSAJE)");
+            $stmt->bind_param("i", $idCita);
+            $stmt->execute();
+            $stmt->close();
+
+            while ($this->conn->more_results() && $this->conn->next_result()) {
+            }
+
+            $result = $this->conn->query("SELECT @OUT_MENSAJE AS MENSAJE");
+            $row = $result->fetch_assoc();
+
+            return [
+                'EXITO' => 1,
+                'MENSAJE' => $row['MENSAJE'] ?? "Cita cancelada correctamente"
+            ];
+
+        } catch (\Throwable $e) {
+            error_log("Error cancelarCita: " . $e->getMessage());
+            return ['EXITO' => 0, 'MENSAJE' => 'Error al cancelar la cita'];
+        }
+    }
+
+
+
 
 }

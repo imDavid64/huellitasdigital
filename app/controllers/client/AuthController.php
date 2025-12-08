@@ -67,6 +67,7 @@ class AuthController
             $_SESSION['user_id'] = $userData['ID_USUARIO_PK'];
             $_SESSION['user_code'] = $userData['CODIGO_USUARIO'];
             $_SESSION['user_name'] = $userData['USUARIO_NOMBRE'];
+            $_SESSION['user_image'] = $userData['USUARIO_IMAGEN_URL'];
             $_SESSION['user_first_name'] = explode(' ', $userData['USUARIO_NOMBRE'])[0];
             $_SESSION['user_role'] = $userData['ROL'];
 

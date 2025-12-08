@@ -49,7 +49,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                         </div>
                     </div>
                     <div class="admin-mgmt-table mb-5">
-                        <table class="table">
+                        <table class="table table-header-fixed">
                             <thead>
                                 <tr>
                                     <th scope="col">ID</th>
@@ -59,7 +59,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                     <th class="text-center" scope="col">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="table-body-scroll">
                                 <?php foreach ($sliderbanners as $sliderbanner): ?>
                                     <tr>
                                         <td>
@@ -108,7 +108,7 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                         </div>
                     </div>
                     <div class="admin-mgmt-table mb-3">
-                        <table class="table">
+                        <table class="table table-header-fixed">
                             <thead>
                                 <tr>
                                     <th scope="col">ID</th>
@@ -119,48 +119,32 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                                     <th class="text-center" scope="col">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <?php foreach ($services as $service): ?>
-                                    <tr>
-                                        <td>
-                                            <div class="admin-table-text-limit">
-                                                <?= htmlspecialchars($service['ID_SERVICIO_PK']) ?>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="admin-table-text-limit">
-                                                <img src="<?= htmlspecialchars($service['IMAGEN_URL']) ?>"
-                                                    style="min-height: 60px; max-height: 60px;">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="admin-table-text-limit">
-                                                <?= htmlspecialchars($service['NOMBRE_SERVICIO']) ?>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="admin-table-text-limit">
-                                                <?= htmlspecialchars($service['DESCRIPCION_SERVICIO']) ?>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="admin-table-text-limit"><?= htmlspecialchars($service['ESTADO']) ?>
-                                            </div>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group">
+                        </table>
+
+                        <!-- Contenedor scroll solo del body -->
+                        <div class="table-body-scroll">
+                            <table class="table">
+                                <tbody>
+                                    <?php foreach ($services as $service): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($service['ID_SERVICIO_PK']) ?></td>
+                                            <td><img src="<?= htmlspecialchars($service['IMAGEN_URL']) ?>"
+                                                    style="height: 60px;"></td>
+                                            <td><?= htmlspecialchars($service['NOMBRE_SERVICIO']) ?></td>
+                                            <td><?= htmlspecialchars($service['DESCRIPCION_SERVICIO']) ?></td>
+                                            <td><?= htmlspecialchars($service['ESTADO']) ?></td>
+                                            <td class="text-center">
                                                 <a href="<?= BASE_URL ?>/index.php?controller=adminGeneralSetting&action=editService&id=<?= $service['ID_SERVICIO_PK'] ?>"
                                                     class="btn btn-dark-blue btn-sm">
                                                     Editar <i class="bi bi-pencil-square"></i>
                                                 </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-
                 </section>
             </section>
         </section>

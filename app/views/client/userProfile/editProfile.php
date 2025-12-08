@@ -59,7 +59,9 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                             <!-- Imagen de perfil -->
                             <div class="profileImg">
                                 <img class="image-preview"
-                                    src="<?= htmlspecialchars($usuario['USUARIO_IMAGEN_URL'] ?? BASE_URL . '/public/assets/images/default-user-image.png') ?>"
+                                    src="<?= !empty($usuario['USUARIO_IMAGEN_URL'])
+                                        ? htmlspecialchars($usuario['USUARIO_IMAGEN_URL'])
+                                        : BASE_URL . '/public/assets/images/default-user-image.png' ?>"
                                     alt="Foto de perfil">
                             </div>
 

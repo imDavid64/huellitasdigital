@@ -1,5 +1,15 @@
 <aside class="admin-aside">
     <div class="aside-container">
+        <div>
+            <div class="f-flex flex-column align-items-center">
+                <h6>Bienvenido!</h6>
+                <h5><strong><?= $_SESSION['user_name'] ?? 'Usuario' ?></strong></h5>
+                <p class="text-secondary text-opacity-75" style="margin-bottom: 0px; font-size: 12px;">
+                    <?= $_SESSION['user_role'] ?? 'Rol' ?>
+                </p>
+            </div>
+        </div>
+        <hr />
         <div class="aside-main">
             <ul>
                 <li><a href="<?= BASE_URL ?>/index.php?controller=adminDashboard&action=index">
@@ -14,15 +24,13 @@
                         <i class="bi bi-box2-fill"></i> Gestión de Productos
                     </a></li>
 
+                <li><a href="<?= BASE_URL ?>/index.php?controller=adminNotification&action=index">
+                        <i class="bi bi-bell-fill"></i> Gestión de Notificacion
+                    </a></li>
+
                 <li><a href="<?= BASE_URL ?>/index.php?controller=adminSupplier&action=index">
                         <i class="bi bi-building-fill"></i> Gestión de Proveedores
                     </a></li>
-
-                <!--
-                <li><a href="<?= BASE_URL ?>/index.php?controller=adminAccountingRecord&action=index">
-                        <i class="bi bi-calculator-fill"></i> Registro Contable
-                    </a></li>
-                -->
 
                 <li><a href="<?= BASE_URL ?>/index.php?controller=adminAppointment&action=index">
                         <i class="bi bi-calendar-week-fill"></i> Gestión de Citas

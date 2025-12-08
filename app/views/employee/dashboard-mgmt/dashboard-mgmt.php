@@ -24,18 +24,9 @@ checkRole(['EMPLEADO', 'ADMINISTRADOR']);
         <section class="admin-main">
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
             <section class="vet-main-content">
-                <!--Breadcrumb-->
-                <nav class="breadcrumbs-container">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index">Inicio</a>
-                        </li>
-                        <li class="breadcrumb-item current-page">Dashboard Empleado</li>
-                    </ol>
-                </nav>
-                
+            
                 <div class="tittles">
-                    <h2><i class="fas fa-tachometer-alt me-2"></i><strong> Dashboard Empleado</strong></h2>
+                    <h2><i class="fas fa-tachometer-alt me-2"></i><strong> Dashboard</strong></h2>
                     <div>
                         <span class="text-muted badge bg-light text-dark fs-6"><?php echo date('d/m/Y'); ?></span>
                     </div>
