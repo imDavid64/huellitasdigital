@@ -2,7 +2,7 @@
 // app/models/BaseModel.php
 namespace App\Models;
 
-use App\Config\ConexionDatabase;
+use App\Config\ConexionDataBase;
 
 class BaseModel
 {
@@ -10,7 +10,7 @@ class BaseModel
 
     public function __construct()
     {
-        $db = new ConexionDatabase();
+        $db = new ConexionDataBase();
         $this->conn = $db->connectDB();
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
         $this->conn->set_charset('utf8mb4');

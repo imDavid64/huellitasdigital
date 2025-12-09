@@ -285,13 +285,15 @@ if ($message === "pass_changed") {
             <ul>
               <?php if ($_SESSION['user_role'] === 'ADMINISTRADOR'): ?>
                 <li><a href="<?= BASE_URL ?>/index.php?controller=adminDashboard&action=index">
-                    <i class="bi bi-gear-fill"></i> Modo Administrador</a></li>
+                    <i class="bi bi-tools"></i> Panel Administrador</a></li>
                 <li><a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index">
-                    <i class="bi bi-person-vcard-fill"></i> Modo Empleado</a></li>
+                    <i class="bi bi-person-vcard-fill"></i> Panel Empleado</a></li>
+                <li><a href="<?= BASE_URL ?>/index.php?controller=home&action=index">
+                    <i class="bi bi-basket2-fill"></i> Modo Cliente</a></li>
               <?php endif; ?>
               <?php if ($_SESSION['user_role'] === 'EMPLEADO'): ?>
                 <li><a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index">
-                    <i class="bi bi-person-vcard-fill"></i> Modo Empleado</a></li>
+                    <i class="bi bi-person-vcard-fill"></i> Panel Empleado</a></li>
               <?php endif; ?>
               <li><a href="<?= BASE_URL ?>/index.php?controller=user&action=index">
                   <i class="bi bi-person-fill"></i> Mi Perfil</a></li>

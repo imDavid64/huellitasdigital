@@ -74,50 +74,21 @@ class ProductModel extends BaseModel
     //Metodo o Función para el filtrado de productos
     public function getFilteredProducts($categories = [], $brands = [])
     {
-        $sql = "SELECT 
-                ID_PRODUCTO_PK,
-                PRODUCTO_NOMBRE,
-                PRODUCTO_DESCRIPCION,
-                PRODUCTO_PRECIO_UNITARIO,
-                PRODUCTO_STOCK,
-                IMAGEN_URL,
-                ID_CATEGORIA_FK,
-                ID_MARCA_FK
-            FROM huellitas_productos_tb 
-            WHERE ID_ESTADO_FK = 1";
+        $categoriaList = !empty($categories) ? implode(",", $categories) : null;
+        $marcaList = !empty($brands) ? implode(",", $brands) : null;
 
-        $types = "";
-        $params = [];
-
-        // --- Filtro por Categorías ---
-        if (!empty($categories)) {
-            $placeholders = implode(',', array_fill(0, count($categories), '?'));
-            $sql .= " AND ID_CATEGORIA_FK IN ($placeholders)";
-            $types .= str_repeat('i', count($categories));
-            $params = array_merge($params, $categories);
-        }
-
-        // --- Filtro por Marcas ---
-        if (!empty($brands)) {
-            $placeholders = implode(',', array_fill(0, count($brands), '?'));
-            $sql .= " AND ID_MARCA_FK IN ($placeholders)";
-            $types .= str_repeat('i', count($brands));
-            $params = array_merge($params, $brands);
-        }
+        $sql = "CALL HUELLITAS_FILTRAR_PRODUCTOS_SP(?, ?)";
 
         $stmt = $this->conn->prepare($sql);
-
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
-        }
-
+        $stmt->bind_param("ss", $categoriaList, $marcaList);
         $stmt->execute();
+
         $result = $stmt->get_result();
+        $data = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+
         $stmt->close();
-
-        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+        return $data;
     }
-
 
     //Metodo o Función para las busquedas de productos
     public function searchActiveProducts($search)

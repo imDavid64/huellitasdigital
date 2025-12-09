@@ -10,7 +10,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 <!--Include para el head-->
 <?php include_once __DIR__ . "/../partials/adminHead.php"; ?>
 
-<body>
+<body data-error="<?= $_SESSION['error'] ?? '' ?>" data-success="<?= $_SESSION['success'] ?? '' ?>">
+    <?php unset($_SESSION['error'], $_SESSION['success']); ?>
 
     <!--Include para el herder-->
     <!--HEADER-->

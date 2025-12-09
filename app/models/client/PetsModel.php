@@ -115,4 +115,26 @@ class PetsModel extends BaseModel
             return null;
         }
     }
+
+    // Actualizar la URL de la imagen de la mascota
+    public function actualizarImagenMascota($codigoMascota, $nuevaUrl)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL HUELLITAS_ACTUALIZAR_MASCOTA_IMAGEN_SP(?, ?)");
+            $stmt->bind_param("ss", $codigoMascota, $nuevaUrl);
+            $stmt->execute();
+            $stmt->close();
+
+            // limpieza
+            while ($this->conn->more_results() && $this->conn->next_result()) {
+            }
+
+            return true;
+
+        } catch (\Throwable $e) {
+            error_log("Error actualizarImagenMascota: " . $e->getMessage());
+            return false;
+        }
+    }
+
 }

@@ -12,8 +12,38 @@ class AdminNotificationController
 
     public function __construct()
     {
-        // ✅ Solo administradores
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'ADMINISTRADOR') {
+        if ($this->isAjax()) {
+            header('Content-Type: application/json; charset=utf-8');
+        }
+
+        // Verificar sesión
+        if (!isset($_SESSION['user_role'])) {
+
+            // Si es AJAX → devolver JSON
+            if ($this->isAjax()) {
+                echo json_encode([
+                    "error" => "No autorizado",
+                    "code" => 403
+                ]);
+                exit;
+            }
+
+            // Si NO es AJAX → redirigir a 403
+            header("Location: " . BASE_URL . "/index.php?controller=home&action=error403");
+            exit;
+        }
+
+        // Verificar roles permitidos
+        if (!in_array($_SESSION['user_role'], ['ADMINISTRADOR', 'EMPLEADO', 'CLIENTE'])) {
+
+            if ($this->isAjax()) {
+                echo json_encode([
+                    "error" => "Acceso denegado",
+                    "code" => 403
+                ]);
+                exit;
+            }
+
             header("Location: " . BASE_URL . "/index.php?controller=home&action=error403");
             exit;
         }
@@ -143,7 +173,66 @@ class AdminNotificationController
     }
 
 
+    public function edit()
+    {
+        $id = intval($_GET['id'] ?? 0);
 
+        if ($id <= 0) {
+            $_SESSION['error'] = "ID inválido.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminNotification&action=index");
+            exit;
+        }
+
+        $notification = $this->notificationModel->getNotificationById($id);
+
+        if (!$notification) {
+            $_SESSION['error'] = "La notificación no existe.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminNotification&action=index");
+            exit;
+        }
+
+        require VIEW_PATH . "/admin/notification-mgmt/edit-notification.php";
+    }
+
+    public function update()
+    {
+        $id = intval($_POST['id'] ?? 0);
+        $title = trim($_POST['addNotificationTitle'] ?? '');
+        $message = trim($_POST['addNotificationMessage'] ?? '');
+        $type = trim($_POST['notificationType'] ?? '');
+        $priority = trim($_POST['priority'] ?? '');
+
+        // Nuevos campos
+        $state = intval($_POST['state'] ?? 1);   // Activa, leída, etc.
+        $read = intval($_POST['read'] ?? 0);
+        $url = trim($_POST['url'] ?? '');
+
+        if ($id <= 0) {
+            $_SESSION['error'] = "ID inválido.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminNotification&action=index");
+            exit;
+        }
+
+        $result = $this->notificationModel->updateNotification(
+            $id,
+            $state,
+            $title,
+            $message,
+            $type,
+            $priority,
+            $read,
+            $url
+        );
+
+        if ($result) {
+            $_SESSION['success'] = "Notificación actualizada correctamente.";
+        } else {
+            $_SESSION['error'] = "No se pudo actualizar la notificación.";
+        }
+
+        header("Location: " . BASE_URL . "/index.php?controller=adminNotification&action=index");
+        exit;
+    }
 
     // 🔍 Detectar AJAX
     private function isAjax(): bool

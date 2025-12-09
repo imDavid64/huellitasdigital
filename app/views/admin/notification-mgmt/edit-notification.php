@@ -1,8 +1,33 @@
 <?php
-//Este include verifica si hay sesión activa
 include_once __DIR__ . '/../includes/auth.php';
-checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
+checkRole(['ADMINISTRADOR']);
+
+// Detectar si estamos editando
+$isEdit = isset($notification);
 ?>
+
+<?php if (isset($_SESSION['success'])): ?>
+    <script>
+        Swal.fire({
+            icon: "success",
+            title: "Operación exitosa",
+            text: "<?= $_SESSION['success'] ?>",
+            confirmButtonColor: "#3085d6"
+        });
+    </script>
+    <?php unset($_SESSION['success']); endif; ?>
+
+<?php if (isset($_SESSION['error'])): ?>
+    <script>
+        Swal.fire({
+            icon: "error",
+            title: "Ocurrió un problema",
+            text: "<?= $_SESSION['error'] ?>",
+            confirmButtonColor: "#d33"
+        });
+    </script>
+    <?php unset($_SESSION['error']); endif; ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -12,8 +37,9 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 <?php include_once __DIR__ . "/../partials/adminHead.php"; ?>
 <!--HEAD-->
 
-<body>
-
+<body data-error="<?= $_SESSION['error'] ?? '' ?>" data-success="<?= $_SESSION['success'] ?? '' ?>">
+    <?php unset($_SESSION['error'], $_SESSION['success']); ?>
+    
     <!--Include para el header-->
     <!--HEADER-->
     <?php include_once __DIR__ . "/../partials/header.php"; ?>
@@ -22,111 +48,158 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
     <!--CONTENIDO CENTRAL-->
     <main>
         <section class="admin-main">
-            <!--Include para el menú aside-->
+
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
 
             <section class="admin-main-content-add-user">
-                <div>
-                    <div class="tittles">
-                        <h2><i class="bi bi-pencil-square"></i><strong> Editar Rol</strong></h2>
-                    </div>
+
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminDashboard&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=adminNotification&action=index">Gestión de
+                                Notificaciones</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Editar Notificación</li>
+                    </ol>
+                </nav>
+                <div class="tittles">
+                    <h2>
+                        <i class="bi bi-bell-fill"></i>
+                        <strong><?= $isEdit ? "Editar Notificación" : "Agregar Notificación" ?></strong>
+                    </h2>
                 </div>
 
                 <div class="admin-form-container">
-                    <form id="editRoleForm"
-                        action="<?= BASE_URL ?>/index.php?controller=adminRole&action=update" method="POST"
-                        enctype="multipart/form-data" novalidate>
 
-                        <input type="hidden" name="id_rol" value="<?= htmlspecialchars($rol['ID_ROL_USUARIO_PK']) ?>">
+                    <form id="notificationEditForm"
+                        action="<?= BASE_URL ?>/index.php?controller=adminNotification&action=<?= $isEdit ? 'update' : 'store' ?>"
+                        method="POST">
 
                         <div class="form-container">
-                            <!-- Campo: Nombre del Rol -->
+                            <?php if ($isEdit): ?>
+                                <input type="hidden" name="id" value="<?= $notification['ID_NOTIFICACION_PK'] ?>">
+                            <?php endif; ?>
+
+                            <!-- Campo: Título -->
                             <div class="form-item">
-                                <label for="rolename">Nombre del rol</label>
-                                <input type="text" id="rolename" name="rolename"
-                                    value="<?= htmlspecialchars($rol['DESCRIPCION_ROL_USUARIO']) ?>" required
-                                    minlength="3" maxlength="50" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                                    title="Solo se permiten letras y espacios.">
-                                <small id="rolenameError" style="color:red; display:none;">
-                                    El nombre del rol debe tener entre 3 y 50 caracteres y solo puede contener letras y
-                                    espacios.
+                                <label for="addNotificationTitle">Título de la Notificación</label>
+                                <input type="text" id="addNotificationTitle" name="addNotificationTitle"
+                                    placeholder="Máximo 50 caracteres" required minlength="3" maxlength="50"
+                                    value="<?= $isEdit ? htmlspecialchars($notification['TITULO_NOTIFICACION']) : '' ?>">
+                                <small id="addNotificationTitleError" style="color:red; display:none;">
+                                    El título debe tener entre 3 y 50 caracteres y solo letras.
                                 </small>
                             </div>
 
-                            <!-- Campo: Estado -->
+                            <!-- Campo: Mensaje -->
                             <div class="form-item">
-                                <label for="state">Estado</label>
-                                <select id="state" name="state" required>
-                                    <option value="" disabled>Seleccione un estado</option>
-                                    <?php foreach ($estados as $estado): ?>
-                                        <option value="<?= htmlspecialchars($estado['ID_ESTADO_PK']) ?>"
-                                            <?= $rol['ID_ESTADO_FK'] == $estado['ID_ESTADO_PK'] ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($estado['ESTADO_DESCRIPCION']) ?>
+                                <label for="addNotificationMessage">Mensaje de la Notificación</label>
+                                <textarea id="addNotificationMessage" name="addNotificationMessage"
+                                    placeholder="Máximo 200 caracteres" required minlength="3"
+                                    maxlength="200"><?= $isEdit ? htmlspecialchars($notification['MENSAJE_NOTIFICACION']) : '' ?></textarea>
+
+                                <small id="addNotificationMessageError" style="color:red; display:none;">
+                                    El mensaje debe tener entre 3 y 200 caracteres y solo letras.
+                                </small>
+                            </div>
+
+                            <!-- Tipo -->
+                            <div class="form-item">
+                                <label for="notificationType">Tipo de Notificación</label>
+                                <select id="notificationType" name="notificationType" required>
+                                    <option value="" disabled <?= !$isEdit ? "selected" : "" ?>>Seleccione un tipo
+                                    </option>
+
+                                    <?php
+                                    $tipos = ["INFORMACION", "PROMOCION", "SISTEMA", "PEDIDO", "CITA"];
+                                    foreach ($tipos as $t): ?>
+                                        <option value="<?= $t ?>" <?= $isEdit && $notification['TIPO_NOTIFICACION'] === $t ? "selected" : "" ?>>
+                                            <?= $t ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <small id="stateError" style="color:red; display:none;">
-                                    Debe seleccionar un estado válido.
+
+                                <small id="notificationTypeError" style="color:red; display:none;">
+                                    Debe seleccionar un tipo válido.
                                 </small>
                             </div>
 
-                            <button type="submit" class="btn-dark-blue">
-                                <strong>Guardar Cambios</strong>
-                                <i class="bi bi-floppy2"></i>
+                            <!-- Prioridad -->
+                            <div class="form-item">
+                                <label for="priority">Prioridad</label>
+                                <select id="priority" name="priority" required>
+                                    <option value="" disabled <?= !$isEdit ? "selected" : "" ?>>Seleccione una prioridad
+                                    </option>
+
+                                    <?php
+                                    $prioridades = ["BAJA", "MEDIA", "ALTA"];
+                                    foreach ($prioridades as $p): ?>
+                                        <option value="<?= $p ?>" <?= $isEdit && $notification['PRIORIDAD'] === $p ? "selected" : "" ?>>
+                                            <?= $p ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+
+                                <small id="priorityError" style="color:red; display:none;">
+                                    Debe seleccionar una prioridad válida.
+                                </small>
+                            </div>
+
+                            <!-- Estado y Leída (solo en editar) -->
+                            <?php if ($isEdit): ?>
+                                <div class="form-item">
+                                    <label>Estado</label>
+                                    <select name="state" required>
+                                        <option value="1" <?= $notification['ID_ESTADO_FK'] == 1 ? "selected" : "" ?>>Activa
+                                        </option>
+                                        <option value="2" <?= $notification['ID_ESTADO_FK'] == 2 ? "selected" : "" ?>>Inactiva
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="form-item">
+                                    <label>¿Marcar como leída?</label>
+                                    <select name="read" required>
+                                        <option value="0" <?= $notification['ES_LEIDA'] == 0 ? "selected" : "" ?>>No</option>
+                                        <option value="1" <?= $notification['ES_LEIDA'] == 1 ? "selected" : "" ?>>Sí</option>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
+
+                            <!--
+                            <?php if ($isEdit): ?>
+                                <div class="form-item">
+                                    <label for="url">URL de Redirección (opcional)</label>
+                                    <input type="url" id="url" name="url"
+                                        value="<?= htmlspecialchars($notification['URL_REDIRECCION'] ?? '') ?>"
+                                        placeholder="https://ejemplo.com">
+                                </div>
+                            <?php endif; ?>
+                            -->
+
+
+                            <button type="submit" class="btn-blue mb-4">
+                                <strong><?= $isEdit ? "Actualizar Notificación" : "Enviar Notificación" ?></strong>
+                                <i class="bi bi-send"></i>
                             </button>
                         </div>
                     </form>
                 </div>
+
             </section>
         </section>
     </main>
-    <!--CONTENIDO CENTRAL-->
 
-    <!--VALIDACIONES CLIENTE-->
-    <script>
-        document.getElementById("editRoleForm").addEventListener("submit", function (event) {
-            let valid = true;
-
-            // Validación del nombre del rol
-            const roleInput = document.getElementById("rolename");
-            const roleError = document.getElementById("rolenameError");
-            const regexRol = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/;
-            const roleValue = roleInput.value.trim();
-
-            if (roleValue.length < 3 || roleValue.length > 50 || !regexRol.test(roleValue)) {
-                roleError.style.display = "block";
-                valid = false;
-            } else {
-                roleError.style.display = "none";
-            }
-
-            // Validación del estado
-            const stateSelect = document.getElementById("state");
-            const stateError = document.getElementById("stateError");
-
-            if (!stateSelect.value) {
-                stateError.style.display = "block";
-                valid = false;
-            } else {
-                stateError.style.display = "none";
-            }
-
-            // Evita el envío si hay errores
-            if (!valid) {
-                event.preventDefault();
-            }
-        });
-    </script>
-    <!--FIN VALIDACIONES CLIENTE-->
+    <footer>
+        <div class="post-footer" style="background-color: #002557; color: white;">
+            <span>&copy; 2025 - Dra Huellitas</span>
+        </div>
+    </footer>
 
 </body>
-
-<!--FOOTER-->
-<footer>
-    <div class="post-footer" style="background-color: #002557; color: white;">
-        <span>&copy; 2025 - Dra Huellitas</span>
-    </div>
-</footer>
-<!--FOOTER-->
 
 </html>

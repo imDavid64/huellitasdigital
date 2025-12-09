@@ -26,16 +26,6 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
             <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
             
             <section class="admin-main-content">
-                <!--Breadcrumb-->
-                <nav class="breadcrumbs-container">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="<?= BASE_URL ?>/index.php?controller=adminDashboard&action=index">Inicio</a>
-                        </li>
-                        <li class="breadcrumb-item current-page">Dashboard</li>
-                    </ol>
-                </nav>
-                
                 <div class="tittles">
                     <h2><i class="bi bi-speedometer2"></i><strong> Dashboard</strong></h2>
                     <p class="text-muted">Resumen general del sistema - <?php echo date('d/m/Y'); ?></p>

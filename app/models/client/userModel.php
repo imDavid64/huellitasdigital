@@ -111,7 +111,7 @@ class UserModel extends BaseModel
     // ==================================================
     public function emailExiste($email)
     {
-        $stmt = $this->conn->prepare("SELECT 1 FROM HUELLITAS_USUARIOS_TB WHERE USUARIO_CORREO = ?");
+        $stmt = $this->conn->prepare("SELECT 1 FROM huellitas_usuarios_tb WHERE usuario_correo = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
 
@@ -131,9 +131,7 @@ class UserModel extends BaseModel
     // ==================================================
     public function registrarUsuario($nombre, $email, $identificacion, $password)
     {
-        $sql = "INSERT INTO HUELLITAS_USUARIOS_TB 
-            (ID_ESTADO_FK, ID_ROL_USUARIO_FK, USUARIO_NOMBRE, USUARIO_CORREO, USUARIO_CONTRASENNA, USUARIO_IDENTIFICACION)
-            VALUES (2, 1, ?, ?, ?, ?)";
+        $sql = "CALL HUELLITAS_REGISTRAR_USUARIO_SP(?, ?, ?, ?)";
 
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -145,15 +143,19 @@ class UserModel extends BaseModel
 
         try {
             $stmt->execute();
-            $newId = $this->conn->insert_id;
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+
             $stmt->close();
-            return $newId;
+            return $row['NUEVO_ID_USUARIO'] ?? false;
+
         } catch (\Throwable $e) {
             $stmt->close();
             $_SESSION['error'] = '❌ Error al registrar usuario: ' . $e->getMessage();
             return false;
         }
     }
+
 
     // ==================================================
     // CREAR TOKEN (usa HUELLITAS_CREAR_TOKEN_SP)
@@ -181,7 +183,7 @@ class UserModel extends BaseModel
     // ==================================================
     public function marcarTokenUsado($token)
     {
-        $stmt = $this->conn->prepare("UPDATE HUELLITAS_TOKENS_TB SET USADO = TRUE WHERE TOKEN_VALOR = ?");
+        $stmt = $this->conn->prepare('CALL HUELLITAS_MARCAR_TOKEN_USADO_SP(?)');
         $stmt->bind_param("s", $token);
         $ok = $stmt->execute();
         $stmt->close();
@@ -217,11 +219,7 @@ class UserModel extends BaseModel
     // ==================================================
     public function activarCuenta($idUsuario)
     {
-        $sql = "UPDATE HUELLITAS_USUARIOS_TB
-            SET ID_ESTADO_FK = 1  -- 1 = Activo
-            WHERE ID_USUARIO_PK = ?";
-
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepare("CALL HUELLITAS_ACTIVAR_CUENTA_SP(?)");
         if (!$stmt) {
             throw new RuntimeException("Error al preparar la consulta: " . $this->conn->error);
         }
@@ -230,19 +228,20 @@ class UserModel extends BaseModel
         $ok = $stmt->execute();
         $stmt->close();
 
-        // Drenar posibles resultados pendientes (por seguridad)
+        // Limpieza de resultados (muy importante con CALL)
         while ($this->conn->more_results() && $this->conn->next_result()) {
         }
 
         return $ok;
     }
 
+
     // ==================================================
     // IDENTIFICACION EXISTE
     // ==================================================
     public function identificacionExiste($identificacion)
     {
-        $stmt = $this->conn->prepare("SELECT 1 FROM HUELLITAS_USUARIOS_TB WHERE USUARIO_IDENTIFICACION=?");
+        $stmt = $this->conn->prepare("SELECT 1 FROM huellitas_usuarios_tb WHERE usuario_identificacion=?");
         $stmt->bind_param("i", $identificacion);
         $stmt->execute();
 
@@ -262,7 +261,7 @@ class UserModel extends BaseModel
     // ==================================================
     public function getUsuarioByEmail($email)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM HUELLITAS_USUARIOS_TB WHERE USUARIO_CORREO = ?");
+        $stmt = $this->conn->prepare("SELECT * FROM huellitas_usuarios_tb WHERE usuario_correo = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();

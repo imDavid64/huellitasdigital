@@ -91,17 +91,17 @@ class CheckoutModel extends BaseModel
 
     public function getPaymentStatus($pedidoId)
     {
-        $stmt = $this->conn->prepare("
-        SELECT ESTADO_PAGO
-        FROM HUELLITAS_PAGOS_TB
-        WHERE ID_PEDIDO_FK = ?
-        ORDER BY ID_PAGO_PK DESC
-        LIMIT 1
-    ");
+        $sql = "CALL HUELLITAS_OBTENER_ESTADO_PAGO_SP(?)";
+        $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $pedidoId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc()['ESTADO_PAGO'] ?? null;
+
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+
+        return $row['ESTADO_PAGO'] ?? null;
     }
+
 
     public function getOrderDetail($codigoPedido)
     {

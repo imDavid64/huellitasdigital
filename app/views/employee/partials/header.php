@@ -10,6 +10,7 @@ $userPhoto = !empty($_SESSION['user_image'])
 ?>
 <script>
     const BASE_URL = "<?= BASE_URL ?>";
+    const USER_LOGGED_IN = <?= isset($_SESSION['user_id']) ? 'true' : 'false' ?>;
 </script>
 <!--NO QUITAR-->
 
@@ -18,7 +19,7 @@ $userPhoto = !empty($_SESSION['user_image'])
         <div class="header-container-left">
             <!--Boton del logo-->
             <div>
-                <a href="<?= BASE_URL ?>/index.php?controller=employee&index" class="header-logo-admin">
+                <a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index" class="header-logo-admin">
                     <img src="<?= BASE_URL ?>/public/assets/images/logo.png" alt="Logo Veterinaria Dra.Huellitas">
                     <span>Huellitas<br><strong>Digital</strong></span>
                 </a>
@@ -50,10 +51,16 @@ $userPhoto = !empty($_SESSION['user_image'])
                 <!---->
                 <div class="admin-header-user-menu" id="header-user-menu">
                     <ul>
-                        <li><a href="<?= BASE_URL ?>/index.php?controller=user&action=index"><i
-                                    class="bi bi-person-fill"></i> Mi Pefil</a></li>
-                        <li><a href="<?= BASE_URL ?>/index.php?controller=home&action=index">
-                                <i class="bi bi-bag-fill"></i> Modo Cliente</a></li>
+                        <li><a href="<?= BASE_URL ?>/index.php?controller=employeeProfile&action=index"><i
+                                    class="bi bi-person-fill"></i> Mi Perfil</a></li>
+                        <?php if ($_SESSION['user_role'] === 'ADMINISTRADOR'): ?>
+                            <li><a href="<?= BASE_URL ?>/index.php?controller=adminDashboard&action=index">
+                                    <i class="bi bi-tools"></i> Panel Administrador</a></li>
+                            <li><a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index">
+                                    <i class="bi bi-person-vcard-fill"></i> Panel Empleado</a></li>
+                            <li><a href="<?= BASE_URL ?>/index.php?controller=home&action=index">
+                                    <i class="bi bi-basket2-fill"></i> Modo Cliente</a></li>
+                        <?php endif; ?>
                         <li><a href="<?= BASE_URL ?>/index.php?controller=auth&action=logout">
                                 <i class="bi bi-door-open-fill"></i> Cerrar Sesión</a></li>
                     </ul>

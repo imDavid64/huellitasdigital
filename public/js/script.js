@@ -383,6 +383,10 @@ $(function () {
 
     // --- PARA LAS NOTIFICAIONES ---
     $("#btnNotifications").on("click", function (e) {
+        if (!USER_LOGGED_IN) {
+            return; // No abrir nada si no hay sesión
+        }
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -393,6 +397,7 @@ $(function () {
             cargarNotificaciones();
         }
     });
+
 
     // Función para cargar notificaciones
     // === Cargar notificaciones ===
@@ -406,7 +411,6 @@ $(function () {
             },
             dataType: "json",
             success: function (data) {
-                console.log(data);
                 const $list = $(".notification-list");
                 $list.empty();
 
@@ -416,38 +420,44 @@ $(function () {
                 }
 
                 data.forEach(n => {
+
+                    const tieneUrl = n.URL_REDIRECCION && n.URL_REDIRECCION.trim() !== "";
+
                     const item = $(`
-                    <div class="notification-item" 
-                        data-id="${n.ID_NOTIFICACION_PK}"
-                        data-url="${n.URL_REDIRECCION || '#'}">
-                        <strong>${n.TITULO_NOTIFICACION}</strong><br>
-                        <small>${n.MENSAJE_NOTIFICACION}</small><br>
-                        <small>${new Date(n.FECHA_CREACION).toLocaleString()}</small>
-                    </div>
-                `);
+                        <div class="notification-item" data-id="${n.ID_NOTIFICACION_PK}">
+                            <strong>${n.TITULO_NOTIFICACION}</strong><br>
+                            <small>${n.MENSAJE_NOTIFICACION}</small><br>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small>${new Date(n.FECHA_CREACION).toLocaleString()}</small>
+                                ${tieneUrl ? `<span class="notif-btn-ver" data-url="${n.URL_REDIRECCION}">Ver</span>` : ""}
+                            </div>
+                        </div>
+                    `);
 
-                    // ✅ Click para marcar y redirigir
-                    item.on("click", function () {
+                    // CLICK SOLO SI TIENE URL
+                    item.find(".notif-btn-ver").on("click", function (e) {
+                        e.stopPropagation(); // evita que dispare el click del item completo
+
+                        const id = item.data("id");
                         let url = $(this).data("url");
-                        const id = $(this).data("id");
 
+                        // marcar como leída
                         $.post(`${BASE_URL}/index.php`, {
                             controller: "adminNotification",
                             action: "markOneAsRead",
                             id: id
                         });
 
-                        if (url) {
-                            if (!url.startsWith("http")) {
-                                url = `${BASE_URL}${url}`;
-                            }
-                            window.location.href = url;
+                        if (!url.startsWith("http")) {
+                            url = `${BASE_URL}${url}`;
                         }
-                    });
 
+                        window.location.href = url;
+                    });
 
                     $list.append(item);
                 });
+
             },
             error: function (xhr) {
                 console.error("Error al cargar notificaciones:", xhr.responseText);
@@ -500,7 +510,10 @@ $(function () {
 
 
     // === Actualizar contador cada 60 segundos automáticamente ===
-    setInterval(actualizarContadorNotificaciones, 60000);
+    if (USER_LOGGED_IN) {
+        actualizarContadorNotificaciones();
+        setInterval(actualizarContadorNotificaciones, 60000);
+    }
 
     // === Disminuir contador al marcar todas como leídas ===
     $("#markAsRead").on("click", function () {
@@ -521,9 +534,6 @@ $(function () {
             }
         });
     });
-
-    // === Inicializar contador al cargar la página ===
-    actualizarContadorNotificaciones();
 
 
     // Sistema de búsqueda por parte del admin
@@ -3196,5 +3206,226 @@ $(function () {
         $("#listaResultadosNotificacion").hide();
     });
 
+    // =====================================================
+    // VALIDACIÓN DEL FORMULARIO CON SWEETALERT2
+    // =====================================================
+
+    const formNotification = document.getElementById("notificationForm");
+
+    if (formNotification) {
+        formNotification.addEventListener("submit", function (e) {
+
+            const title = document.getElementById("addNotificationTitle").value.trim();
+            const message = document.getElementById("addNotificationMessage").value.trim();
+            const type = document.getElementById("notificationType").value;
+            const priority = document.getElementById("priority").value;
+
+            // AQUÍ VALIDAMOS EL DESTINO
+            const target = document.querySelector("input[name='notificationTarget']:checked")?.value;
+            const selectedUserId = document.getElementById("selectedUserId")?.value;
+
+            // ==============================
+            // VALIDACIÓN DEL DESTINO
+            // ==============================
+            if (!target) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Destino requerido",
+                    text: "Debe seleccionar si la notificación es Global o para un Usuario Específico."
+                });
+            }
+
+            // ==============================
+            // VALIDACIONES EXISTENTES
+            // ==============================
+
+            if (title.length < 3 || title.length > 50) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Título inválido",
+                    text: "El título debe tener entre 3 y 50 caracteres."
+                });
+            }
+
+            if (message.length < 3 || message.length > 200) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Mensaje inválido",
+                    text: "El mensaje debe tener entre 3 y 200 caracteres."
+                });
+            }
+
+            if (!type) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Tipo requerido",
+                    text: "Seleccione un tipo de notificación."
+                });
+            }
+
+            if (!priority) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Prioridad requerida",
+                    text: "Seleccione una prioridad."
+                });
+            }
+
+            if (target === "PERSONA" && (!selectedUserId || selectedUserId === "")) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Usuario no seleccionado",
+                    text: "Debes seleccionar un usuario para enviar esta notificación."
+                });
+            }
+        });
+    }
+
+    const formEditNotification = document.getElementById("notificationEditForm");
+
+    if (formEditNotification) {
+        formEditNotification.addEventListener("submit", function (e) {
+
+            const title = document.getElementById("addNotificationTitle").value.trim();
+            const message = document.getElementById("addNotificationMessage").value.trim();
+            const type = document.getElementById("notificationType").value;
+            const priority = document.getElementById("priority").value;
+
+            const selectedUserId = document.getElementById("selectedUserId")?.value;
+
+            // ==============================
+            // VALIDACIONES EXISTENTES
+            // ==============================
+
+            if (title.length < 3 || title.length > 50) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Título inválido",
+                    text: "El título debe tener entre 3 y 50 caracteres."
+                });
+            }
+
+            if (message.length < 3 || message.length > 200) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Mensaje inválido",
+                    text: "El mensaje debe tener entre 3 y 200 caracteres."
+                });
+            }
+
+            if (!type) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Tipo requerido",
+                    text: "Seleccione un tipo de notificación."
+                });
+            }
+
+            if (!priority) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Prioridad requerida",
+                    text: "Seleccione una prioridad."
+                });
+            }
+
+            if (target === "PERSONA" && (!selectedUserId || selectedUserId === "")) {
+                e.preventDefault();
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Usuario no seleccionado",
+                    text: "Debes seleccionar un usuario para enviar esta notificación."
+                });
+            }
+        });
+    }
+
+    // =================================================
+    // VALIDACIONES SWEETALERT2 PARA MENSAJES DE ERROR / ÉXITO
+    // =================================================
+
+    const errorMsg = document.body.dataset.error;
+    const successMsg = document.body.dataset.success;
+
+    if (errorMsg) {
+        console.log("ERROR:", document.body.dataset.error);
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            html: errorMsg,
+            confirmButtonColor: "#002557"
+        });
+    }
+
+    if (successMsg) {
+        console.log("SUCCESS:", document.body.dataset.success);
+        Swal.fire({
+            icon: "success",
+            title: "Éxito",
+            html: successMsg,
+            confirmButtonColor: "#002557"
+        });
+    }
+
+    // =================================================
+    // EDITAR IMAGEN MASCOTA - MODAL + AJAX
+    // =================================================
+    $(document).on("click", "#btnEditarImagen", function (e) {
+        e.preventDefault();
+        $("#modalEditarImagen").modal("show");
+    });
+
+    // Vista previa de imagen
+    $("input[name='imagenMascota']").on("change", function () {
+        const file = this.files[0];
+        if (file) {
+            $("#previewImagenMascota").attr("src", URL.createObjectURL(file));
+        }
+    });
+
+    // Enviar imagen por AJAX
+    $("#formCambiarImagen").on("submit", function (e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: BASE_URL + "/index.php?controller=pets&action=updatePetImage",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (resp) {
+
+                if (resp.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Imagen actualizada",
+                        text: "La imagen de tu mascota fue actualizada correctamente",
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+
+                } else {
+                    Swal.fire("Error", resp.error, "error");
+                }
+            },
+            error: function () {
+                Swal.fire("Error", "No se pudo actualizar la imagen.", "error");
+            }
+        });
+    });
 
 });

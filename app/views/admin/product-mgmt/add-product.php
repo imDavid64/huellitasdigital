@@ -11,7 +11,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 <?php include_once __DIR__ . "/../partials/adminHead.php"; ?>
 <!--HEAD-->
 
-<body>
+<body data-error="<?= $_SESSION['error'] ?? '' ?>" data-success="<?= $_SESSION['success'] ?? '' ?>">
+    <?php unset($_SESSION['error'], $_SESSION['success']); ?>
     <!--HEADER-->
     <?php include_once __DIR__ . "/../partials/header.php"; ?>
     <!--HEADER-->

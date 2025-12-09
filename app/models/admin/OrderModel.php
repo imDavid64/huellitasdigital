@@ -111,19 +111,15 @@ class OrderModel extends BaseModel
 
     public function getPaymentByOrderCode($codigoPedido)
     {
-        $sql = "SELECT pg.*
-            FROM HUELLITAS_PAGOS_TB pg
-            INNER JOIN HUELLITAS_PEDIDOS_TB p 
-                ON p.ID_PEDIDO_PK = pg.ID_PEDIDO_FK
-            WHERE p.CODIGO_PEDIDO = ?";
-
+        $sql = "CALL HUELLITAS_OBTENER_PAGO_POR_CODIGO_PEDIDO_SP(?)";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $codigoPedido);
         $stmt->execute();
+
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
-        $stmt->close();
 
+        $stmt->close();
         return $row;
     }
 

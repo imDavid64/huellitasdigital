@@ -17,6 +17,9 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+    <!-- SweetAlert2 local -->
+    <script src="<?= BASE_URL ?>/public/js/libs/sweetalert2.all.min.js"></script>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="<?= BASE_URL ?>/public/js/script.js"></script>
 </head>
@@ -58,14 +61,14 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                                     <?= htmlspecialchars($mascota['FECHA_NACIMIENTO']) ?></h5>
                             </div>
                             <div class="my-pets-info-header-right">
-                                <a href="#">
+                                <a href="#" id="btnEditarImagen">
                                     <img src="<?= htmlspecialchars($mascota['MASCOTA_IMAGEN_URL']) ?>" height="200px"
-                                        width="200px"
-                                        alt="Imagen de <?= htmlspecialchars($mascota['NOMBRE_MASCOTA']) ?>">
+                                        width="200px">
                                     <div class="overlay">
                                         <i class="bi bi-pencil">Editar</i>
                                     </div>
                                 </a>
+
                             </div>
                         </div>
                         <div class="my-pets-info-main-content">
@@ -119,6 +122,46 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
         <!--FOODER-->
         <?php require_once __DIR__ . "/../partials/fooder.php"; ?>
         <!--FOODER-->
+
+
+        <!-- Modal Cambiar Imagen Mascota -->
+        <div class="modal fade" id="modalEditarImagen" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cambiar Imagen de la Mascota</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <form id="formCambiarImagen" enctype="multipart/form-data">
+                        <input type="hidden" name="codigo" value="<?= $mascota['CODIGO_MASCOTA'] ?>">
+
+                        <div class="modal-body">
+
+                            <div class="mb-3">
+                                <label class="form-label">Seleccione una nueva imagen:</label>
+                                <input type="file" name="imagenMascota" class="form-control" accept="image/*" required>
+                            </div>
+
+                            <div class="text-center">
+                                <img id="previewImagenMascota" src="<?= $mascota['MASCOTA_IMAGEN_URL'] ?>"
+                                    style="width:150px;height:150px;object-fit:cover;border-radius:10px;">
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn-green">Actualizar Imagen</button>
+                            <button type="button" class="btn-black" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
 </body>
 
 </html>

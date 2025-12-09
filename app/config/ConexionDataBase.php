@@ -7,7 +7,7 @@ namespace App\Config;
 
 use mysqli;
 
-final class ConexionDatabase
+final class ConexionDataBase
 {
     private string $host;
     private string $user;

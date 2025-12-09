@@ -1,52 +1,47 @@
 <?php
-//NO QUITAR//
-require_once __DIR__ . '/../../../config/bootstrap.php';
-//NO QUITAR//
+//Este include verifica si hay sesión activa
+include_once __DIR__ . '/../includes/auth.php';
+checkRole(['EMPLEADO', 'ADMINISTRADOR']);
 ?>
+
+
 <!DOCTYPE html>
 <html lang="es">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Huellitas Digital</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="<?= BASE_URL ?>/public/js/script.js"></script>
-</head>
+<!--Include para el head-->
+<!--HEAD-->
+<?php include_once __DIR__ . "/../partials/employeeHead.php"; ?>
+<!--HEAD-->
 
 <body>
+
+    <!--Include para el herder-->
     <!--HEADER-->
-    <?php require_once __DIR__ . "/../partials/header.php"; ?>
+    <?php include_once __DIR__ . "/../partials/header.php"; ?>
     <!--HEADER-->
 
-    <!--Breadcrumb-->
-    <nav class="breadcrumbs-container-client">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="/huellitasdigital/index.php?controller=home&action=index">Inicio</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="profile.html">Perfil de Usuario</a>
-            </li>
-            <li class="breadcrumb-item current-page">Editar Usuario</li>
-        </ol>
-    </nav>
-
+    <!--CONTENIDO CENTRAL-->
     <main>
-        <section class="main-content">
-            <div>
+        <section class="admin-main">
+            <?php include_once __DIR__ . "/../partials/asideMenu.php"; ?>
+            <section class="vet-main-content">
+                <!--Breadcrumb-->
+                <nav class="breadcrumbs-container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=employeeDashboard&action=index">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="<?= BASE_URL ?>/index.php?controller=employeeProfile&action=index">Perfil de Usuario</a>
+                        </li>
+                        <li class="breadcrumb-item current-page">Editar Perfil</li>
+                    </ol>
+                </nav>
                 <div class="tittles">
                     <h1><strong>Editar Perfil</strong></h1>
                 </div>
                 <div class="contentProfile">
-                    <form action="<?= BASE_URL ?>/index.php?controller=user&action=updateProfile" method="POST"
+                    <form action="<?= BASE_URL ?>/index.php?controller=employeeProfile&action=updateProfile" method="POST"
                         enctype="multipart/form-data">
 
                         <!-- Imagen actual -->
@@ -58,10 +53,9 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
 
                             <!-- Imagen de perfil -->
                             <div class="profileImg">
-                                <img class="image-preview"
-                                    src="<?= !empty($usuario['USUARIO_IMAGEN_URL'])
-                                        ? htmlspecialchars($usuario['USUARIO_IMAGEN_URL'])
-                                        : BASE_URL . '/public/assets/images/default-user-image.png' ?>"
+                                <img class="image-preview" src="<?= !empty($usuario['USUARIO_IMAGEN_URL'])
+                                    ? htmlspecialchars($usuario['USUARIO_IMAGEN_URL'])
+                                    : BASE_URL . '/public/assets/images/default-user-image.png' ?>"
                                     alt="Foto de perfil">
                             </div>
 
@@ -92,7 +86,7 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                                 <label>Teléfono</label>
                                 <input type="text" name="usuario_telefono"
                                     value="<?= htmlspecialchars($usuario['TELEFONO_CONTACTO'] ?? '') ?>" maxlength="8"
-                                    pattern="\d{8}" inputmode="numeric" placeholder="Ej: 88888888">
+                                    pattern="\d{8}" inputmode="numeric" placeholder="Ej: 88888888" required>
                             </div>
 
                             <hr>
@@ -157,20 +151,22 @@ require_once __DIR__ . '/../../../config/bootstrap.php';
                             <!-- Botones -->
                             <div class="editProfile-footer">
                                 <button class="btn-blue" type="submit">Guardar cambios</button>
-                                <a href="<?= BASE_URL ?>/index.php?controller=user&action=index"
+                                <a href="<?= BASE_URL ?>/index.php?controller=employeeProfile&action=index"
                                     class="btn-black">Cancelar</a>
                             </div>
                         </div>
                     </form>
                 </div>
-            </div>
-        </section>
+                </div>
+            </section>
     </main>
-
+    <!--FOOTER-->
+    <footer>
+        <div class="post-footer" style="background-color: #002557; color: white;">
+            <span>&copy; 2025 - Dra Huellitas</span>
+        </div>
+    </footer>
+    <!--FOOTER-->
 </body>
-
-<!--FOODER-->
-<?php require_once __DIR__ . "/../partials/fooder.php"; ?>
-<!--FOODER-->
 
 </html>

@@ -25,7 +25,9 @@ require_once __DIR__ . '/../../app/config/bootstrap.php';
     <script src="<?= BASE_URL ?>/public/js/script.js"></script>
 </head>
 
-<body>
+<body data-error="<?= $_SESSION['error'] ?? '' ?>" data-success="<?= $_SESSION['success'] ?? '' ?>">
+    <?php unset($_SESSION['error'], $_SESSION['success']); ?>
+    
     <!--HEADER-->
     <?php require_once __DIR__ . "/client/partials/header.php"; ?>
     <!--HEADER-->

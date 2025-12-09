@@ -1721,6 +1721,23 @@ header {
     font-size: 25px;
 }
 
+.notif-btn-ver {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 8px;
+    background-color: #002557;
+    color: white !important;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+}
+
+.notif-btn-ver:hover {
+    background-color: #013b8f;
+}
+
+
 .admin-main {
     display: flex;
     justify-content: center;
@@ -1819,6 +1836,21 @@ header {
 
 .table-body-scroll table {
     margin: 0;
+}
+
+.infoProfileAdmin {
+    display: flex;
+    justify-content: center;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: thin;
+    border-radius: 10px;
+    padding: 2rem;
+    color: #002557;
+    gap: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
 

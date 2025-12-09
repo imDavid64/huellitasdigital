@@ -92,6 +92,25 @@ class AdminProductController
         $currentImage = $_POST['current_image_url'] ?? null;
         $newImage = $currentImage;
 
+        if ($nombre === "") {
+            $_SESSION['error'] = "❌ El nombre del producto es obligatorio.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminProduct&action=edit&id=" . $id);
+            exit;
+        }
+
+        if ($precio <= 0) {
+            $_SESSION['error'] = "❌ El precio debe ser mayor a 0.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminProduct&action=edit&id=" . $id);
+            exit;
+        }
+
+        if ($stock < 0) {
+            $_SESSION['error'] = "❌ El stock no puede ser negativo.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminProduct&action=edit&id=" . $id);
+            exit;
+        }
+
+
         if (!empty($_FILES['productimg']['tmp_name'])) {
             $file = $_FILES['productimg']['tmp_name'];
             $fileName = uniqid() . "_" . $_FILES['productimg']['name'];
@@ -139,8 +158,11 @@ class AdminProductController
 
     public function store()
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
-            exit("❌ Acceso Denegado");
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = "❌ Acceso denegado.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminProduct&action=index");
+            exit;
+        }
 
         $nombre = trim($_POST['nombre']);
         $descripcion = trim($_POST['descripcion']);
@@ -151,6 +173,24 @@ class AdminProductController
         $categoria = intval($_POST['categoria']);
         $marca = intval($_POST['marca']);
         $nuevo = intval($_POST['nuevo']);
+
+        if ($nombre === "") {
+            $_SESSION['error'] = "❌ El nombre del producto es obligatorio.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminProduct&action=create");
+            exit;
+        }
+
+        if ($precio <= 0) {
+            $_SESSION['error'] = "❌ El precio debe ser mayor a 0.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminProduct&action=create");
+            exit;
+        }
+
+        if ($stock < 0) {
+            $_SESSION['error'] = "❌ El stock no puede ser negativo.";
+            header("Location: " . BASE_URL . "/index.php?controller=adminProduct&action=create");
+            exit;
+        }
 
         $imgUrl = null;
         if (!empty($_FILES['imagen']['tmp_name'])) {

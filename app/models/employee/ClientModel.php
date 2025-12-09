@@ -120,36 +120,45 @@ class ClientModel extends BaseModel
 
     public function crearDireccion($provinciaId, $cantonId, $distritoId, $senas)
     {
-        $stmt = $this->conn->prepare("
-        INSERT INTO HUELLITAS_DIRECCION_TB 
-        (ID_ESTADO_FK, ID_DIRECCION_PROVINCIA_FK, ID_DIRECCION_CANTON_FK, ID_DIRECCION_DISTRITO_FK, DIRECCION_SENNAS)
-        VALUES (1, ?, ?, ?, ?)
-    ");
+        $stmt = $this->conn->prepare("CALL HUELLITAS_CREAR_DIRECCION_SP(?, ?, ?, ?, @direccionId)");
         $stmt->bind_param("iiis", $provinciaId, $cantonId, $distritoId, $senas);
         $stmt->execute();
-        return $stmt->insert_id;
+        $stmt->close();
+
+        // Obtener el valor devuelto por el OUT
+        $result = $this->conn->query("SELECT @direccionId AS direccionId");
+        $row = $result->fetch_assoc();
+
+        return $row['direccionId'];
     }
+
 
     public function crearTelefono($telefono)
     {
-        $stmt = $this->conn->prepare("
-        INSERT INTO HUELLITAS_TELEFONO_CONTACTO_TB (ID_ESTADO_FK, TELEFONO_CONTACTO)
-        VALUES (1, ?)
-    ");
+        $stmt = $this->conn->prepare(
+            "CALL HUELLITAS_CREAR_TELEFONO_SP(?, @telefonoId)"
+        );
         $stmt->bind_param("i", $telefono);
         $stmt->execute();
-        return $stmt->insert_id;
+        $stmt->close();
+
+        // Obtener el ID insertado
+        $result = $this->conn->query("SELECT @telefonoId AS telefonoId");
+        $row = $result->fetch_assoc();
+
+        return $row['telefonoId'];
     }
+
 
     public function correoExistenteEnClientesOUsuarios($correo)
     {
-        
+
         // Initialize counters to avoid "use of unassigned variable" warnings
         $countClientes = 0;
         $countUsuarios = 0;
 
         // Buscar en clientes
-        $stmt1 = $this->conn->prepare("SELECT COUNT(*) FROM HUELLITAS_CLIENTES_TB WHERE CLIENTE_CORREO = ?");
+        $stmt1 = $this->conn->prepare("SELECT COUNT(*) FROM huellitas_clientes_tb WHERE cliente_correo = ?");
         $stmt1->bind_param("s", $correo);
         $stmt1->execute();
         $stmt1->bind_result($countClientes);
@@ -157,7 +166,7 @@ class ClientModel extends BaseModel
         $stmt1->close();
 
         // Buscar en usuarios
-        $stmt2 = $this->conn->prepare("SELECT COUNT(*) FROM HUELLITAS_USUARIOS_TB WHERE USUARIO_CORREO = ?");
+        $stmt2 = $this->conn->prepare("SELECT COUNT(*) FROM huellitas_usuarios_tb WHERE usuario_correo = ?");
         $stmt2->bind_param("s", $correo);
         $stmt2->execute();
         $stmt2->bind_result($countUsuarios);

@@ -12,7 +12,8 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 <?php include_once __DIR__ . "/../partials/adminHead.php"; ?>
 <!--HEAD-->
 
-<body>
+<body data-error="<?= $_SESSION['error'] ?? '' ?>" data-success="<?= $_SESSION['success'] ?? '' ?>">
+    <?php unset($_SESSION['error'], $_SESSION['success']); ?>
 
     <!--Include para el header-->
     <!--HEADER-->
@@ -45,13 +46,13 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
 
                                 <div class="notification-target-selector">
                                     <label class="selector-option">
-                                        <input type="radio" name="notificationTarget" value="GLOBAL" checked>
-                                        <span>Notificación Global 🌍</span>
+                                        <input type="radio" name="notificationTarget" value="PERSONA">
+                                        <span>Para un Usuario Específico 👤</span>
                                     </label>
 
                                     <label class="selector-option">
-                                        <input type="radio" name="notificationTarget" value="PERSONA">
-                                        <span>Para un Usuario Específico 👤</span>
+                                        <input type="radio" name="notificationTarget" value="GLOBAL">
+                                        <span>Notificación Global 🌍</span>
                                     </label>
                                 </div>
                             </div>
@@ -71,8 +72,6 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                             <!-- ======================================================= -->
                             <!-- INFORMACIÓN DEL USUARIO SELECCIONADO -->
                             <!-- ======================================================= -->
-                            <input type="hidden" id="selectedUserId" name="selectedUserId">
-
                             <div id="datosUsuarioSeleccionado" class="border rounded p-3 mb-3" style="display:none;">
                                 <h5 class="fw-bold mb-3"><i class="bi bi-person-check-fill"></i> Usuario Seleccionado
                                 </h5>
@@ -171,15 +170,16 @@ checkRole(['ADMINISTRADOR']); //Solo admin puede entrar
                         </div>
 
                         <!-- Campo: Dirección URL -->
+                        <!--
                         <div class="form-item">
                             <label for="url">Dirección URL (opcional)</label>
                             <input type="url" id="url" name="url">
                         </div>
+                        -->
 
-                        <button type="submit" class="btn-blue"><strong>Enviar Notificación</strong><i
+                        <button type="submit" class="btn-blue mb-4"><strong>Enviar Notificación</strong><i
                                 class="bi bi-send"></i></button>
-                </div>
-                </form>
+                    </form>
                 </div>
             </section>
         </section>

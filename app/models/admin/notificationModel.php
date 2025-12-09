@@ -156,6 +156,47 @@ class NotificationModel extends BaseModel
         return $users;
     }
 
+    public function getNotificationById($id)
+    {
+        $stmt = $this->conn->prepare("CALL HUELLITAS_OBTENER_NOTIFICACION_POR_ID_SP(?)");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+
+        $stmt->close();
+        return $row;
+    }
+
+    public function updateNotification($id, $state, $title, $message, $type, $priority, $read, $url)
+    {
+        $stmt = $this->conn->prepare(
+            "CALL HUELLITAS_ACTUALIZAR_NOTIFICACION_SP(?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+
+        $stmt->bind_param(
+            "iissssis",
+            $id,
+            $state,
+            $title,
+            $message,
+            $type,
+            $priority,
+            $read,
+            $url
+        );
+
+        $result = $stmt->execute();
+
+        $stmt->close();
+        while ($this->conn->more_results() && $this->conn->next_result()) {
+        }
+
+        return $result;
+    }
+
+
 
 
 }

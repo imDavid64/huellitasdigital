@@ -173,7 +173,4 @@ class AppointmentModel extends BaseModel
             return ['EXITO' => 0, 'MENSAJE' => 'Error al cancelar la cita'];
         }
     }
-
-
-
 }
